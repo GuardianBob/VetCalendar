@@ -198,6 +198,9 @@ export default defineComponent({
         weekends: true,
         initialDate: new Date(),
         height: "auto",
+        eventDisplay: 'block',
+        eventColor: 'white',
+        eventTextColor: "black",
         events: [
           { }
         ]
