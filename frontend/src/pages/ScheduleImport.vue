@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pt-xl" >
     <!-- <div class="col-10 col-sm-5 col-md-5 col-lg-5"> -->
-      <q-form           
+    <q-form           
       @submit="upload_shifts_v2">
       <div class="row align-start justify-center q-mx-sm items-center">
         <!-- <q-input filled v-model="gmail" required type="email" label="Gmail"></q-input> -->
@@ -95,13 +95,38 @@
           :thickness="3"
           />
         <!-- </div> -->
-        </q-form>
+    </q-form>
       <!-- </div> -->
-    <div class="row align-start justify-center">
-      <div id="test_add" class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
-        <FullCalendar id="fullCalendar" ref="fullCalendar" :custom-buttons="customButtons" :options='calendarOptions'/>
+      <!-- <q-tab-panels
+      v-model="panel"
+      animated
+      infinite    
+    >
+    <q-tab-panel animated :name="panel"  > -->
+      <div class="row align-start justify-center" v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe">
+        <div class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
+          <FullCalendar 
+            id="fullCalendar" 
+            ref="fullCalendar" 
+            
+            :custom-buttons="customButtons" 
+            :options='calendarOptions'/>
+            
+        </div>
       </div>
-    </div>
+    <!-- </q-tab-panel>
+    <q-tab-panel name="snail"> -->
+      <!-- <div class="row align-start justify-center">
+        <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe" class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
+          <FullCalendar 
+            id="fullCalendar" 
+            ref="fullCalendar" 
+            :custom-buttons="customButtons" 
+            :options='calendarOptions'/>
+        </div>
+      </div> -->
+    <!-- </q-tab-panel>
+  </q-tab-panels> -->
     <q-dialog v-model="info" transition-show="slide-down" transition-hide="slide-up">
       <ButtonDefinitions />
     </q-dialog>
@@ -207,6 +232,9 @@ export default defineComponent({
       enable_file: ref(false),
       enable_date: ref(false),
       info: ref(false),
+      slide: ref(1),
+      panel: ref(1),
+      savedTheme: 'light_theme',
       // onFileSelected(file) {
       //   this.file = file
       //   console.log(file)
@@ -242,8 +270,11 @@ export default defineComponent({
       }
     },
     date(newValue, oldValue) {
-      // console.log(newValue, oldValue)
+      // console.log(newValue.slice(4, 8), oldValue.slice(4, 8))
       this.handleMonthChange()
+      // if (newValue.slice(4, 8) != oldValue.slice(4, 8)){
+
+      // }
     },
   },
   computed: {
@@ -259,9 +290,29 @@ export default defineComponent({
       return date_string
     },
 
+    async handleRightSwipe() {      
+      let calendarApi = this.$refs.fullCalendar.getApi();
+      calendarApi.prev();
+      let new_date =  calendarApi.getDate().toString()
+      // console.log("eventPrev", calendarApi.getDate());
+      this.handleCalendarChange(new_date, -1)
+      // this.panel = this.panel - 1
+
+    },
+
+    async handleLeftSwipe() {
+      let calendarApi = this.$refs.fullCalendar.getApi();
+      calendarApi.next();
+      let new_date =  calendarApi.getDate().toString()
+      this.handleCalendarChange(new_date, 1)
+      .then(() => {
+        // this.panel = this.panel + 1
+      })
+    },
+
     async handleMonthChange(){
-      let calendarApi = this.$refs.fullCalendar.getApi()
       let new_date = new Date('01 ' + this.date)
+      let calendarApi = this.$refs.fullCalendar.getApi()
       calendarApi.gotoDate(new_date.toISOString())
       await this.getShifts()
       if (this.user) {
@@ -270,13 +321,25 @@ export default defineComponent({
       // console.log(this.calendarOptions.events.length)
     },
 
-    async handleCalendarChange(cal_date){
+    async handleCalendarChange(cal_date, direction = null){
       let new_date = cal_date.slice(4, 7) + " " + cal_date.slice(11, 15)
       // console.log(new_date)
       this.date = new_date
+      // let calendarApi = this.$refs.fullCalendar.getApi()
+      // calendarApi.gotoDate(new Date('01 ' + new_date).toISOString())
+      // if (direction != null) {
+      //   if (direction > 0){
+      //     calendarApi.next();
+      //   } else {
+      //     calendarApi.prev();
+      //   }
+      // //   this.panel = this.panel + direction
+      // //   console.log(direction, this.panel)
+      // }
       // let body = {}
       // body["date"] = this.date      
       // APIService.return_shifts(this.date)
+      return
     },
 
     async file_upload(){
@@ -1035,7 +1098,7 @@ export default defineComponent({
   created() {
     if (localStorage.getItem("filtered_user")) {
       this.user = localStorage.getItem("filtered_user")
-    }
+    }    
   },
   
   mounted() {

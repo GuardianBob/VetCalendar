@@ -78,6 +78,7 @@ export default {
   setup() {
     return {
       info: ref(false),
+      savedTheme: 'light_theme',
     }
   }
 };

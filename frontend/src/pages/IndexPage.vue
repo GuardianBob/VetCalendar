@@ -22,7 +22,7 @@ export default defineComponent({
   name: 'IndexPage',
   data() {
     return {
-
+      savedTheme: 'light_theme',
     }
 
   },

@@ -20,6 +20,7 @@
 
 <script>
 import { defineComponent } from 'vue'
+import { useQuasar } from "quasar";
 
 export default defineComponent({
   name: 'EssentialLink',
@@ -43,6 +44,13 @@ export default defineComponent({
       type: String,
       default: ''
     }
-  }
+  },
+  data() {
+    const $q = useQuasar();
+    // $q.dark.set(false);
+    return {
+      savedTheme: 'light_theme',
+    };
+  },
 })
 </script>
