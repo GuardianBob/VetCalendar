@@ -1,6 +1,8 @@
 import { api } from "boot/axios";
 import axios from 'axios'
 
+
+
 class APIService {
   get_todo() {
     console.log("at api")
@@ -8,12 +10,25 @@ class APIService {
   }
 
   get_form() {
-    console.log("at api")
     return api.get('/login/');
   }
 
+  get_csrf() {
+    return api.get('/login/get_csrf');
+  }
+
   login(data) {
-    return api.post("/login/validate", data);
+    console.log(data)
+    // const headers = { 'X-CSRF-TOKEN': data.token }
+    // // api.defaults.headers.common['X-CSRF-TOKEN'] = data.token;
+    // return api.post("/login/validate", { data: data.data }, {headers: headers} );
+    return api.post("/login/validate", data.data );
+    // return api({
+    //   method: "get",
+    //   url: "/login/validate",
+    //   data: data.data,
+    //   headers: { "Content-Type": "multipart/form-data", 'X-CSRF-TOKEN': data.token },
+    // })
   }
 
   upload_file(formData) {

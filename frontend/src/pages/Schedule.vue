@@ -361,7 +361,12 @@ export default defineComponent({
       // console.log(window.location.href)
       // copyURL.select();
       // copyURL.setSelectionRange(0, 99999); /* For mobile devices */
-      navigator.clipboard.writeText(window.location.href);
+      if (this.$q.platform.is.mobile) {
+        navigator.share(window.location.href)
+        console.log("shared on mobile!")
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+      }
       Notify.create({
         message: "URL copied to clipboard",
         color: "green",

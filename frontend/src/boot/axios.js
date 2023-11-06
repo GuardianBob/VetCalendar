@@ -15,12 +15,16 @@ if (process.env.DEV_ENV == "true") {
 }
 const api = axios.create({
   // baseURL: 'https://api.example.com'
-  // withCredentials: false,
+  // withCredentials: true,
   baseURL: HTTP,
   // baseURL: 'https://vet-cal.jmeyer-dev.com/backend',
   headers: {
     // "Content-Type": "application/json; charset=utf-8",
     // "Access-Control-Allow-Origin": "*",
+    // "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE,OPTIONS",
+    // 'Access-Control-Allow-Methods': '*',
+    // 'Access-Control-Allow-Credentials': 'true',
   },
 })
 
@@ -36,4 +40,4 @@ export default boot(({ app }) => {
   //       so you can easily perform requests against your app's API
 })
 
-export { api }
+export { api, axios }

@@ -93,6 +93,20 @@ class Register_Form(forms.Form):
       self.fields['password'].label = 'Password'
       self.fields['check_pass'].label = 'Password Confirmation'
 
+  def clean(self):
+        super(Register_Form, self).clean()
+        first_name = self.cleaned_data.get('first_name')
+        last_name = self.cleaned_data.get('last_name')
+        email = self.cleaned_data.get('email')
+        address = self.cleaned_data.get('address')
+        address_line2 = self.cleaned_data.get('address_line2')
+        apt_num = self.cleaned_data.get('apt_num')
+        city = self.cleaned_data.get('city')
+        state = self.cleaned_data.get('state')
+        zipcode = self.cleaned_data.get('zipcode')
+        # password = self.cleaned_data.get('password')
+        # check_pass = self.cleaned_data.get('check_pass')
+
 class Login_Form(forms.Form): 
     login_email = forms.EmailField(max_length=200, widget=forms.EmailInput)
     login_password = forms.CharField(max_length=20, min_length=8, widget=forms.PasswordInput)
@@ -106,6 +120,8 @@ class Login_Form(forms.Form):
             self.fields['login_password'].widget.attrs.update({
                 'class' : 'form-control',
                 'id' : 'login_password',
-                'onChange': 'passEnbl();'
+                '@change': 'passEnbl();',
+                'v-model': 'password'
             })
             self.fields['login_password'].label = 'Password'
+

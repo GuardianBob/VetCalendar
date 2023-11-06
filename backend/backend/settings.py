@@ -61,7 +61,7 @@ CORS_ORIGIN_WHITELIST = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:9000/*',
+    'http://localhost:9000',
     'http://*.127.0.0.1',
     'http://*.127.0.0.1:8000/*',
     "https://jmeyer-dev.com/*", 
@@ -101,6 +101,17 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
+
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
+
+# CORS_ALLOW_CREDENTIALS: True 
 
 TEMPLATES = [
     {
