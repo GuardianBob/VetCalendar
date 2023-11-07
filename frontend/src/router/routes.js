@@ -20,9 +20,27 @@ const routes = [
           '/schedule_import/:year*/:month*/:user*'
         ],  
     },
-      { path: '/login', component: () => import('pages/LoginPage.vue') },
-    ]
-  },
+    {
+      path: '/login', 
+      component: () => import('pages/LoginPage.vue'),
+    },
+    // { 
+    //   path: '/login', 
+    //   component: () => import('pages/FormsPage.vue'),
+    //   children: [
+    //     { path: '', component: () => import('components/LoginForm.vue') }
+    //   ]
+    // },
+    {
+      path: '/register', 
+      component: () => import('pages/RegisterPage.vue'),
+    },
+    {
+      path: '/profile', 
+      component: () => import('pages/EditProfile.vue'),
+    },
+  ]
+},
 
   // Always leave this as last one,
   // but you can also remove it

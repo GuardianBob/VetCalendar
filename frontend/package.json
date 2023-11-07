@@ -19,6 +19,7 @@
     "@google-cloud/local-auth": "^2.1.0",
     "@quasar/extras": "^1.0.0",
     "axios": "^1.2.1",
+    "babel-eslint": "^10.1.0",
     "dotenv": "^16.0.3",
     "googleapis": "^105.0.0",
     "pinia": "^2.0.11",

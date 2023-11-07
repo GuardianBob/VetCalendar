@@ -58,12 +58,12 @@ const linksList = [
     icon: 'home',
     link: '/'
   },
-  // {
-  //   title: 'Schedule Import',
-  //   caption: '',
-  //   icon: 'code',
-  //   link: '/schedule_import'
-  // },
+  {
+    title: 'Schedule Import',
+    caption: '',
+    icon: 'code',
+    link: '/schedule_import'
+  },
   // {
   //   title: 'Discord Chat Channel',
   //   caption: 'chat.quasar.dev',
@@ -110,7 +110,7 @@ export default defineComponent({
   setup () {
     
     return {
-      drawer: ref(false),
+      // drawer: ref(false),
       essentialLinks: linksList,
       // toggleLeftDrawer () {
       //   leftDrawerOpen.value = !leftDrawerOpen.value

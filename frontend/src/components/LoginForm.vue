@@ -9,7 +9,7 @@
       <div class="text-center q-ma-md">
       <q-form @submit="submit" method="POST">
         <!-- <q-field  class="q-my-sm "> -->
-            <q-input v-model="email" label="E-mail address" dense outlined class="q-my-sm"></q-input>
+            <q-input v-model="email" label="Email" dense outlined class="q-my-sm"></q-input>
         <!-- </q-field> -->
         <!-- <q-field class="q-my-sm" dense> -->
           <q-input label="Password" type="password" v-model="password" dense outlined class="q-my-sm"></q-input>
@@ -29,20 +29,22 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
-import APIService from "../../services/api"
+// import APIService from "../../services/api"
 
-const api = APIService 
+// const api = APIService 
 const form_email = document.getElementById("id_login_email")
 const form_pass = document.getElementById("login_password")
 
 export default defineComponent({
   name: "LoginPage",
-  setup() {
+  props: [ 'api' ],
+  setup(props) {
     return {
       password: ref(''),
       email: ref(''),
       remember: ref(false),
       passDisabled: ref(true),
+      pAPI: ref(props.api),
     }
   },
   data() {
@@ -67,7 +69,7 @@ export default defineComponent({
 
   methods: {
     submit() {
-      api.login({ token: this.csrf_token, data: {email: this.email, password: this.password, remember: this.remember}})
+      this.pAPI.login({ token: this.csrf_token, data: {email: this.email, password: this.password, remember: this.remember}})
       .then((res) => {
         console.log(res)
         Notify.create({
@@ -90,14 +92,14 @@ export default defineComponent({
         })
     },
     async get_form(){
-      await api.get_form().then(async(results) => {
+      await this.pAPI.get_form().then(async(results) => {
         console.log(results.data);
         this.python_form = results.data;
       })
     },
 
     async get_csrf(){
-      await api.get_csrf().then((results) => {
+      await this.pAPI.get_csrf().then((results) => {
         console.log(results.data)
         this.csrf_token = results.data
         // document.head.querySelector('meta[name="csrf-token"]');
@@ -116,7 +118,7 @@ export default defineComponent({
     },
   },
   mounted() {
-    // this.get_form()
+    this.get_form()
     this.get_csrf()
   }
 })

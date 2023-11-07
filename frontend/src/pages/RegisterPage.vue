@@ -3,7 +3,7 @@
     <div class="row q-mx-md full-width justify-around " id="Login Form">
       <div class="col-4 text-center" style="border: 4px solid #1976D2; border-radius: 10px;">
       <!-- <div class="col-4 q-mx-xl text-center"> -->
-        <h4 class="text-primary q-py-none q-my-sm">User Login:</h4>
+        <h5 class="text-primary q-py-none q-my-sm">User Registration:</h5>
       <!-- </div> -->
 
       <div class="text-center q-ma-md">
@@ -13,11 +13,14 @@
         <!-- </q-field> -->
         <!-- <q-field class="q-my-sm" dense> -->
           <q-input label="Password" type="password" v-model="password" dense outlined class="q-my-sm"></q-input>
+          <q-input label="Re-enter password" type="password" v-model="password2" dense outlined class="q-my-sm"></q-input>
         <!-- </q-field> -->
-        <q-checkbox label="Remember me" v-model="remember"></q-checkbox>
         <br>
-        <q-btn label="Submit" type="submit" color="primary" :disabled="passDisabled" />
+        <q-btn class="full" label="Submit" type="submit" color="primary" :disabled="passDisabled" />
       </q-form>
+      <div class="text-body2 q-my-sm">
+        Already have an account? <a href="/login">Login</a>
+      </div>
     </div>
   </div> 
 </div>
@@ -30,6 +33,7 @@
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
+// import { validators } from "app/services/ValidateService";
 
 const api = APIService 
 const form_email = document.getElementById("id_login_email")
@@ -40,13 +44,17 @@ export default defineComponent({
   setup() {
     return {
       password: ref(''),
+      password2: ref(''),
       email: ref(''),
       remember: ref(false),
       passDisabled: ref(true),
+      passError: ref(false),
+
     }
   },
   data() {
     return {
+      // rules: ValidateService.validators,
       loading: false,
       python_form: ref([]),
       csrf_token: ref('')
@@ -54,11 +62,13 @@ export default defineComponent({
   },
 
   watch: {
-    password(newValue, oldValue) {
+    password2(newValue, oldValue) {
       // form_pass.value = newValue
       // console.log(form_pass.value)
-      if (newValue.length >= 8) {
+      if (newValue.length >= 8 && newValue == this.password) {
         this.passDisabled = false
+      } else if (newValue.length >= 8 && newValue != this.password){
+
       } else {
         this.passDisabled = true
       }
