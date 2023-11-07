@@ -104,13 +104,13 @@ export default defineComponent({
   },
   data() {
     return {
-      version: version
+      version: version,
     }
   },
   setup () {
     
     return {
-      // drawer: ref(false),
+      drawer: ref(false),
       essentialLinks: linksList,
       // toggleLeftDrawer () {
       //   leftDrawerOpen.value = !leftDrawerOpen.value
