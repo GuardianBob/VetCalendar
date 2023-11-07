@@ -37,7 +37,7 @@ const routes = [
     },
     {
       path: '/profile', 
-      component: () => import('pages/EditProfile.vue'),
+      component: () => import('pages/ProfilePage.vue'),
     },
   ]
 },
