@@ -4,7 +4,7 @@
       <div class="col-10 text-center" style="border: 4px solid #1976D2; border-radius: 10px;">
         <!-- <div class="col-4 q-mx-xl text-center"> -->
         <ProfileEdit :userInfo="userInfo" v-show="edit" />
-        <ProfileView :userInfo="userInfo" v-show="!edit" />
+        <ProfileView :userInfo="userInfo" v-show="!edit"/>
         <div class="col-10 q-my-lg">
           <q-btn class="" label="Edit Profile" @click="edit=!edit" color="primary" />
         </div>
@@ -19,6 +19,7 @@ import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
 import ProfileEdit from 'components/ProfileEdit.vue'
 import ProfileView from 'components/ProfileView.vue'
+import dummyData from "components/dummyData.json"
 // import { validators } from "app/services/ValidateService";
 
 const api = APIService 

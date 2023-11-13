@@ -6,8 +6,11 @@
         <div outline class="col-4 q-px-md q-mx-md">
           <q-input v-model="userData.email" label="E-Mail Address" label-color="black" dense class="q-my-sm" disable ></q-input>
         </div>
+        <!-- <div class="col-4 q-px-md q-mx-md">
+          <q-input v-model="userData.firstName" dense class="q-my-sm" :label="columnLabels.firstName" disable></q-input>
+        </div> -->
         <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.firstName" label="First Name" dense class="q-my-sm" disable></q-input>
+          <q-input v-model="userData.firstName" dense class="q-my-sm" label="First Name" disable></q-input>
         </div>
         <div class="col-4 q-px-md q-mx-md">
           <q-input v-model="userData.lastName" label="Last Name" dense class="q-my-sm" disable></q-input>
@@ -46,6 +49,7 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
+import dummyData from "./dummyData.json"
 
 export default {
   name: "ProfileView",
@@ -54,7 +58,8 @@ export default {
     return {
       info: ref(false),
       userData: ref({}),
-      pageTitle: ref('User Details')
+      pageTitle: ref('User Details'),
+      columnLabels: dummyData.columnLabels
     }
   },
 
@@ -76,6 +81,9 @@ export default {
 
   mounted() {
     this.userData = this.userInfo
+    // Object.keys(this.userData).forEach(key => {
+    //   console.log(key)
+    // })
   }
 };
 </script>
