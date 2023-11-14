@@ -13,15 +13,21 @@ if (process.env.DEV_ENV == "true") {
 } else {
   HTTP = `https://${process.env.REST_API_LIVE}`
 }
+let access_control = ''
+if (process.env.DEV_ENV == "true") {
+  access_control = `http://localhost:9000, http://127.0.0.1:8000*`
+} else {
+  access_control = `https://vet-cal-dev.jmeyer-dev.com`
+}
 const api = axios.create({
   // baseURL: 'https://api.example.com'
   // withCredentials: false,
   baseURL: HTTP,
   // baseURL: 'https://vet-cal.jmeyer-dev.com/backend',
-  headers: {
+  // headers: {
     // "Content-Type": "application/json; charset=utf-8",
-    // "Access-Control-Allow-Origin": "*",
-  },
+    // "Access-Control-Allow-Origin": access_control,
+  // },
 })
 
 export default boot(({ app }) => {

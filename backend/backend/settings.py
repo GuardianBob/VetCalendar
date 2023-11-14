@@ -32,6 +32,31 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # DEBUG = True
 DEBUG = os.getenv("DEBUG", "False") == "True"
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+host_list = []
+if DEBUG == "False":
+    host_list = [
+        "https://jmeyer-dev.com", 
+        "https://jbear-creations.com", 
+        "https://jbearcreations.com",
+        "https://vet-cal.jmeyer-dev.com",
+        "https://vet-backend.jmeyer-dev.com",
+        "https://vet-cal-dev.jmeyer-dev.com",
+        "https://vet-backend-dev.jmeyer-dev.com",
+    ]
+else: 
+    host_list = [
+        'http://localhost:9000',
+        'http://127.0.0.1:9000',
+        'http://127.0.0.1:8000',
+        'http://localhost',
+        "https://jmeyer-dev.com", 
+        "https://jbear-creations.com", 
+        "https://jbearcreations.com",
+        "https://vet-cal.jmeyer-dev.com",
+        "https://vet-backend.jmeyer-dev.com",
+        "https://vet-cal-dev.jmeyer-dev.com",
+        "https://vet-backend-dev.jmeyer-dev.com",
+    ]
 
 ALLOWED_HOSTS = [
     'http://localhost',
@@ -72,6 +97,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://vet-cal-dev.jmeyer-dev.com/*",
     "https://vet-backend-dev.jmeyer-dev.com/*",
 ]
+
+CORS_ALLOWED_ORIGINS = host_list
     
 
 # Application definition
@@ -90,6 +117,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -97,7 +125,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'backend.urls'
