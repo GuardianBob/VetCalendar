@@ -1,0 +1,69 @@
+{
+  "columns" : [
+    { "name": "lastName", "align": "left", "label": "Last Name", "field": "name", "sortable": true },
+    { "name": "firstName", "align": "left", "label": "First Name", "field": "name", "sortable": true },
+    { "name": "email", "align": "center", "label": "Email", "field": "email", "sortable": true },
+    { "name": "userGroup", "align": "center", "label": "User Group", "field": "userGroup", "sortable": true },
+    { "name": "userLevel", "align": "center", "label": "User Level", "field": "userLevel", "sortable": true },
+    { "name": "actions", "label": "Actions", "field": "actions", "sortable": true } 
+  ],
+
+  "users" : [
+    { 
+      "id": "13", 
+      "firstName": "Jesse", 
+      "lastName": "Meyer", 
+      "email": "mail@mail.com", 
+      "userGroup": "Staff", 
+      "userLevel": "Admin",
+      "nickname": "JBear",
+      "phoneNumber": "",
+      "addressLineOne": "",
+      "addressLineTwo": "",
+      "city": "",
+      "state": "",
+      "zipCode": ""
+    },
+    { 
+      "id": "12", 
+      "firstName": "John", 
+      "lastName": "Dorian", 
+      "email": "mail@mail.com", 
+      "userGroup": "ER Vet", 
+      "userLevel": "User",
+      "phoneNumber": "",
+      "addressLineOne": "",
+      "addressLineTwo": "",
+      "city": "",
+      "state": "",
+      "zipCode": ""
+    },
+    { 
+      "id": "11", 
+      "firstName": "Perry", 
+      "lastName": "Cox", 
+      "email": "mail@mail.com", 
+      "userGroup": "ER Vet", 
+      "userLevel": "User",
+      "phoneNumber": "",
+      "addressLineOne": "",
+      "addressLineTwo": "",
+      "city": "",
+      "state": "",
+      "zipCode": ""
+    }
+  ],
+
+  "userInfoLabels" : {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "nickname": "Nickname",
+    "email": "Email",
+    "phoneNumber": "Phone Number",
+    "addressLineOne": "Address Line One",
+    "addressLineTwo": "Address Line Two",
+    "city": "City",
+    "state": "State",
+    "zipCode": "Zip Code"
+  }
+}
