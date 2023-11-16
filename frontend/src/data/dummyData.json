@@ -65,5 +65,11 @@
     "city": "City",
     "state": "State",
     "zipCode": "Zip Code"
+  },
+
+  "shiftCountLabels": {
+    "employee": "Employee",
+    "monthTotal": "Month Total",
+    "yearTotal": "Year Total"
   }
 }

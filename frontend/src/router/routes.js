@@ -6,7 +6,7 @@ const routes = [
     children: [
       { 
         path: '', 
-        component: () => import('pages/Schedule.vue') ,
+        component: () => import('pages/IndexPage.vue') ,
         alias: [
           '/:year*', 
           '/:year*/:month*', 

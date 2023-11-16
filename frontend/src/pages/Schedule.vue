@@ -160,7 +160,7 @@ import APIService from "../../services/api"
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import ButtonDefinitions from 'components/ButtonDefinitions.vue'
-import MainService from '../../services/MainService'
+import MainService from '../../services/MainFunctions'
 
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID

@@ -38,9 +38,10 @@ month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 def upload_file(request):
     # print (request.POST['date'])
     input_date = request.POST["date"]
+    print(input_date)
     # user= request.POST["user"]
     # gmail = request.POST["gmail"][:-10]
-    year = input_date[4:]
+    year = input_date[:4]
     file_name = request.FILES['file']
     file_month = "false"
     for month in month_abbrev:
@@ -53,6 +54,7 @@ def upload_file(request):
     # print(user)
     # contents = convert_schedule(file_name, user, month, year)
     month = month_list[file_month[:3]] if file_month != "false" else month_list[input_date[:3]]
+    print(f'month: {month}, year: {year}')
     contents = load_schedule(file_name, month, year)
     # print("the contents are: ", contents) 
     return HttpResponse(contents)
