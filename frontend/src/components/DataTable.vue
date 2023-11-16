@@ -1,12 +1,13 @@
 <template>
   <div class="row q-mx-md full-width justify-around ">
     <q-table
-      title="Users"
-      :rows="users"
+      :title="pageTitle"
+      :rows="rowData"
       :columns="columns"
       row-key="name"
       class="col-10"
       flat
+      :rows-per-page-options="[10,20,50,0]"
     >
       <!-- Remove "Actions" column from "columns" in setup to hide "Actions" column -->
       <template v-slot:header-cell-actions="props" >
@@ -31,12 +32,20 @@ import { useQuasar, Notify } from "quasar"
 
 export default {
   name: "DataTable",
-  props: [ "columns", "users", "parentEdit" ],
+  props: [
+    "columns",
+    "rowData",
+    "parentFunc01",
+    "parentFunc02",
+    "parentFunc03",
+    "parentFunc04",
+    "parentFunc05",
+    "title"],
   setup() {
     return {
       info: ref(false),
       userData: ref([]),
-      pageTitle: ref('User Details')
+      pageTitle: ref(''),      
     }
   },
 
@@ -45,12 +54,13 @@ export default {
 
   methods: {
     editBtn(data) {
-      this.parentEdit(data)
+      this.parentFunc01(data)
     }
   },
 
   mounted() {
-    // this.userData = this.users
+    // this.userData = this.rowData
+    this.pageTitle = this.title
   }
 };
 </script>

@@ -1,7 +1,6 @@
 <template>
   <q-page class="items-center flex-center q-my-xl">
-    <DataTable :users="users" :columns="columns" :parentEdit="edit_users"/>
-    <Calendar />
+    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_users" :title="pageTitle"/>
   </q-page>
 </template>
 
@@ -11,15 +10,14 @@ import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
 import DataTable from "components/DataTable.vue"
 import dummyData from "components/dummyData.json"
-import Calendar from "components/Calendar.vue"
 // import { validators } from "app/services/ValidateService";
 
 const api = APIService 
 
 export default defineComponent({
-  name: "ProfilePage",
+  name: "UserInfo",
   components: {
-    DataTable, Calendar
+    DataTable
   },
   setup() {
     return {
