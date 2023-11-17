@@ -1223,14 +1223,14 @@ export default defineComponent({
   },
   
   mounted() {
-    gapi.load('client', this.initializeGapiClient);
-    this.tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: '', // defined later
-    });
-    this.gisInited = true;
-    this.maybeEnableButtons();
+    // gapi.load('client', this.initializeGapiClient);
+    // this.tokenClient = google.accounts.oauth2.initTokenClient({
+    //   client_id: CLIENT_ID,
+    //   scope: SCOPES,
+    //   callback: '', // defined later
+    // });
+    // this.gisInited = true;
+    // this.maybeEnableButtons();
     this.get_stored_gmail();
     this.gapiLoaded()
     this.gisLoaded()
