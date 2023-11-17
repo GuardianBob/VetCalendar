@@ -464,6 +464,7 @@ export default defineComponent({
             this.shifts = []
             // console.log(events)
             this.users = res.data.users
+            this.users.sort()
             res.data.shifts.map(event => {
               // console.log(event)
               this.calendarOptions.events.push({
@@ -1095,8 +1096,7 @@ export default defineComponent({
         discoveryDocs: [DISCOVERY_DOC],
       });
       this.gapiInited = true;
-      this.maybeEnableButtons();
-
+      // this.maybeEnableButtons();
     },
 
       /**
@@ -1109,7 +1109,6 @@ export default defineComponent({
         callback: '', // defined later
       });
       this.gisInited = true;
-      this.maybeEnableButtons();
     },
 
       /**
@@ -1203,17 +1202,19 @@ export default defineComponent({
     if (this.$q.platform.is.mobile) {
       this.button_size = 'md'
     }
+    // this.gapiLoaded()
+    // this.gisLoaded()
   },
   
   mounted() {
-    gapi.load('client', this.initializeGapiClient);
-    this.tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: '', // defined later
-    });
-    this.gisInited = true;
-    this.maybeEnableButtons();
+    // gapi.load('client', this.initializeGapiClient);
+    // this.tokenClient = google.accounts.oauth2.initTokenClient({
+    //   client_id: CLIENT_ID,
+    //   scope: SCOPES,
+    //   callback: '', // defined later
+    // });
+    
+    // this.maybeEnableButtons();
     // this.get_stored_gmail();
     this.gapiLoaded()
     this.gisLoaded()
