@@ -38,22 +38,32 @@ month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 def upload_file(request):
     # print (request.POST['date'])
     input_date = request.POST["date"]
-    # user= request.POST["user"]
-    # gmail = request.POST["gmail"][:-10]
-    year = input_date[4:]
+    # print(input_date[:3].isnumeric())
+    if input_date[:3].isnumeric():
+        input_date = datetime.strptime(input_date, '%Y %b') # Convert string date to datetime
+    else: 
+        input_date = datetime.strptime(input_date, '%b %Y')
+    input_month = input_date.strftime('%m')  # Convert datetime to month number
+    short_month = input_date.strftime('%b')  # Convert datetime to short month, ex: "Nov"
+    year = input_date.strftime('%Y')    # convert datetime to YYYY
+    # new_date = datetime.strptime(input_date, '%Y %b').strftime('%b')
+    # print(input_date, input_date.strftime('%m'), input_date.strftime('%Y'))
     file_name = request.FILES['file']
-    file_month = "false"
-    for month in month_abbrev:
-        if month.lower() in file_name.name.lower():
-            # print(month)
-            file_month = month
-    # print(file_name)
-    # print(gmail)
-    # contents = ''
-    # print(user)
-    # contents = convert_schedule(file_name, user, month, year)
-    month = month_list[file_month[:3]] if file_month != "false" else month_list[input_date[:3]]
-    contents = load_schedule(file_name, month, year)
+    if short_month.lower() in file_name.name.lower():
+        contents = load_schedule(file_name, input_month, year) # Run upload script
+    else:
+        file_month = "false"
+        for month in month_abbrev:  # Verify that the file month matches the input month
+            if month.lower() in file_name.name.lower():
+                # print(month)
+                file_month = month
+        # print(file_name)
+        # print(gmail)
+        # contents = ''
+        # print(user)
+        # contents = convert_schedule(file_name, user, month, year)
+        month = month_list[file_month[:3]] if file_month != "false" else input_month
+        contents = load_schedule(file_name, month, year) # Run upload script
     # print("the contents are: ", contents) 
     return HttpResponse(contents)
 

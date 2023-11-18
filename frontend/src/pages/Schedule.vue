@@ -425,6 +425,12 @@ export default defineComponent({
           }
         })        
         this.getShiftsYear()
+          .then(() => {
+            console.log(this.user)
+            if (this.user != null) {
+              this.filterShifts()
+            }
+        })
         this.clearFile()
         // this.clearFilters()
       }
