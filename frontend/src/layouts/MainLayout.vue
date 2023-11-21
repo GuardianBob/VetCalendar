@@ -9,13 +9,14 @@
           icon="menu"
           aria-label="Menu"
           @click="drawer = !drawer"
+          color="secondary"
         />
 
         <q-toolbar-title>
-          Vet Scheduler
+          Shift Management
         </q-toolbar-title>
 
-        <div>Version: {{ version }}</div>
+        <div class="text-secondary">v: {{ version }}</div>
       </q-toolbar>
     </q-header>
 
@@ -28,7 +29,7 @@
         <q-item-label
           header
         >
-          <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="primary" @click="drawer = !drawer" ></q-icon>
+          <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="secondary" @click="drawer = !drawer" ></q-icon>
           Essential Links
         </q-item-label>
 
@@ -61,8 +62,20 @@ const linksList = [
   {
     title: 'Schedule Import',
     caption: '',
-    icon: 'code',
+    icon: 'upload_file',
     link: '/schedule_import'
+  },
+  {
+    title: 'Manage Users',
+    caption: '',
+    icon: 'people',
+    link: '/users'
+  },
+  {
+    title: 'Manage Schedule',
+    caption: '',
+    icon: 'calendar_month',
+    link: '/schedule'
   },
   // {
   //   title: 'Discord Chat Channel',

@@ -38,3 +38,8 @@ def validate(request):
 def get_csrf(request):
   token = csrf.get_token(request)
   return JsonResponse({'token' : token})
+
+@csrf_exempt
+def register(request):
+  print("works!")
+  return (HttpResponse("Hi."))

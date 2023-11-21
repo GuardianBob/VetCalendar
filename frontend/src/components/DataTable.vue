@@ -1,7 +1,7 @@
 <template>
   <div class="row q-mx-md full-width justify-around ">
+    <div class="col-12 text-center text-body1 text-weight-medium" style="font-size:20px">{{ title }}</div>
     <q-table
-      :title="pageTitle"
       :rows="rowData"
       :columns="columns"
       row-key="name"

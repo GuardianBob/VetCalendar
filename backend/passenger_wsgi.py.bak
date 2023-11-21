@@ -2,10 +2,10 @@ import imp
 import os
 import sys
 # from backend import application
-import django.core.handlers.wsgi
-# from backend.wsgi import get_wsgi_application
-from django.core.wsgi import get_wsgi_application
-# from backend import wsgi
+# import django.core.handlers.wsgi
+from backend.wsgi import get_wsgi_application
+# from django.core.wsgi import get_wsgi_application
+from backend import wsgi
 
 # application = wsgi.appligation
 
@@ -38,6 +38,6 @@ class PassengerPathInfoFix(object):
         return self.app(environ, start_response)
 
 # Set the application
-application = get_wsgi_application()
-application = PassengerPathInfoFix(application)
-# application = wsgi.application
+# application = get_wsgi_application()
+# application = PassengerPathInfoFix(application)
+application = wsgi.application

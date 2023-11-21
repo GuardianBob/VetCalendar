@@ -6,8 +6,12 @@
       </div>
       <div class="col-8 q-pr-sm">
         <div class="column justify-start">
-          <div class="row justify-end">
-            <div class="col-1 q-mx-md text-right">
+          <div class="row justify-between">
+            <div class="col-2">
+              <q-btn color="accent" id="add_shifts" :size="button_size" @click="add_shifts = !add_shifts" icon="more_time" label="Quick Add"></q-btn>
+            </div>
+            <div class="col-5"></div>
+            <div class="col-1 text-right">
               <q-btn color="primary" round :size="button_size" id="enable_date" @click="enable_date = !enable_date" icon="event">
                 <!-- <q-icon name="event" /> -->
                 <q-tooltip class="bg-accent" anchor="bottom middle">Select Date</q-tooltip>
@@ -20,8 +24,8 @@
                 </q-popup-proxy>
               </q-btn>
             </div>
-            <div class="col-xs-7 col-lg-3 col-md-3 col-sm-3 q-mr-sm">          
-              <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense @update:model-value="filterShifts()">
+            <div class="col-xs-7 col-lg-3 col-md-3 col-sm-3 q-mx-sm q-pr-sm">          
+              <q-select class="" v-model="user" :options="users" dense options-dense @update:model-value="filterShifts()">
                 <template v-slot:prepend>
                   <q-icon name="filter_alt" round color="primary"/>
                 </template>
@@ -40,6 +44,9 @@
         </div>
       </div>
     </div>
+    <q-dialog v-model="info" transition-show="slide-down" transition-hide="slide-up">
+      <ButtonDefinitions />
+    </q-dialog>
   </q-page>
 </template>
 
