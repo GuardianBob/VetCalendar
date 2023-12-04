@@ -165,7 +165,7 @@ else:
             'NAME': os.getenv('DB_TABLE'),
             'USER': os.getenv('DB_USER'),
             'PASSWORD': os.getenv('DB_PASS'),
-            'HOST': 'localhost',
+            'HOST': os.getenv('DB_HOST'),
             'PORT': '3306',
             'OPTIONS': {  
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  

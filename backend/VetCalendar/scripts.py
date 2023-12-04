@@ -90,6 +90,8 @@ from datetime import timedelta
 import os.path
 from .models import Calendar
 from django.utils import timezone
+from django.conf import settings
+from django.utils.timezone import make_aware
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -138,6 +140,7 @@ def convert_schedule(schedule, user, month, year):
   user_month = month
   user_year = year
   wordDoc = Document(schedule)
+  settings.TIME_ZONE
   while not user_month in month_variables:
     # user_month = simpledialog.askstring(title="Month", prompt="Please enter the 2-digit month")
     user_month = "08"
@@ -191,7 +194,8 @@ def convert_schedule(schedule, user, month, year):
                 00,
                 00
               )
-              # print(shift_start)
+              shift_start = make_aware(shift_start)
+              print(shift_start)
               shifts.append({
                 "shift": shift, 
                 "date": user_year + "-" + user_month + "-" + date[i], 
@@ -232,6 +236,7 @@ def load_schedule(schedule, month, year):
   user_month = month
   user_year = year
   wordDoc = Document(schedule)
+  settings.TIME_ZONE
   while not user_month in month_variables:
     # user_month = simpledialog.askstring(title="Month", prompt="Please enter the 2-digit month")
     user_month = "08"
@@ -287,6 +292,8 @@ def load_schedule(schedule, month, year):
                   00,
                   00
                 )
+                shift_start = make_aware(shift_start)
+                print(shift_start)
                 # print(shift_start)
                 # print(f'user: {cell_user}')
                 shifts.append({
