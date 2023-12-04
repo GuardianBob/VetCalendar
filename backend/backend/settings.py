@@ -61,16 +61,16 @@ else:
 # Application definition
 
 INSTALLED_APPS = [
+    'VetCalendar',
+    'login',
+    # 'rest_framework',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-    'rest_framework',
-    'VetCalendar',
-    'login',
 ]
 
 MIDDLEWARE = [
@@ -213,13 +213,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-    'VetCalendar/static/',
-    # 'ShiftScheduler/static/',
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+#     'VetCalendar/static/',
+#     # 'ShiftScheduler/static/',
+# ]
 # STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") #local
-STATIC_ROOT = os.path.join(BASE_DIR, 'public') # cPanel
+STATIC_ROOT = os.path.join(BASE_DIR, 'static') # cPanel
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp") # cPanel
