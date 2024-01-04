@@ -1,0 +1,57 @@
+{
+  "columns" : [
+    { "name": "lastName", "align": "left", "label": "Last Name", "field": "user__last_name", "sortable": true },
+    { "name": "firstName", "align": "left", "label": "First Name", "field": "user__first_name", "sortable": true },
+    { "name": "email", "align": "center", "label": "Email", "field": "user__email", "sortable": true },
+    { "name": "userGroup", "align": "center", "label": "User Group", "field": "userGroup", "sortable": true },
+    { "name": "userLevel", "align": "center", "label": "User Level", "field": "userLevel", "sortable": true },
+    { "name": "actions", "label": "Actions", "field": "actions", "sortable": true } 
+  ],
+
+  "userInfoLabels" : {
+    "user__first_name": "First Name",
+    "user__middle_name": "Middle Name",
+    "user__last_name": "Last Name",
+    "user__nickname": "Nickname",
+    "user__email": "Email",
+    "user__user_phone__number": "Phone Number",
+    "address__street": "Address Line One",
+    "address__street2": "Address Line Two",
+    "city_state__city": "City",
+    "city_state__state": "State",
+    "city_state__city_zip__zipCode": "Zip Code"
+  },
+
+  "userInfoFormat" : {
+    "user__user_phone__number": "(###) ###-####"
+  },
+
+  "userInfoType" : {
+    "user__user_phone__number": "tel",
+    "user__email": "email"
+  },
+
+  "userInfoRequired" : {
+    "user__first_name": true,
+    "user__last_name": true,
+    "user__nickname": false,
+    "user__email": true,
+    "user__user_phone__number": true,
+    "address__street": false,
+    "address__street2": false,
+    "city_state__city": false,
+    "city_state__state": false,
+    "city_state__city_zip__zipCode": false
+  },
+
+  "adminUserEditLabels" : {
+    "userAccess" : "User Access",
+    "userOccupation": "Occupation"
+  },
+
+  "shiftCountColumns": [
+    { "name": "employee", "align": "left", "label": "Employee", "field": "employee", "sortable": true },
+    { "name": "monthTotal", "align": "left", "label": "Month Total", "field": "monthTotal", "sortable": true },
+    { "name": "yearTotal", "align": "left", "label": "Year Total", "field": "yearTotal", "sortable": true }
+  ]
+}

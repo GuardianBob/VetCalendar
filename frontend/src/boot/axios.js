@@ -21,7 +21,7 @@ const api = axios.create({
   headers: {
     // "Content-Type": "application/json; charset=utf-8",
     // "Access-Control-Allow-Origin": "*",
-    // "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    // "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-TOKEN",
     // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE,OPTIONS",
     // 'Access-Control-Allow-Methods': '*',
     // 'Access-Control-Allow-Credentials': 'true',

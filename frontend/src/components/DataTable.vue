@@ -18,7 +18,7 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div>
-            <q-btn color="positive" dense class="q-px-sm" size="xs" label="Edit" icon="edit" @click="editBtn(props.row.id)"/>
+            <q-btn color="positive" dense class="q-px-sm" size="xs" label="Edit" icon="edit" @click="editBtn(props.row)"/>
           </div>
         </q-td>
       </template>

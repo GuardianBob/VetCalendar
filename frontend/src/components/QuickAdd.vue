@@ -1,26 +1,19 @@
 <template>
-  <div class="">
-    <q-form @submit="submit" method="POST">
-      <h5 class="text-primary q-py-none q-my-sm">{{ pageTitle }}</h5>
-      <div class="row justify-around text-center q-ma-md">
-        <div class="col q-px-md q-mx-md">
-          <q-select class="q-mx-sm" v-model="user" :options="user_list" dense options-dense
-            @update:model-value="filterShifts()">
-            <template v-slot:prepend>
-              <q-icon name="filter_alt" round color="primary" />
-            </template>
-            <template v-slot:append>
-              <q-btn v-if="user !== null" class="q-ml-md q-px-sm" color="negative" size="md" flat rounded
-                id="clear_filters_button" @click.stop.prevent="clearFilters" icon="cancel" />
-              <!-- <q-icon name="close" @click.stop.prevent="clearFilters" class="cursor-pointer" v-if="user !== null" /> -->
-            </template>
-            <q-tooltip class="bg-accent" anchor="center start">Filter Schedule</q-tooltip>
-          </q-select>
+  <q-layout view="Lhh lpR fff" container class="bg-white text-dark">
+    <!-- <div class="col-10"> -->
+      <q-form @submit="submit" method="POST">
+        <h5 class="text-primary q-py-none q-my-sm">{{ pageTitle }}</h5>
+        <div class="row justify-around text-center q-ma-md">
+          <div class="col q-px-md q-mx-md">
+            <q-select class="q-my-sm" standout="bg-dark-navy text-white" v-model="user" :options="user_list" label="User" />
+            <q-select class="q-my-sm" standout="bg-dark-navy text-white" v-model="text" :options="shift" label="Shift" />
+            <q-select class="q-my-sm" standout="bg-dark-navy text-white" v-model="text" :options="shift_type" label="Shift Type" />
+            <q-select class="q-my-sm" standout="bg-dark-navy text-white" v-model="text" :options="dates" label="Dates" />
+          </div>
         </div>
-      </div>
-    </q-form>
-    
-  </div>
+      </q-form>
+    <!-- </div> -->
+  </q-layout>
 </template>
 
 <script>

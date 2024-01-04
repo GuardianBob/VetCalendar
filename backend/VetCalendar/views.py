@@ -3,15 +3,26 @@ from django.http import JsonResponse
 from rest_framework import viewsets
 from .serializers import TodoSerializer, CalendarSerializer
 from django.core import serializers
-from .models import Todo, Calendar
-from django.views.decorators.csrf import csrf_exempt
+from .models import Todo, Calendar, Shift, ShiftType, Shift, ScheduleShift
+from django.forms.models import model_to_dict
+from login.models import User, Address, CityState, Zipcode, User_Info
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, test_calendar, test_event, get_users, load_schedule
 import datetime, json
 from datetime import datetime, date, timedelta
 import dateutil.parser as parser
 import numpy as np
 from django.utils import timezone
+from django.middleware.csrf import get_token
+
 # Create your views here.
+
+
+@ensure_csrf_cookie
+def get_csrf(request):
+    token = get_token(request)
+    print('token: ', token)
+    return JsonResponse({'token' : token})
 
 class TodoView(viewsets.ModelViewSet):
     serializer_class = TodoSerializer
@@ -31,6 +42,49 @@ month_list = {
     "Nov": "11",
     "Dec": "12"
 }
+
+user_info_fields = [
+    "email",
+    "first_name",
+    "middle_name",
+    "last_name",
+    "initials",
+    "user_address__number",
+    "user_address__street",
+    "user_address__street2",
+    "user_address__apt_num",
+    "user_city_state__city",
+    "user_city_state__state",
+    "user_city_state__city_zip__zipcode",
+    "user_level__level_name",
+    "user_type__type_name"
+    "user_type"
+    # "user_address__values"
+]
+
+user_info_fields2 = [
+    "user__id",
+    "user__email",
+    "user__first_name",
+    "user__middle_name",
+    "user__last_name",
+    "user__initials",
+    "user__user_phone__number",
+    "user__user_phone__type",
+    "address__number",
+    "address__street",
+    "address__street2",
+    "address__apt_num",
+    "city_state__city",
+    "city_state__state",
+    "city_state__city_zip__zipcode",
+    "level__level_name",
+    "occupation__type_name"
+    # "level__level_name",
+    # "type__type_name"
+    # "type"
+    # "user_address__values"
+]
 
 month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -117,4 +171,43 @@ def calendar_test(request):
 def event_test(request):
     new_event = test_event()
     return HttpResponse(new_event)
+
+@csrf_exempt
+def get_user_list(request):
+    # print(request.headers)
+    users = User_Info.objects.values('user__id', 'user__first_name', 'user__last_name', 'user__initials')
+    user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
+    user_data = json.dumps(user_dict)   
+    # print(user_data)
+    return HttpResponse(user_data)
+
+@csrf_exempt 
+def get_user_profiles(request):
+    # print(request)
+    # users = User.objects.values(*user_info_fields)
+    users = User_Info.objects.values(*user_info_fields2)
+    print(users)
+    user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
+    user_data = json.dumps(user_dict)   
+    # print(user_data)
+    return HttpResponse(user_data)
+
+@csrf_exempt
+def get_user_info(request):
+    pass
+
+@csrf_exempt
+def get_shift_types(request):
+    db_objects = ShiftType.objects.values()
+    db_dict = [item for item in db_objects]
+    db_json = json.dumps(db_dict)
+    return HttpResponse(db_json)
+
+@csrf_exempt
+def get_shifts(request):
+    db_objects = Shift.objects.values()
+    db_dict = [item for item in db_objects]
+    db_json = json.dumps(db_dict)
+    return HttpResponse(db_json)
+
 

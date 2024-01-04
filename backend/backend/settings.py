@@ -62,8 +62,10 @@ CORS_ORIGIN_WHITELIST = [
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:9000',
+    'http://localhost:9000/*',
     'http://*.127.0.0.1',
     'http://*.127.0.0.1:8000/*',
+    'http://*.127.0.0.1:9000/*',
     "https://jmeyer-dev.com/*", 
     "https://jbear-creations.com/*", 
     "https://jbearcreations.com/*",
@@ -112,6 +114,13 @@ CORS_ALLOW_METHODS = (
 )
 
 # CORS_ALLOW_CREDENTIALS: True 
+
+# CORS_ALLOW_HEADERS = [
+#     'X-CSRF-TOKEN',
+#     'XCSRF-TOKEN',
+#     'HTTP_X_CSRFTOKEN',
+#     'HTTP_X_XSRF_TOKEN',
+# ]
 
 TEMPLATES = [
     {

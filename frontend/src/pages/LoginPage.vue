@@ -30,10 +30,13 @@
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
+import { useMainStore } from "stores/main-store.js"
 
 const api = APIService 
 const form_email = document.getElementById("id_login_email")
 const form_pass = document.getElementById("login_password")
+const mainStore = useMainStore();
+let cipher_key = process.env.LOCAL_KEY
 
 export default defineComponent({
   name: "LoginPage",
@@ -99,9 +102,17 @@ export default defineComponent({
     async get_csrf(){
       await api.get_csrf().then((results) => {
         console.log(results.data)
-        this.csrf_token = results.data
+        this.csrf_token = results.data['token'];
+        let token_expire = new Date().setDate(new Date().getDate() + 10)
+        let cookieString = 'd_csrfToken=' + this.csrf_token + '; expires = ' + token_expire + '; path=/';
+        document.cookie = cookieString;
+        mainStore.setCsrfToken(this.csrf_token);
+        // localStorage.setItem("csrf_token", this.csrf_token)
         // document.head.querySelector('meta[name="csrf-token"]');
         // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
+        document.cookie = 'csrfToken =; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        console.log(mainStore.csrfToken)
+        console.log(document.cookie);
       } )
     },
 

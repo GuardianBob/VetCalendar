@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
-import dummyData from "../data/dummyData.json"
+import formFields from "../components/formFields.json"
 
 
-export const useDummyData = defineStore('dummy-data', {
+export const useFormFields = defineStore('form-fields', {
   state: () => {
     csrfToken: null
     return {
-      dummyData,
+      formFields,
     }
   },
   getters: {

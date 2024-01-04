@@ -1,6 +1,17 @@
 <template>
   <q-page class="items-center flex-center q-my-xl">
+    <div class="row q-mx-md justify-end">
+      <div class="col-10 ">
+        <q-btn color="accent" dense class="q-px-sm" size="xs" label="Add" icon="add" @click="add_user()"/>
+      </div>
+    </div>
     <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_users" :title="pageTitle"/>
+    <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
+      <ProfileView :userInfo="userInfo" :parentFunc01="update_user" editButton="Edit User" page_title="User Details"/>
+    </q-dialog>
+    <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">
+      <ProfileView :userInfo="userInfo" :parentFunc01="add_user" editButton="Add User" page_title="Add User" />
+    </q-dialog>
   </q-page>
 </template>
 
@@ -10,19 +21,29 @@ import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
 import DataTable from "components/DataTable.vue"
 import dummyData from "components/dummyData.json"
+import { useMainStore } from "stores/main-store.js"
+import { useFormFields } from "stores/form-fields.js"
+import ProfileView from "components/ProfileView.vue"
 // import { validators } from "app/services/ValidateService";
-
+const mainStore = useMainStore();
 const api = APIService 
+const formStore = useFormFields();
 
 export default defineComponent({
   name: "UserInfo",
   components: {
-    DataTable
+    DataTable,
+    ProfileView
   },
   setup() {
     return {
-      columns: ref(dummyData.columns),
+      columns: ref(formStore.formFields.columns),
       users: ref(dummyData.users),
+      view_user: ref(false),
+      new_user: ref(false),
+      user_list: ref([]),
+      user_id: ref(),
+      userInfo: ref(),
       // columns: ref([
       //   // Replace with database columns
       //   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
@@ -49,16 +70,43 @@ export default defineComponent({
   },
 
   methods: {
-    edit_users(user_id) {
-      Notify.create({
-        message: `Open User Edit Window for ${user_id}`,
-        color: "positive",
-        position: "center",
-        timeout: 2000
+    edit_users(userInfo) {
+      console.log(userInfo)
+      this.userInfo = userInfo
+      this.view_user = true
+      // Notify.create({
+      //   message: `Open User Edit Window for ${user_id}`,
+      //   color: "positive",
+      //   position: "center",
+      //   timeout: 2000
+      // })
+    },
+
+    add_user() {
+      this.userInfo = []
+      this.new_user = true
+    },
+
+    update_user(userInfo) {
+
+    },
+
+    async get_user_profiles() {
+      await APIService.get_user_profiles().then((res) => {
+        console.log(res.data);
+        this.users = res.data
       })
     }
   },
+  created() {
+  },
+  
   mounted() {
+    // console.log(this.getCookie('d_csrfToken'))
+    // mainStore.get_csrf()
+    this.get_user_profiles()
+    console.log(formStore.formFields.columns);
+    // console.log(mainStore.getCookie('csrftoken'))
   },
 })
 </script>

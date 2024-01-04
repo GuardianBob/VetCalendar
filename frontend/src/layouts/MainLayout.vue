@@ -51,6 +51,9 @@
 import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { version } from '../../package.json'
+import { useMainStore } from "stores/main-store.js"
+
+const mainStore = useMainStore();
 
 const linksList = [
   {

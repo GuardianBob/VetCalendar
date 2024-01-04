@@ -22,6 +22,20 @@ class MainFunctions {
     return newPath;
   }
 
+  mapVueProxyToObject(proxy) {
+  // Get the names of the proxy's own properties
+    let names = Object.getOwnPropertyNames(proxy);
+    // Create a new object
+    let object = {};
+    // Loop through the names and assign the corresponding values from the proxy to the object
+    for (let name of names) {
+      object[name] = proxy[name];
+    }
+    delete object.length ? object.length : null
+    // Return the object
+    return object;
+  }
+
   view_date() {
     let pathArray = window.location.pathname.split("/");
     pathArray = pathArray.filter((path) => path != "");

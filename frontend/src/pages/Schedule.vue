@@ -37,15 +37,15 @@
             </div>
           </div>  
           <div class="row align-start justify-center">
-            <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe" class="col-12 col-md-12 col-sm-8 col-lg-6 col-xs-11 q-mx-sm q-pr-md text-center" style="max-height: fit-content;">
+            <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe" class="col-12 col-md-12 col-sm-12 col-lg-12 col-xs-11 q-mx-sm q-pr-md text-center" style="max-height: fit-content;">
               <Calendar :calEvents="events" :calDate="date" :parHandleCalChange="handleCalendarChange" />
             </div>
           </div>
         </div>
       </div>
     </div>
-    <q-dialog v-model="info" transition-show="slide-down" transition-hide="slide-up">
-      <ButtonDefinitions />
+    <q-dialog v-model="add_shifts" transition-show="slide-down" transition-hide="slide-up">
+      <QuickAdd />
     </q-dialog>
   </q-page>
 </template>
@@ -59,6 +59,7 @@ import Calendar from 'components/Calendar.vue'
 import MainFunctions from '../../services/MainFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
+import QuickAdd from "components/QuickAdd.vue"
 
 const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -66,7 +67,8 @@ export default defineComponent({
   name: "ScheduleShifts",
   components: {
     Calendar,
-    DataTable
+    DataTable,
+    QuickAdd
   },
   setup() {
     const $q = useQuasar()
@@ -83,6 +85,7 @@ export default defineComponent({
       user: ref(null),
       show_users: ref(false),
       user_shifts: ref([]),
+      user_data: ref({}),
       filtered_shifts: ref([]),
       submit_button: ref(false),
       disabled: ref(true),
@@ -90,7 +93,7 @@ export default defineComponent({
       shifts: ref([]),
       shift_data: ref([]),     
       enable_date: ref(false),
-      info: ref(false),
+      add_shifts: ref(false),
       button_size: ref('sm'),
       columnLabels: ref([]),
     };
@@ -115,7 +118,7 @@ export default defineComponent({
         this.date = new_month + " " + new_year.toString()
         console.log(new_year)
         // this.user = null
-        // this.get_users()      
+        // this.get_user_list()      
       }
     },
     date(newValue, oldValue) {
@@ -281,6 +284,13 @@ export default defineComponent({
       }
     },
 
+    async get_user_list() {
+      await APIService.get_user_list().then((results) => {
+        console.log(results.data)
+        this.user_data = results.data
+      })
+    },
+
     async filterShifts() {
       // console.log(this.user)
       this.events = []
@@ -333,7 +343,7 @@ export default defineComponent({
     })
     console.log(this.store.dummyData.shiftCountColumns)
     this.columnLabels = this.store.dummyData.shiftCountColumns
-    
+    this.get_user_list();
   },
   
 })
