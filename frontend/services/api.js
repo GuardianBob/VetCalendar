@@ -25,6 +25,14 @@ class APIService {
     return api.get('/login/');
   }
 
+  create_user(data) {
+    if (!data) {
+      return api.get('/login/create_user');
+    } else {
+      return api.post('/login/create_user', data);
+    }
+  }
+
   get_login_csrf() {
     return api.get('/login/get_csrf');
   }

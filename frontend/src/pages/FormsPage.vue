@@ -1,62 +1,111 @@
 <template>
-  <router-view @click="drawer = false" api='api' />
+  <q-page class="items-center flex flex-center">
+    <div class="row q-mx-md full-width justify-around" id="Login Form">
+      <div
+        class="col-4 text-center"
+        style="border: 4px solid #1976d2; border-radius: 10px"
+      >
+        <div class="text-center q-ma-md">
+          <q-form @submit="submit" method="POST" id="login_form">
+            <div v-html="python_form"></div>
+            <q-btn
+              id="submit_btn"
+              label="Submit"
+              type="submit"
+              color="primary"
+            />
+          </q-form>
+        </div>
+      </div>
+    </div>
+  </q-page>
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
-import { useQuasar, Notify } from "quasar"
-import APIService from "../../services/api"
-
-const api = APIService
+import { defineComponent, ref } from "vue";
+import { useQuasar, Notify } from "quasar";
+import APIService from "../../services/api";
+import { api } from "boot/axios";
 
 export default defineComponent({
   name: "LoginPage",
   setup() {
-    return {
-    }
+    return {};
   },
   data() {
     return {
       loading: false,
-      csrf_token: ref('')
-    }
+      python_form: ref([]),
+      csrf_token: ref(""),
+    };
   },
 
-  watch: {
-
-  },
+  watch: {},
 
   methods: {
-
-    async get_form(){
-      await api.get_form().then(async(results) => {
-        console.log(results.data);
-        this.python_form = results.data;
-      })
+    submit(event) {
+      console.log(event);
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      console.log(formData);
+      // this.$q.cookies.set('csrftoken', dataObj.csrfmiddlewaretoken) //, {
+      //   path: '/',
+      //   sameSite: 'strict',
+      //   secure: false
+      // });
+      // console.log(this.getCookie('csrftoken'))
+      APIService.create_user(formData)
+        .then((res) => {
+          // console.log(res)
+          Notify.create({
+            message: res.data.message,
+            color: "green",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+          // this.$router.push('/schedule')
+        })
+        .catch((error) => {
+          // console.log(error.response)
+          Notify.create({
+            message: error.response.data.message,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        });
     },
 
-    async get_csrf(){
-      await api.get_csrf().then((results) => {
-        console.log(results.data)
-        this.csrf_token = results.data
+    async get_form(param) {
+      if (!param.includes("login")) {
+        param = "/login" + param;
+      } else {
+        param += "/";
+      }
+      console.log(param);
+      await api.get(param).then(async (results) => {
+        console.log(results);
+        this.python_form = results.data;
+      });
+    },
+
+    async get_csrf() {
+      await APIService.get_csrf().then((results) => {
+        console.log(results);
+        this.csrf_token = results.data;
         // document.head.querySelector('meta[name="csrf-token"]');
         // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
-      } )
-    },
-
-    passEnabl() {
-      let login_password = document.getElementById("login_password").val();
-      console.log("enabling?")
-      if (login_password.length >= 8) {
-        document.getElementById("login").attr("disabled", false);
-      } else {
-        document.getElementById("login").attr("disabled", true);
-      }
+      });
     },
   },
   mounted() {
-    // this.get_form()
+    let urlParams = this.$route.path;
+    // urlParams = urlParams.replace(/^\/+/, "");
+    console.log(urlParams);
+    this.get_form(urlParams);
     // this.get_csrf()
-  }
-})
+  },
+});
 </script>

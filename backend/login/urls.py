@@ -11,6 +11,8 @@ urlpatterns = [
     path('add_user', views.add_user, name="add_user"),
     path('get_user_profile', views.get_user_profile, name='get_user_profile'),
     path('get_user_list', views.get_user_list, name='get_user_list'),
+    path('create_user', views.create_user, name='create_user'),
+    path('forms_page', views.login, name='login'),
     # path('user_register', views.new_registration, name='user_register'),
     # path('add_user', views.add_new_user, name='add_user'),
     # path('user_validate', views.validate_login),

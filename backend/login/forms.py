@@ -64,6 +64,20 @@ STATE_SELECT = (
     ('WY', 'Wyoming')
 )
 
+FORM_FIELDS = {
+    "first_name": "First Name",
+    "middle_name": "Middle Name",
+    "last_name": "Last Name",
+    "email": "E-Mail",
+    "phone": "Phone Number",
+    "address": "Address",
+    "address_line2": "Address Line 2",
+    "apt_num": "Apt #",
+    "city": "City",
+    "state": "State",
+    "zipcode": "Zip Code",
+}
+
 class Register_Form(forms.Form):
   first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
   last_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)  
@@ -131,4 +145,19 @@ class Login_Form(forms.Form):
             self.fields[name].label = ''
 
 class UserCreationForm(forms.Form):
-  pass
+  first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
+  middle_name = forms.CharField(max_length=200, widget=forms.TextInput, required=False)
+  last_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)  
+  email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=True)
+  phone = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
+
+  def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+        for name in self.fields.keys():
+            # print("field: ", FORM_FIELDS[name])
+            self.fields[name].widget.attrs.update({
+                'class' : 'form-control input-field',
+                'id' : name,
+                'placeholder': str(FORM_FIELDS[name])
+            })
+            self.fields[name].label = ''

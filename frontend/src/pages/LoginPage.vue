@@ -90,11 +90,12 @@ export default defineComponent({
           position: "center",
           timeout: 3000
         })
+        this.$router.push('/schedule')
       })
       .catch(error => {
-        console.log(error)
+        console.log(error.response)
           Notify.create({
-            message: error.response.data,
+            message: error.response.data.message,
             color: "red",
             textColor: "white",
             position: "center",

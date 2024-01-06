@@ -8,7 +8,7 @@ import bcrypt, json
 from django.middleware import csrf
 from .forms import Register_Form, Login_Form, UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-import random
+import random, secrets, re
 
 class SingleUser():
     pass
@@ -64,11 +64,11 @@ def login(request):
     form = Login_Form(request.POST)
     # print(form)
     if form.is_valid():
-      print("it worked!")
+      # print("it worked!")
       email = form.cleaned_data['login_email']
       password = form.cleaned_data['login_password']
       user = validate_login(email, password)
-      print(user)
+      # print(user)
       if user is not None:
         # login(request, user)
         response_data = {
@@ -90,12 +90,12 @@ def login(request):
       }
       return JsonResponse(response_data, status=400)
   else:
-    login_form = Login_Form()
+    form = Login_Form()
     context = {
-      'login_form': login_form,
-      'page_title': 'Login Form'   
+      'form': form,
+      'page_title': 'User Login:'   
     }
-    return render(request, 'login.html', context)
+    return render(request, 'form.html', context)
   # return JsonResponse({'form': login_form.as_table()})
 
 @csrf_exempt
@@ -126,7 +126,8 @@ def login2(request, login_form = Login_Form()):
 def validate_login(email, password):
     # Check if the user exists
     try:
-      user = User.objects.get(email=email)
+      # print(email.lower())
+      user = User.objects.get(email=email.lower())
       # print(user)
     except User.DoesNotExist:
       return None
@@ -141,15 +142,103 @@ def validate_login(email, password):
 @csrf_exempt
 def create_user(request):
   if request.method == 'POST':
-    print(request.POST)
+    # print(request.POST)
     form = UserCreationForm(request.POST)
-    pass
+    if form.is_valid():
+      print('valid')
+      print(form.cleaned_data)
+      form.cleaned_data["password"] = generate_password()
+      # print('new password: ', form.cleaned_data["password"])
+      form.cleaned_data["initials"] = get_unique_initials(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
+      print("returned: ", form.cleaned_data["initials"])
+      if not verify_new_user(form.cleaned_data["email"]):
+        print('verified new')
+        print(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
+        print(form.cleaned_data["initials"])
+        save_new_user(form.cleaned_data)
+        response_data = {
+          'code': 200, # Replace this with your desired response code
+          'message': 'New User Being Added' # Replace this with your desired response message
+        }
+        return JsonResponse(response_data, status=200)
+      else:
+        print('user exists')
+        response_data = {
+          'code': 200, # Replace this with your desired response code
+          'message': 'User Exists' # Replace this with your desired response message
+        }
+        return JsonResponse(response_data, status=200)
+    print('guess not valid')
+    response_data = {
+      'code': 200, # Replace this with your desired response code
+      'message': 'Still Testing' # Replace this with your desired response message
+    }
+    return JsonResponse(response_data, status=200)
   else:
     form = UserCreationForm()
     context = {
       'form': form,
+      'page_title': 'Create New User'
     }
   return render(request, 'form.html', context)
+
+def verify_new_user(email):
+  print(email)
+  user = User.objects.filter(email__icontains=email)
+  return user
+
+def get_unique_initials(user_first_name='', user_middle_name='', user_last_name=''):
+    print(f'First: {user_first_name}, Middle: {user_middle_name}, Last: {user_last_name}')
+    user_initials = user_first_name[0] + user_last_name[0] 
+    initial_dict = User.objects.filter(initials__icontains=user_initials).values("initials")
+    # get the user's initials from just first and last name
+    print(initial_dict)
+    # user_initials = generate_new_initials(user_first_name, user_middle_name, user_last_name)
+    if any(d["initials"] == user_initials for d in initial_dict):
+      print("found first initials")
+      if not user_middle_name == "":
+        user_full_initials = user_first_name[0] + user_middle_name[0] + user_last_name[0]
+        if not user_full_initials in initial_dict:
+          return user_full_initials
+      else:
+        counter = 1
+        new_initials = user_initials + f"{counter:02d}"
+        while any(d["initials"] == new_initials for d in initial_dict):
+            counter += 1
+            new_initials = user_initials + f"{counter:02d}"
+        user_initials = new_initials
+        return user_initials
+    return user_initials
+
+def save_new_user(user):
+  print(user["first_name"])
+  # Create a new user
+  
+  phone = re.sub('\D', '', user["phone"])
+  new_user = User.objects.create(
+      first_name=user["first_name"],
+      middle_name=user["middle_name"],
+      last_name=user["last_name"],
+      email=user["email"],
+      initials=user["initials"].upper()
+  )  
+  # Create a new user password
+  new_user_password = UserPass.objects.create(
+      user=new_user,
+      password=user["password"]["decrypted"],
+  )  
+  # Create a new phone for the new user
+  new_phone = Phone.objects.create(
+      number=re.sub('\D', '', user["phone"]),
+      type="mobile",
+  )  
+  # Add the new phone to the new user's phones
+  new_phone.users.add(new_user)
+  # Save all of these objects to the database
+  # new_user.save()
+  # new_user_password.save()
+  # new_phone.save()
+  return
 
 @csrf_exempt
 def validate(request):
@@ -219,8 +308,9 @@ def add_user(request):
   #   return HttpResponse(e)
 
 def generate_password():
-  string = lower + upper + numbers + symbols
-  password = "".join(random.sample(string, 20))
+  password_length = 20
+  password = secrets.token_urlsafe(password_length)
+  # print(password)
   salted_pass = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
   # print(salted_pass)
   new_password = {
@@ -228,6 +318,12 @@ def generate_password():
     "encrypted" : salted_pass
   }
   return new_password
+
+# def generate_password():
+#   password_length = 20
+#   new_password = secrets.token_urlsafe(password_length)
+#   print(new_password)
+#   return new_password
 
 def set_initials(data):
   print(data)

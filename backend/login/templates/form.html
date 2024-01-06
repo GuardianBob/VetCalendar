@@ -1,5 +1,7 @@
 {% load static %}
+
 <div class="container">
+  <div><h4 style="color: #581fc2">{{ page_title }}</h4></div>
   {% csrf_token %}
   <div class="form-group">{{ form }}</div>
 </div>
