@@ -37,6 +37,7 @@ export default defineComponent({
       loading: false,
       python_form: ref([]),
       csrf_token: ref(""),
+      api_call: ref(""),
     };
   },
 
@@ -54,9 +55,10 @@ export default defineComponent({
       //   secure: false
       // });
       // console.log(this.getCookie('csrftoken'))
-      APIService.create_user(formData)
+      api
+        .post(this.api_call, formData)
         .then((res) => {
-          // console.log(res)
+          console.log(res.data);
           Notify.create({
             message: res.data.message,
             color: "green",
@@ -67,7 +69,7 @@ export default defineComponent({
           // this.$router.push('/schedule')
         })
         .catch((error) => {
-          // console.log(error.response)
+          console.log(error.response.data);
           Notify.create({
             message: error.response.data.message,
             color: "red",
@@ -78,14 +80,14 @@ export default defineComponent({
         });
     },
 
-    async get_form(param) {
-      if (!param.includes("login")) {
-        param = "/login" + param;
+    async get_form() {
+      if (!this.api_call.includes("login")) {
+        this.api_call = "/login" + this.api_call;
       } else {
-        param += "/";
+        this.api_call += "/";
       }
-      console.log(param);
-      await api.get(param).then(async (results) => {
+      console.log(this.api_call);
+      await api.get(this.api_call).then(async (results) => {
         console.log(results);
         this.python_form = results.data;
       });
@@ -104,7 +106,8 @@ export default defineComponent({
     let urlParams = this.$route.path;
     // urlParams = urlParams.replace(/^\/+/, "");
     console.log(urlParams);
-    this.get_form(urlParams);
+    this.api_call = urlParams;
+    this.get_form();
     // this.get_csrf()
   },
 });

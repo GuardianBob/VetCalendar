@@ -56,6 +56,13 @@ upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 numbers = "0123456789"
 symbols = "@#$&_-()=%*:/!?+."
 
+def response_msg(status=200, message=""):
+  response_data = {
+    'code': status, # Replace this with your desired response code
+    'message': message # Replace this with your desired response message
+  }
+  return JsonResponse(response_data, status=status)
+
 # Create your views here.
 @csrf_exempt
 def login(request):
@@ -65,30 +72,20 @@ def login(request):
     # print(form)
     if form.is_valid():
       # print("it worked!")
-      email = form.cleaned_data['login_email']
-      password = form.cleaned_data['login_password']
+      email = form.cleaned_data['email']
+      password = form.cleaned_data['password']
       user = validate_login(email, password)
       # print(user)
       if user is not None:
         # login(request, user)
-        response_data = {
-          'status': 200, # Replace this with your desired response status
-          'message': 'Success logged in' # Replace this with your desired response message
-        }
-        return JsonResponse(response_data, status=200)
+        # return response_msg(200, 'Successfully logged in')
+        return JsonResponse({"message":'Successfully logged in'}, status=200)
       else:
-        response_data = {
-          'code': 400, # Replace this with your desired response code
-          'message': 'Incorrect Login or Password' # Replace this with your desired response message
-        }
-        return JsonResponse(response_data, status=400)
+        # return response_msg(400, 'Incorrect Login or Password')
+        return JsonResponse({"message":'Incorrect Login or Password'}, status=400)
     else:
       # print("failed")
-      response_data = {
-        'code': 400, # Replace this with your desired response code
-        'message': 'Incorrect Login or Password' # Replace this with your desired response message
-      }
-      return JsonResponse(response_data, status=400)
+      return JsonResponse({'message':'Incorrect Login or Password'}, status=400)
   else:
     form = Login_Form()
     context = {
@@ -105,8 +102,8 @@ def login2(request, login_form = Login_Form()):
     form = Login_Form(request.POST)
     if form.is_valid():
       print("it worked!")
-      email = form.cleaned_data['login_email']
-      password = form.cleaned_data['login_password']
+      email = form.cleaned_data['email']
+      password = form.cleaned_data['password']
       user = validate_login(email, password)
       if user is not None:
         # login(request, user)
@@ -149,31 +146,23 @@ def create_user(request):
       print(form.cleaned_data)
       form.cleaned_data["password"] = generate_password()
       # print('new password: ', form.cleaned_data["password"])
-      form.cleaned_data["initials"] = get_unique_initials(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
-      print("returned: ", form.cleaned_data["initials"])
       if not verify_new_user(form.cleaned_data["email"]):
-        print('verified new')
-        print(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
-        print(form.cleaned_data["initials"])
+        form.cleaned_data["initials"] = get_unique_initials(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
+        # print("returned: ", form.cleaned_data["initials"])
+        # print('verified new')
+        # print(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
+        # print(form.cleaned_data["initials"])
         save_new_user(form.cleaned_data)
-        response_data = {
-          'code': 200, # Replace this with your desired response code
-          'message': 'New User Being Added' # Replace this with your desired response message
-        }
-        return JsonResponse(response_data, status=200)
+        return JsonResponse({'message':'New User Being Added'}, status=200)
       else:
         print('user exists')
-        response_data = {
-          'code': 200, # Replace this with your desired response code
-          'message': 'User Exists' # Replace this with your desired response message
-        }
-        return JsonResponse(response_data, status=200)
+        return JsonResponse({'message':'E-Mail already exists'}, status=500)
     print('guess not valid')
     response_data = {
-      'code': 200, # Replace this with your desired response code
-      'message': 'Still Testing' # Replace this with your desired response message
+      'code': 500, # Replace this with your desired response code
+      'message': 'Something went wrong' # Replace this with your desired response message
     }
-    return JsonResponse(response_data, status=200)
+    return JsonResponse({'message':'Something went wrong'}, status=500)
   else:
     form = UserCreationForm()
     context = {
