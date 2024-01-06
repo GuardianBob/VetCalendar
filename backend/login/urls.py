@@ -1,9 +1,10 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
     # path('', views.login2),
     path('', views.login, name='login'),
+    path('login', views.login, name='login'),
     path('login2', views.login2, name='login2'),
     path('validate', views.validate, name='validate'),
     path('get_csrf', views.get_csrf, name='get_csrf'),

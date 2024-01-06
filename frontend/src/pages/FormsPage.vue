@@ -83,8 +83,6 @@ export default defineComponent({
     async get_form() {
       if (!this.api_call.includes("login")) {
         this.api_call = "/login" + this.api_call;
-      } else {
-        this.api_call += "/";
       }
       console.log(this.api_call);
       await api.get(this.api_call).then(async (results) => {

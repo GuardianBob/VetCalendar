@@ -112,8 +112,8 @@ class Register_Form(forms.Form):
     # verify_password = self.cleaned_data.get('verify_password')
 
 class Login_Form(forms.Form): 
-    email = forms.EmailField(max_length=200, widget=forms.EmailInput)
-    password = forms.CharField(max_length=20, min_length=8, widget=forms.PasswordInput)
+    email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=True)
+    password = forms.CharField(max_length=20, min_length=8, widget=forms.PasswordInput, required=True)
 
     def __init__(self, *args, **kwargs):
       super(Login_Form, self).__init__(*args, **kwargs)
@@ -140,12 +140,4 @@ def set_attributes(fields):
       'placeholder': str(FORM_FIELDS[name]),
     })
     fields[name].label = ''
-    if "password" in name:
-      fields[name].widget.attrs.update({
-        'type': 'password',
-      })
-    if "email" in name:
-      fields[name].widget.attrs.update({
-      'type': 'email',
-    })
   return fields

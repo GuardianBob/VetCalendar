@@ -19,7 +19,7 @@ const routes = [
       },
       {
         path: "/login",
-        component: () => import("pages/FormsPage.vue"),
+        component: () => import("pages/LoginPage.vue"),
       },
       // {
       //   path: '/login',
@@ -46,7 +46,7 @@ const routes = [
       },
       {
         path: "/create_user",
-        component: () => import("pages/FormsPage.vue"),
+        component: () => import("pages/LoginPage.vue"),
       },
       {
         path: "/forms_page",
