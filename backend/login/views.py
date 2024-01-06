@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
 from django.middleware import csrf
-from .forms import Register_Form, Login_Form
+from .forms import Register_Form, Login_Form, UserCreationForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 import random
 
@@ -58,32 +58,44 @@ symbols = "@#$&_-()=%*:/!?+."
 
 # Create your views here.
 @csrf_exempt
-def login(request, login_form = Login_Form()):
+def login(request):
   if request.method == 'POST':
-    print(request.POST)
+    # print(request.POST)
     form = Login_Form(request.POST)
+    # print(form)
     if form.is_valid():
-      # print("it worked!")
+      print("it worked!")
       email = form.cleaned_data['login_email']
       password = form.cleaned_data['login_password']
       user = validate_login(email, password)
+      print(user)
       if user is not None:
         # login(request, user)
         response_data = {
-          'code': 200, # Replace this with your desired response code
+          'status': 200, # Replace this with your desired response status
           'message': 'Success logged in' # Replace this with your desired response message
         }
-        return JsonResponse(response_data)
+        return JsonResponse(response_data, status=200)
       else:
-        # Show an error message
-        pass
+        response_data = {
+          'code': 400, # Replace this with your desired response code
+          'message': 'Incorrect Login or Password' # Replace this with your desired response message
+        }
+        return JsonResponse(response_data, status=400)
+    else:
+      # print("failed")
+      response_data = {
+        'code': 400, # Replace this with your desired response code
+        'message': 'Incorrect Login or Password' # Replace this with your desired response message
+      }
+      return JsonResponse(response_data, status=400)
   else:
-      login_form = Login_Form()
-  context = {
-    'login_form': login_form,
-    'page_title': 'Login Form'   
-  }
-  return render(request, 'login.html', context)
+    login_form = Login_Form()
+    context = {
+      'login_form': login_form,
+      'page_title': 'Login Form'   
+    }
+    return render(request, 'login.html', context)
   # return JsonResponse({'form': login_form.as_table()})
 
 @csrf_exempt
@@ -115,15 +127,29 @@ def validate_login(email, password):
     # Check if the user exists
     try:
       user = User.objects.get(email=email)
-      print(user)
+      # print(user)
     except User.DoesNotExist:
       return None
     # Check if the password is correct
-    print(user.password)
-    print(bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode())
+    # print(user.password)
+    # print(bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode())
+    # print(bcrypt.checkpw(password.encode(), user.password.encode()))
     if bcrypt.checkpw(password.encode(), user.password.encode()):
         return user
     return None
+
+@csrf_exempt
+def create_user(request):
+  if request.method == 'POST':
+    print(request.POST)
+    form = UserCreationForm(request.POST)
+    pass
+  else:
+    form = UserCreationForm()
+    context = {
+      'form': form,
+    }
+  return render(request, 'form.html', context)
 
 @csrf_exempt
 def validate(request):

@@ -34,7 +34,7 @@ class APIService {
   }
 
   login(data) {
-    console.log(data, data.csrfmiddlewaretoken)    
+    console.log(data)    
     // document.cookie = 'csrftoken=' + data.csrfmiddlewaretoken + ';path=/;samesite=strict;secure=false';
     // this.$q.cookies.set('csrftoken', data.csrfmiddlewaretoken, {
     //   path: '/',
@@ -43,7 +43,11 @@ class APIService {
     // });
     // const headers = { 'X-CSRF-TOKEN': data.csrfmiddlewaretoken }
     // return api.post("/login/validate", { data: data.data }, {headers: headers} );
-    return api.post("/login/", data);
+    if (!data) {
+      return api.get("/login/")
+    } else {
+      return api.post("/login/", data);
+    }
     // return api({
     //   method: "get",
     //   url: "/login/validate",

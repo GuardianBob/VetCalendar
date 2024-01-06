@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, UserPass, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation
 from django import forms
 import datetime
 import bcrypt
@@ -115,7 +115,7 @@ class Login_Form(forms.Form):
     def __init__(self, *args, **kwargs):
         super(Login_Form, self).__init__(*args, **kwargs)
         for name in self.fields.keys():
-            print(name)
+            # print("form: ", name)
             self.fields[name].widget.attrs.update({
                 'class' : 'form-control input-field',
                 'id' : name,
@@ -130,3 +130,5 @@ class Login_Form(forms.Form):
             })
             self.fields[name].label = ''
 
+class UserCreationForm(forms.Form):
+  pass

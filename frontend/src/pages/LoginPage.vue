@@ -2,28 +2,17 @@
   <q-page class="items-center flex flex-center">
     <div class="row q-mx-md full-width justify-around " id="Login Form">
       <div class="col-4 text-center" style="border: 4px solid #1976D2; border-radius: 10px;">
-      <!-- <div class="col-4 q-mx-xl text-center"> -->
         <h4 class="text-primary q-py-none q-my-sm">User Login:</h4>
-      <!-- </div> -->
-
-      <div class="text-center q-ma-md">
-      <q-form @submit="submit" method="POST" id="login_form">
-        <!-- <q-field  class="q-my-sm "> -->
-            <!-- <q-input v-model="email" label="E-mail address" dense outlined class="q-my-sm"></q-input> -->
-        <!-- </q-field> -->
-        <!-- <q-field class="q-my-sm" dense> -->
-          <!-- <q-input label="Password" type="password" v-model="password" dense outlined class="q-my-sm"></q-input> -->
-        <!-- </q-field> -->
-        <div v-html="python_form"></div>
-        <q-checkbox label="Remember me" v-model="remember"></q-checkbox>
-        <br>
-        <q-btn id="submit_btn" label="Submit" type="submit" color="primary" :disabled="passDisabled" />
-      </q-form>
+        <div class="text-center q-ma-md">
+          <q-form @submit="submit" method="POST" id="login_form">
+            <div v-html="python_form"></div>
+            <q-checkbox label="Remember me" v-model="remember"></q-checkbox>
+            <br>
+            <q-btn id="submit_btn" label="Submit" type="submit" color="primary" :disabled="passDisabled" />
+          </q-form>
+        </div>
+      </div> 
     </div>
-  </div> 
-</div>
-<!-- <div id="Python_Form" v-html="python_form" ></div> -->
-      <!-- </div> -->
   </q-page>
 </template>
 
@@ -62,19 +51,6 @@ export default defineComponent({
   },
 
   watch: {
-    // password(newValue, oldValue) {
-    //   // form_pass.value = newValue
-    //   // console.log(form_pass.value)
-    //   if (newValue.length >= 8) {
-    //     this.passDisabled = false
-    //   } else {
-    //     this.passDisabled = true
-    //   }
-    // },
-
-    // passEl(newValue, oldValue) {
-    //   console.log(newValue)
-    // },
   },
 
   methods: {
@@ -105,27 +81,26 @@ export default defineComponent({
       // });
       // console.log(this.getCookie('csrftoken'))
       api.login(formData)
-      // api.login({ token: this.csrf_token, data: {email: this.email, password: this.password, remember: this.remember}})
-      // .then((res) => {
-      //   console.log(res)
-      //   Notify.create({
-      //     message: "Logged in successfully",
-      //     color: "green",
-      //     textColor: "white",
-      //     position: "center",
-      //     timeout: 3000
-      //   })
-      // })
-      // .catch(error => {
-      //   console.log(error)
-      //     Notify.create({
-      //       message: error.response.data,
-      //       color: "red",
-      //       textColor: "white",
-      //       position: "center",
-      //       timeout: 3000
-      //     })
-      //   })
+      .then((res) => {
+        console.log(res)
+        Notify.create({
+          message: "Logged in successfully",
+          color: "green",
+          textColor: "white",
+          position: "center",
+          timeout: 3000
+        })
+      })
+      .catch(error => {
+        console.log(error)
+          Notify.create({
+            message: error.response.data,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000
+          })
+        })
     },
     async get_form(){
       await api.get_form().then(async(results) => {
@@ -167,9 +142,17 @@ export default defineComponent({
   },
 
   mounted() {
-    this.get_form().then(() => {
-      this.add_watcher();
+    api.login().then(async (results) => {
+      let form = results.data
+      this.python_form = form;
+      
+    }).then(() => {
+    
+      this.add_watcher()
     })
+    // this.get_form().then(() => {
+    //   this.add_watcher();
+    // })
     // this.get_csrf()
   }
 })
