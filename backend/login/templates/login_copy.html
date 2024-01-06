@@ -5,7 +5,8 @@
       <div class="text-secondary">
         (Demo: login with email: "demo@mail.com", password: "password")
       </div>
-      <form action="user_validate" method="post">
+      {% comment %} <form action="user_validate" method="post"> {% endcomment %}
+        <form action="login2" method="post">
         {% csrf_token %}
         <div class="form-group">
           {{ login_form }}

@@ -35,6 +35,7 @@ DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
 ALLOWED_HOSTS = [
     'http://localhost',
+    'localhost',
     '127.0.0.1',
     'jbearlocal.com',
     "jmeyer-dev.com", 
@@ -48,8 +49,10 @@ ALLOWED_HOSTS = [
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:9000',
-    'http://127.0.0.1:9000',
-    'http://127.0.0.1:8000',
+    'http://*.127.0.0.1',
+    'http://*.127.0.0.1:9000',
+    'http://*.127.0.0.1:8000',
+    'http://192.168.2.16:9000',
     'http://localhost',
     "https://jmeyer-dev.com", 
     "https://jbear-creations.com", 
@@ -60,12 +63,18 @@ CORS_ORIGIN_WHITELIST = [
     "https://vet-backend-dev.jmeyer-dev.com",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_COOKIE_NAME = 'csrftoken'
+
+
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:9000',
     'http://localhost:9000/*',
     'http://*.127.0.0.1',
     'http://*.127.0.0.1:8000/*',
     'http://*.127.0.0.1:9000/*',
+    'http://192.168.2.16:9000/*',
     "https://jmeyer-dev.com/*", 
     "https://jbear-creations.com/*", 
     "https://jbearcreations.com/*",
@@ -99,6 +108,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'corsheaders.middleware.CorsMiddleware'
 ]
 
@@ -152,6 +162,9 @@ if os.getenv('DEBUG') == "True":
             'NAME': BASE_DIR / 'db.sqlite3',
         },
     }
+    CSRF_COOKIE_DOMAIN = None
+    CSRF_COOKIE_SECURE = False # Set this to True if you are using HTTPS
+    CSRF_COOKIE_HTTPONLY = False # Set this to True if you are using 
 else:
     DATABASES = {
         'default': { # MySQL Settings
@@ -166,6 +179,8 @@ else:
             }
         }
     }
+    CSRF_COOKIE_DOMAIN = CORS_ORIGIN_WHITELIST
+    CSRF_COOKIE_SECURE = True # Set this to True if you are using HTTPS
 
 
 # Password validation

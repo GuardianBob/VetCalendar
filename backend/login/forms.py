@@ -3,6 +3,7 @@ from django import forms
 import datetime
 import bcrypt
 
+
 STATE_SELECT = (
     ('', ''),
     ('AL', 'Alabama'),
@@ -114,14 +115,18 @@ class Login_Form(forms.Form):
     def __init__(self, *args, **kwargs):
         super(Login_Form, self).__init__(*args, **kwargs)
         for name in self.fields.keys():
+            print(name)
             self.fields[name].widget.attrs.update({
-                'class' : 'form-control',
+                'class' : 'form-control input-field',
+                'id' : name,
+            })
+            self.fields['login_email'].widget.attrs.update({
+                'type': 'email',
+                'placeholder': 'E-Mail Address'
             })
             self.fields['login_password'].widget.attrs.update({
-                'class' : 'form-control',
-                'id' : 'login_password',
-                '@change': 'passEnbl();',
-                'v-model': 'password'
+                'type': 'password',
+                'placeholder': 'Password',
             })
-            self.fields['login_password'].label = 'Password'
+            self.fields[name].label = ''
 

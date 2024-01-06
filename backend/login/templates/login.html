@@ -9,12 +9,12 @@
         {% csrf_token %}
         <div class="form-group">
           {{ login_form }}
-          <input
+          {% comment %} <input
             type="submit"
             value="Login"
             class="px-2 my-2"
             id="login"
-          />
+          /> {% endcomment %}
         </div>
       {% comment %} </form>
       <p>

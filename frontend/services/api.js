@@ -34,11 +34,16 @@ class APIService {
   }
 
   login(data) {
-    console.log(data)
-    // const headers = { 'X-CSRF-TOKEN': data.token }
-    // // api.defaults.headers.common['X-CSRF-TOKEN'] = data.token;
+    console.log(data, data.csrfmiddlewaretoken)    
+    // document.cookie = 'csrftoken=' + data.csrfmiddlewaretoken + ';path=/;samesite=strict;secure=false';
+    // this.$q.cookies.set('csrftoken', data.csrfmiddlewaretoken, {
+    //   path: '/',
+    //   sameSite: 'strict',
+    //   secure: false
+    // });
+    // const headers = { 'X-CSRF-TOKEN': data.csrfmiddlewaretoken }
     // return api.post("/login/validate", { data: data.data }, {headers: headers} );
-    return api.post("/login/validate", data.data );
+    return api.post("/login/", data);
     // return api({
     //   method: "get",
     //   url: "/login/validate",
@@ -108,16 +113,16 @@ class APIService {
     // new_api.setRequestHeader("X-CSRFToken", csrfToken);
     // new_api.defaults.headers.common["HTTP_X_CSRFTOKEN"] = csrfToken;
     // console.log(new_api.defaults)
-    return api.post('/get_user_list');
+    return api.post('/login/get_user_list');
   }
 
-  get_user_profiles() {
-    return api.post('/get_user_profiles');
+  get_user_profile(id) {
+    return api.post('/login/get_user_profile', id);
   }
 
-  get_user_data() {
-    return api.post('/get_user_profiles');
-  }
+  // get_user_data() {
+  //   return api.post('/get_user_profiles');
+  // }
 
   add_user(data) {
     console.log(JSON.stringify(data))

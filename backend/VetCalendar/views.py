@@ -5,7 +5,7 @@ from .serializers import TodoSerializer, CalendarSerializer
 from django.core import serializers
 from .models import Todo, Calendar, Shift, ShiftType, Shift, ScheduleShift
 from django.forms.models import model_to_dict
-from login.models import User, Address, CityState, Zipcode, User_Info
+from login.models import User, UserPass, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, test_calendar, test_event, get_users, load_schedule
 import datetime, json
@@ -17,6 +17,22 @@ from django.middleware.csrf import get_token
 
 # Create your views here.
 
+class SingleUser():
+    pass
+
+class UserProfile():
+    pass
+
+class ProfileFields():
+    user_fields = [f.name for f in User._meta.get_fields()]
+    # userpass_fields = ['user_password__' + f.name for f in UserPass._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    userpass_fields = ['user_password__password']
+    address_fields = ['user_address__' + f.name for f in Address._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    citystate_fields = ['user_city_state__' + f.name for f in CityState._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    phone_fields = ['user_phone__' + f.name for f in Phone._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    level_fields = ['user_level__' + f.name for f in AccessLevel._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    privileges_fields = ['user_privileges__' + f.name for f in UserPrivileges._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    occupation_fields = ['user_occupation__' + f.name for f in Occupation._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
 
 @ensure_csrf_cookie
 def get_csrf(request):
@@ -172,25 +188,7 @@ def event_test(request):
     new_event = test_event()
     return HttpResponse(new_event)
 
-@csrf_exempt
-def get_user_list(request):
-    # print(request.headers)
-    users = User_Info.objects.values('user__id', 'user__first_name', 'user__last_name', 'user__initials')
-    user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
-    user_data = json.dumps(user_dict)   
-    # print(user_data)
-    return HttpResponse(user_data)
 
-@csrf_exempt 
-def get_user_profiles(request):
-    # print(request)
-    # users = User.objects.values(*user_info_fields)
-    users = User_Info.objects.values(*user_info_fields2)
-    print(users)
-    user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
-    user_data = json.dumps(user_dict)   
-    # print(user_data)
-    return HttpResponse(user_data)
 
 @csrf_exempt
 def get_user_info(request):

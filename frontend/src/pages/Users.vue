@@ -5,7 +5,7 @@
         <q-btn color="accent" dense class="q-px-sm" size="xs" label="Add" icon="add" @click="add_user()"/>
       </div>
     </div>
-    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_users" :title="pageTitle"/>
+    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
       <ProfileView :userInfo="userInfo" :parentFunc01="update_user" editButton="Edit User" page_title="User Details"/>
     </q-dialog>
@@ -70,9 +70,10 @@ export default defineComponent({
   },
 
   methods: {
-    edit_users(userInfo) {
-      console.log(userInfo)
-      this.userInfo = userInfo
+    async edit_user(userInfo) {
+      console.log(userInfo.id)
+      await this.get_user_profile(userInfo.id)
+      // this.userInfo = userInfo
       this.view_user = true
       // Notify.create({
       //   message: `Open User Edit Window for ${user_id}`,
@@ -91,11 +92,19 @@ export default defineComponent({
 
     },
 
-    async get_user_profiles() {
-      await APIService.get_user_profiles().then((res) => {
+    async get_user_list() {
+      await APIService.get_user_list().then((res) => {
         console.log(res.data);
         this.users = res.data
       })
+    },
+
+    async get_user_profile(id) {
+      await APIService.get_user_profile(id).then((res) => {
+        console.log(res.data);
+        this.userInfo = res.data
+      })
+      return
     }
   },
   created() {
@@ -104,7 +113,7 @@ export default defineComponent({
   mounted() {
     // console.log(this.getCookie('d_csrfToken'))
     // mainStore.get_csrf()
-    this.get_user_profiles()
+    this.get_user_list()
     console.log(formStore.formFields.columns);
     // console.log(mainStore.getCookie('csrftoken'))
   },

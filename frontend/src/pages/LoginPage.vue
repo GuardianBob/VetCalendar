@@ -7,16 +7,17 @@
       <!-- </div> -->
 
       <div class="text-center q-ma-md">
-      <q-form @submit="submit" method="POST">
+      <q-form @submit="submit" method="POST" id="login_form">
         <!-- <q-field  class="q-my-sm "> -->
-            <q-input v-model="email" label="E-mail address" dense outlined class="q-my-sm"></q-input>
+            <!-- <q-input v-model="email" label="E-mail address" dense outlined class="q-my-sm"></q-input> -->
         <!-- </q-field> -->
         <!-- <q-field class="q-my-sm" dense> -->
-          <q-input label="Password" type="password" v-model="password" dense outlined class="q-my-sm"></q-input>
+          <!-- <q-input label="Password" type="password" v-model="password" dense outlined class="q-my-sm"></q-input> -->
         <!-- </q-field> -->
+        <div v-html="python_form"></div>
         <q-checkbox label="Remember me" v-model="remember"></q-checkbox>
         <br>
-        <q-btn label="Submit" type="submit" color="primary" :disabled="passDisabled" />
+        <q-btn id="submit_btn" label="Submit" type="submit" color="primary" :disabled="passDisabled" />
       </q-form>
     </div>
   </div> 
@@ -28,24 +29,28 @@
 
 <script>
 import { defineComponent, ref } from 'vue'
-import { useQuasar, Notify } from "quasar"
+import { useQuasar, Notify, Cookies } from "quasar"
 import APIService from "../../services/api"
 import { useMainStore } from "stores/main-store.js"
 
 const api = APIService 
-const form_email = document.getElementById("id_login_email")
-const form_pass = document.getElementById("login_password")
+// const form_email = document.getElementById("id_login_email")
+// const form_pass = document.getElementById("login_password")
 const mainStore = useMainStore();
 let cipher_key = process.env.LOCAL_KEY
+
+
 
 export default defineComponent({
   name: "LoginPage",
   setup() {
+    const $q = useQuasar()
     return {
       password: ref(''),
       email: ref(''),
       remember: ref(false),
       passDisabled: ref(true),
+      passEl: ref(),
     }
   },
   data() {
@@ -57,45 +62,77 @@ export default defineComponent({
   },
 
   watch: {
-    password(newValue, oldValue) {
-      // form_pass.value = newValue
-      // console.log(form_pass.value)
-      if (newValue.length >= 8) {
-        this.passDisabled = false
-      } else {
-        this.passDisabled = true
-      }
-    },
+    // password(newValue, oldValue) {
+    //   // form_pass.value = newValue
+    //   // console.log(form_pass.value)
+    //   if (newValue.length >= 8) {
+    //     this.passDisabled = false
+    //   } else {
+    //     this.passDisabled = true
+    //   }
+    // },
+
+    // passEl(newValue, oldValue) {
+    //   console.log(newValue)
+    // },
   },
 
   methods: {
-    submit() {
-      api.login({ token: this.csrf_token, data: {email: this.email, password: this.password, remember: this.remember}})
-      .then((res) => {
-        console.log(res)
-        Notify.create({
-          message: "Logged in successfully",
-          color: "green",
-          textColor: "white",
-          position: "center",
-          timeout: 3000
-        })
-      })
-      .catch(error => {
-        console.log(error)
-          Notify.create({
-            message: error.response.data,
-            color: "red",
-            textColor: "white",
-            position: "center",
-            timeout: 3000
-          })
-        })
+    getCookie(name) {
+      let cookieValue = null;
+      if(document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = jQuery.trim(cookies[i]);
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+          }
+        }
+      return cookieValue;
+    },
+
+    submit(event) {
+      console.log(event)
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      // console.log(formData)
+      // this.$q.cookies.set('csrftoken', dataObj.csrfmiddlewaretoken) //, {
+      //   path: '/',
+      //   sameSite: 'strict',
+      //   secure: false
+      // });
+      // console.log(this.getCookie('csrftoken'))
+      api.login(formData)
+      // api.login({ token: this.csrf_token, data: {email: this.email, password: this.password, remember: this.remember}})
+      // .then((res) => {
+      //   console.log(res)
+      //   Notify.create({
+      //     message: "Logged in successfully",
+      //     color: "green",
+      //     textColor: "white",
+      //     position: "center",
+      //     timeout: 3000
+      //   })
+      // })
+      // .catch(error => {
+      //   console.log(error)
+      //     Notify.create({
+      //       message: error.response.data,
+      //       color: "red",
+      //       textColor: "white",
+      //       position: "center",
+      //       timeout: 3000
+      //     })
+      //   })
     },
     async get_form(){
       await api.get_form().then(async(results) => {
-        console.log(results.data);
-        this.python_form = results.data;
+        let form = results.data
+        // form = form.replaceAll("<input ", "<q-input ")
+        // console.log(form);
+        this.python_form = form;
       })
     },
 
@@ -116,19 +153,42 @@ export default defineComponent({
       } )
     },
 
-    passEnabl() {
-      let login_password = document.getElementById("login_password").val();
-      console.log("enabling?")
-      if (login_password.length >= 8) {
-        document.getElementById("login").attr("disabled", false);
-      } else {
-        document.getElementById("login").attr("disabled", true);
-      }
+    async add_watcher() {
+      $('#login_password').on('input', function () {
+        // console.log('Input value changed to:', this.value.length);
+        if (this.value.length >= 8) {
+          $('#submit_btn').prop('disabled', false);
+        } else {
+          $('#submit_btn').prop('disabled', true);
+        }
+      });
     },
+
   },
+
   mounted() {
-    // this.get_form()
-    this.get_csrf()
+    this.get_form().then(() => {
+      this.add_watcher();
+    })
+    // this.get_csrf()
   }
 })
 </script>
+
+<style>
+.input-field {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 5px 0;
+  outline: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  border-color: #3f51b5;
+  box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
+}
+</style>

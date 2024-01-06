@@ -146,6 +146,7 @@ export default {
   },
 
   mounted() {
+    console.log(this.userInfo)
     this.userData = this.userInfo ? this.userInfo : []
     this.edit = true ? this.editButton == "Add User" : false
     this.userInfoLabels = this.store.formFields.userInfoLabels;
