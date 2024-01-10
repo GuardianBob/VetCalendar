@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
 from django.middleware import csrf
-from .forms import Register_Form, Login_Form, UserCreationForm
+from .forms import Register_Form, Login_Form, UserCreationForm, UserAdminUpdateForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 import random, secrets, re
 
@@ -220,7 +220,7 @@ def save_new_user(user):
   new_phone = Phone.objects.create(
       number=re.sub('\D', '', user["phone"]),
       type="mobile",
-  )  
+  )
   # Add the new phone to the new user's phones
   new_phone.users.add(new_user)
   # Save all of these objects to the database
@@ -333,7 +333,7 @@ def set_initials(data):
 
 @csrf_exempt
 def get_user_list(request):
-    users = User.objects.select_related('user_level').values('id', 'first_name', 'last_name', 'initials', 'email', 'user_level__level__name')
+    users = User.objects.select_related('user_level').values('id', 'first_name', 'last_name', 'initials', 'email', 'user_level__name')
     print(users)
     user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
     user_data = json.dumps(user_dict)   
@@ -342,8 +342,10 @@ def get_user_list(request):
 
 @csrf_exempt 
 def get_user_profile(request):
-    user_id = eval(request.body.decode("utf-8"))
-    print(user_id)
+    req = eval(request.body.decode("utf-8"))
+    # req = request.body
+    # print(req["id"], req["admin"])
+    print(req)
     remove = ['created_at', 'updated_at', 'user_shifts', 'user_password']
     fields = ProfileFields()    
     fields_to_select = (
@@ -355,7 +357,16 @@ def get_user_profile(request):
     fields_to_select = list(set(fields_to_select) - set(remove))
     # fields.userpass_fields = list(set(fields.userpass_fields) - set(remove))
     print(fields_to_select)
-    profile = User.objects.filter(id=user_id).values(*fields_to_select)
+    if req["admin"] == "true":
+      # profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
+      user = User.objects.get(id=req["id"])
+      address = user.user_address if hasattr(user, 'user_address') else None
+      city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
+      phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
+      occupation = user.user_occupation if hasattr(user, 'user_occupation') else None
+    else:
+      profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
+      print(profile[0])
     # profile = User.objects.filter(id=user_id).select_related('user_address', 'user_city_state', 'user_phone', 'user_level', 'user_privileges', 'user_occupation').prefetch_related(
     #   Prefetch('address_set', queryset=Address.objects.select_related(*fields.address_fields)),
     #   Prefetch('phone_set', queryset=Phone.objects.select_related(*fields.phone_fields)),
@@ -365,10 +376,27 @@ def get_user_profile(request):
     #   Prefetch('occupation_set', queryset=Occupation.objects.select_related(*fields.occupation_fields))
     #   # Add other prefetch related calls for related models like 'citystate_set', etc.
     # )
-    print(profile[0])
+    # form = UserAdminUpdateForm(profile[0])
     # users = User.objects.values(*user_info_fields)
     # users = User.objects.select_related('user_password', 'user_address', 'user_city_state').all()
-    # data = []
+    data = {
+      'first_name': user.first_name,
+      'middle_name': user.middle_name,
+      'last_name': user.last_name,
+      'initials': user.initials,
+      'nickname': user.nickname,
+      'email': user.email,
+      'phone': phone.number if phone else '',
+      'phone_type': phone.type if phone else '',
+      'apt_num': address.apt_num if address else '',
+      'address': address.street if address else '',
+      'address_line2': address.street2 if address else '',
+      'city': city_state.city if city_state else '',
+      'state': city_state.state if city_state else '',
+      'zipcode': city_state.zipcode if city_state else '',
+      'occupation': occupation.name if occupation else '',
+    }
+    form = UserAdminUpdateForm(data)
     # Loop through the QuerySet
     # for user in users:
     #     # Get the data for this user as a dictionary
@@ -405,7 +433,12 @@ def get_user_profile(request):
     # user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
     # print(user_dict)
     # print(user_data)
-    return JsonResponse(profile[0])
+    context = {
+      'form': form,
+      'page_title': 'Update User'
+    }
+    return render(request, 'form.html', context)
+    # return JsonResponse(profile[0])
 
 # @csrf_exempt
 # def add_new_user:

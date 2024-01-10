@@ -7,10 +7,10 @@
     </div>
     <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileView :userInfo="userInfo" :parentFunc01="update_user" editButton="Edit User" page_title="User Details"/>
+      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" editButton="Edit User" page_title="User Details"/>
     </q-dialog>
     <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileView :userInfo="userInfo" :parentFunc01="add_user" editButton="Add User" page_title="Add User" />
+      <ProfileEdit :python_form="python_form" :parentFunc01="add_user" editButton="Add User" page_title="Add User" />
     </q-dialog>
   </q-page>
 </template>
@@ -23,7 +23,7 @@ import DataTable from "components/DataTable.vue"
 import dummyData from "components/dummyData.json"
 import { useMainStore } from "stores/main-store.js"
 import { useFormFields } from "stores/form-fields.js"
-import ProfileView from "components/ProfileView.vue"
+import ProfileEdit from "components/ProfileEdit.vue"
 // import { validators } from "app/services/ValidateService";
 const mainStore = useMainStore();
 const api = APIService 
@@ -33,7 +33,7 @@ export default defineComponent({
   name: "UserInfo",
   components: {
     DataTable,
-    ProfileView
+    ProfileEdit
   },
   setup() {
     return {
@@ -43,7 +43,11 @@ export default defineComponent({
       new_user: ref(false),
       user_list: ref([]),
       user_id: ref(),
+      admin: ref(),
       userInfo: ref(),
+      python_form: ref(),
+      api_string: ref(""),
+      api_data: ref({}),
       // columns: ref([
       //   // Replace with database columns
       //   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
@@ -55,7 +59,7 @@ export default defineComponent({
       // users: ref([
       //   { id: '13', name: 'Jesse Meyer', email: 'mail@mail.com', userGroup: 'Staff', userLevel: 'Admin'}
       // ]),
-      pageTitle: ref('User Details'),
+      // pageTitle: ref('User Details'),
     }
   },
   data() {
@@ -74,6 +78,7 @@ export default defineComponent({
       console.log(userInfo.id)
       await this.get_user_profile(userInfo.id)
       // this.userInfo = userInfo
+      console.log(this.api_data)
       this.view_user = true
       // Notify.create({
       //   message: `Open User Edit Window for ${user_id}`,
@@ -100,10 +105,14 @@ export default defineComponent({
     },
 
     async get_user_profile(id) {
-      await APIService.get_user_profile(id).then((res) => {
-        console.log(res.data);
-        this.userInfo = res.data
-      })
+      this.api_string = "/login/get_user_profile"
+      this.user_id = id
+      this.admin = "true"
+      // let req = { "id": id, "admin": "true" }
+      // await APIService.get_user_profile(req).then((res) => {
+      //   console.log(res.data);
+      //   this.python_form = res.data
+      // })
       return
     }
   },

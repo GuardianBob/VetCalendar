@@ -71,14 +71,15 @@ class Phone(models.Model):
 
 class AccessLevel(models.Model):
   name = models.CharField(max_length=50)
+  users = models.ManyToManyField(User, related_name='user_level', default=1)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
-class UserLevel(models.Model):
-  level = models.OneToOneField(AccessLevel, related_name='access_level', default=1, on_delete=models.CASCADE)
-  user = models.OneToOneField(User, related_name='user_level', on_delete=models.CASCADE)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now=True)
+# class UserLevel(models.Model):
+#   level = models.OneToOneField(AccessLevel, related_name='access_level', default=1, on_delete=models.CASCADE)
+#   user = models.OneToOneField(User, related_name='user_level', on_delete=models.CASCADE)
+#   created_at = models.DateTimeField(auto_now_add=True)
+#   updated_at = models.DateTimeField(auto_now=True)
 
 class UserPrivileges(models.Model):
   name = models.CharField(max_length=150)
@@ -102,3 +103,10 @@ class User_Info(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
   
+class FormOptions(models.Model):
+  option_model = models.CharField(max_length=50, blank=True)
+  option_field = models.CharField(max_length=50)
+  option = models.CharField(max_length=50)
+  option_label= models.CharField(max_length=50, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)

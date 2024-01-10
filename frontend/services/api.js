@@ -128,8 +128,12 @@ class APIService {
     return api.post('/login/get_user_list');
   }
 
-  get_user_profile(id) {
-    return api.post('/login/get_user_profile', id);
+  get_user_profile(req) {
+    return api.post('/login/get_user_profile', req);
+  }
+
+  get_user_profile_admin(id) {
+    return api.post('/login/get_user_profile_admin', id);
   }
 
   // get_user_data() {

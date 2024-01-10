@@ -24,3 +24,27 @@
   border-color: #3f51b5;
   box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
 }
+
+/* Define the form fields to be in one column by default */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  
+}
+
+/* Use a media query to switch to two columns when the viewport height is less than a certain value */
+@media (max-height: 400px) {
+  .form-field {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+ul.errorlist {
+  display: none;
+}
+
+.input-field {
+  max-width: 25vw;
+  margin: 5px 10px;
+}

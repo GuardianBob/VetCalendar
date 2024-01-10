@@ -1,16 +1,17 @@
 <template>
-  <!-- <q-page class="items-center flex flex-center"> -->
-    <div class="row q-mx-md full-width justify-around" style="width: 700px; max-width: 60vw;">
-      <div class="col-12 text-center bg-white text-dark" style="border: 4px solid #1976d2; border-radius: 10px">
-        <div class="text-center q-ma-md">
-          <q-form @submit="submit" method="POST" id="login_form">
-            <div v-html="python_form"></div>
-            <q-btn id="submit_btn" label="Submit" type="submit" color="primary" />
-          </q-form>
-        </div>
+  <div class="row q-mx-md full-width justify-around" id="Login Form">
+    <div
+      class="col-4 text-center"
+      style="border: 4px solid #1976d2; border-radius: 10px"
+    >
+      <div class="text-center q-ma-md">
+        <q-form @submit="submit" method="POST" id="login_form">
+          <div v-html="python_form"></div>
+          <q-btn id="submit_btn" label="Submit" type="submit" color="primary" />
+        </q-form>
       </div>
     </div>
-  <!-- </q-page> -->
+  </div>
 </template>
 
 <script>
@@ -20,17 +21,16 @@ import APIService from "../../services/api";
 import { api } from "boot/axios";
 
 export default defineComponent({
-  name: "ProfileForm",
   props: [
-    "user_id",
-    "adminEdit",
+    "title",
     "api_string",
-    "editButton",
-    "page_title",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
+    "parentFunc04",
+    "parentFunc05",
   ],
+
   setup() {
     return {};
   },
@@ -39,38 +39,11 @@ export default defineComponent({
       loading: false,
       python_form: ref([]),
       csrf_token: ref(""),
-      info: ref(false),
-      userData: ref(),
       api_call: ref(""),
-      api_data: ref(),
-      editLabel: ref("Edit User"),
-      pageTitle: ref('User Details'),
-      // columnLabels: store.formFields.columnLabels,
-      user: ref({}),
-      userInfoLabels: ref({}),
-      edit: ref(false),
-      edit_pw: ref(false),
-      remember: ref(false),
-      passDisabled: ref(true),
-      passError: ref(false),
-      password: ref(""),
-      password2: ref(""),
     };
   },
 
-  watch: {
-    userInfo(newValue, oldValue) {
-      this.userData = this.userInfo
-    },
-    edit(newValue, oldValue) {
-      if (newValue == true) {
-        this.editLabel = "Done"
-        this.edit_pw = true ? this.editButton != "Add User" : false
-      } else {
-        this.editLabel = this.editButton
-      }
-    },
-  },  
+  watch: {},
 
   methods: {
     submit(event) {
@@ -110,13 +83,36 @@ export default defineComponent({
     },
 
     async get_form() {
-      let body = { "id": this.user_id, "admin": this.adminEdit}
-      console.log(body)
-      console.log(this.api_call, body);
-      await api.post(this.api_call, body).then(async (results) => {
+      console.log(this.api_call);
+      await api.get(this.api_call).then(async (results) => {
         console.log(results);
         this.python_form = results.data;
+        if (this.api_call == "/login") {
+          add_password_watcher("#password");
+        }
+        if ("login" in this.api_call || "register" in this.api_call) {
+          add_verify_watcher("#verify_password");
+        }
       });
+    },
+
+    async add_password_watcher(id) {
+      if ($(id)) {
+        $(id).on("input", function () {
+          // console.log('Input value changed to:', this.value.length);
+          if (this.value.length >= 8) {
+            $("#submit_btn").prop("disabled", false);
+          } else {
+            $("#submit_btn").prop("disabled", true);
+          }
+        });
+        if ("verify_password" in id) {
+          $(id).on("input", function () {
+            if (this.value === $("#password").value) {
+            }
+          });
+        }
+      }
     },
 
     async get_csrf() {
@@ -132,9 +128,7 @@ export default defineComponent({
     // let urlParams = this.$route.path;
     // urlParams = urlParams.replace(/^\/+/, "");
     // console.log(urlParams);
-    console.log(this.user_data)
     this.api_call = this.api_string;
-    this.api_data = this.userId;
     this.get_form();
     // this.get_csrf()
   },
