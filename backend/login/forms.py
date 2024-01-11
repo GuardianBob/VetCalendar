@@ -100,17 +100,6 @@ USER_OCCUPATION = (
   ('other', 'Other')
 )
 
-class ProfileFields():
-  user_fields = [f.name for f in User._meta.get_fields()]
-  # userpass_fields = ['user_password__' + f.name for f in UserPass._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-  userpass_fields = ['user_password__password']
-  address_fields = ['user_address__' + f.name for f in Address._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-  citystate_fields = ['user_city_state__' + f.name for f in CityState._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-  phone_fields = ['user_phone__' + f.name for f in Phone._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-  level_fields = ['user_level__' + f.name for f in AccessLevel._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-  privileges_fields = ['user_privileges__' + f.name for f in UserPrivileges._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-  occupation_fields = ['user_occupation__' + f.name for f in Occupation._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-
 def option_fields(field):
   form_options = FormOptions.objects.filter(option_field__icontains=field)
   print(form_options.values())
@@ -214,15 +203,20 @@ class UpdatePasswordForm(forms.Form):
     super(UpdatePasswordForm, self).__init__(*args, **kwargs)
     self.fields = set_attributes(self.fields)
 
-class UpdateOccupationForm(forms.Form):
-  occupation = forms.ChoiceField(widget=forms.Select, required=False)
+class UpdateOccupationForm(forms.ModelForm):
+  # Create form from Occupation model
+  class Meta:
+    model = Occupation
+    fields = ['occupation']
+  # occupation = forms.ChoiceField(widget=forms.Select, required=False)
 
   def __init__(self, *args, **kwargs):
     if args:
       # Extract the first value from the queryset if it's not None
       args = (args[0].values().first(),) if args[0] else args
     super(UpdateOccupationForm, self).__init__(*args, **kwargs)
-    self.initial['occupation'] = 'None'
+    # self.initial['occupation'] = 'None'
+    self.fields['occupation'] = forms.ChoiceField(widget=forms.Select, required=False)
     self = identify_choice_fields(self)
     # options = field_options('occupation')
     # self.fields['occupation'].choices = [(option.option, option.option_label) for option in options]
