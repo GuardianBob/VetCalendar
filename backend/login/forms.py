@@ -181,7 +181,7 @@ class UserAdminUpdateForm(forms.Form):
   nickname = forms.CharField(max_length=200, widget=forms.TextInput, required=False)
   email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=True)
   phone = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
-  phone_type = forms.ChoiceField(widget=forms.Select, choices=PHONE_TYPE, required=False)
+  phone_type = forms.ChoiceField(widget=forms.Select, required=False)
   apt_num = forms.CharField(max_length=10, widget=forms.TextInput, required=False)
   address = forms.CharField(max_length=150, widget=forms.TextInput, required=False)
   address_line2 = forms.CharField(max_length=150, widget=forms.TextInput, required=False)
@@ -192,11 +192,18 @@ class UserAdminUpdateForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
     super(UserAdminUpdateForm, self).__init__(*args, **kwargs)
+    self.initial['phone_type'] = 'Mobile'  
     self.fields = set_attributes(self.fields)
-    options = option_fields('phone_type')
-    self.fields['phone_type'].choices = [(option.option, option.option_label) for option in options]
+    # options = option_fields('phone_type')
+    # self.fields['phone_type'].choices = [(option.option, option.option_label) for option in options]
+    self = identify_choice_fields(self)
+    # for field_name, field in self.fields.items():
+    #   if isinstance(field, forms.ChoiceField):
+    #     f_options = option_fields(field_name) 
+    #     if f_options:
+    #       self.fields[field_name].choices = [(option.option, option.option_label) for option in f_options]
+    #     print(f"{field_name} is a ChoiceField")
     # self.fields['occupation'] = forms.ChoiceField(choices=option_fields("occupation_type"))
-    self.initial['Phone Type'] = 'Mobile'   
 
 class UpdatePasswordForm(forms.Form):
   old_password = forms.CharField(max_length=50, min_length=8, widget=forms.PasswordInput, required=True)
@@ -212,12 +219,14 @@ class UpdateOccupationForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
     super(UpdateOccupationForm, self).__init__(*args, **kwargs)
-    options = field_options('occupation')
-    self.fields['occupation'].choices = [(option.option, option.option_label) for option in options]
+    self.initial['occupation'] = 'None'
+    self = identify_choice_fields(self)
+    # options = field_options('occupation')
+    # self.fields['occupation'].choices = [(option.option, option.option_label) for option in options]
     self.fields = set_attributes(self.fields)
 
   def from_user(user):
-      return UpdateOccupationForm(initial=user.user_occupation.values().first())
+      return UpdateOccupationForm(user.user_occupation.values().first())
 
 def set_attributes(fields):
   # print(fields.keys())
@@ -230,3 +239,12 @@ def set_attributes(fields):
     })
     fields[name].label = ''
   return fields
+
+def identify_choice_fields(form):
+  for field_name, field in form.fields.items():
+    if isinstance(field, forms.ChoiceField):
+      print(f"{field_name} is a ChoiceField")
+      f_options = option_fields(field_name) 
+      if f_options:
+        form.fields[field_name].choices = [('', '')] + [(option.option, option.option_label) for option in f_options]
+  return form

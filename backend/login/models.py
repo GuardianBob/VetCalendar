@@ -88,7 +88,7 @@ class UserPrivileges(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
 
 class Occupation(models.Model):
-  name = models.CharField(max_length=50, default=0)
+  occupation = models.CharField(max_length=50, default=0)
   user = models.ForeignKey(User, related_name='user_occupation', on_delete=models.CASCADE, default=0)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)

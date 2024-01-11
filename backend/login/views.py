@@ -435,9 +435,10 @@ def get_user_profile(request):
     # print(user_dict)
     # print(user_data)
     # updatePassword = UpdatePasswordForm()
-    print(Occupation.objects.filter(user=user).values())
+    # print(Occupation.objects.filter(user=user).values())
     # occupation_dict = model_to_dict(user.user_occupation, fields=['name'])
-    print(user.user_occupation.values().first())
+    # user_occupation = UpdateOccupationForm.from_user(user)
+    # print(user_occupation)
     updateOccupation = UpdateOccupationForm.from_user(user)
     # updateOccupation = UpdateOccupationForm(user.user_occupation.values().first())
     context = {
