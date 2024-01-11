@@ -6,8 +6,9 @@ from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
 from django.middleware import csrf
-from .forms import Register_Form, Login_Form, UserCreationForm, UserAdminUpdateForm
+from .forms import Register_Form, Login_Form, UserCreationForm, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.forms.models import model_to_dict
 import random, secrets, re
 
 class SingleUser():
@@ -394,9 +395,9 @@ def get_user_profile(request):
       'city': city_state.city if city_state else '',
       'state': city_state.state if city_state else '',
       'zipcode': city_state.zipcode if city_state else '',
-      'occupation': occupation.name if occupation else '',
+      # 'occupation': occupation.name if occupation else '',
     }
-    form = UserAdminUpdateForm(data)
+    userDetails = UserAdminUpdateForm(data)
     # Loop through the QuerySet
     # for user in users:
     #     # Get the data for this user as a dictionary
@@ -433,12 +434,80 @@ def get_user_profile(request):
     # user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
     # print(user_dict)
     # print(user_data)
+    # updatePassword = UpdatePasswordForm()
+    print(Occupation.objects.filter(user=user).values())
+    # occupation_dict = model_to_dict(user.user_occupation, fields=['name'])
+    print(user.user_occupation.values().first())
+    updateOccupation = UpdateOccupationForm.from_user(user)
+    # updateOccupation = UpdateOccupationForm(user.user_occupation.values().first())
     context = {
-      'form': form,
+      'forms': {
+        'Details': userDetails, 
+        # 'Update Password': updatePassword,
+        'Occupation': updateOccupation,  
+      },
       'page_title': 'Update User'
     }
-    return render(request, 'form.html', context)
+    return render(request, 'multiForm.html', context)
     # return JsonResponse(profile[0])
 
 # @csrf_exempt
 # def add_new_user:
+
+@csrf_exempt 
+def get_user_profile2(request):
+    req = eval(request.body.decode("utf-8"))
+    # req = request.body
+    # print(req["id"], req["admin"])
+    print(req)
+    remove = ['created_at', 'updated_at', 'user_shifts', 'user_password']
+    fields = ProfileFields()    
+    fields_to_select = (
+      fields.user_fields 
+      + fields.address_fields 
+      + fields.citystate_fields 
+      + fields.phone_fields
+    )
+    fields_to_select = list(set(fields_to_select) - set(remove))
+    # fields.userpass_fields = list(set(fields.userpass_fields) - set(remove))
+    print(fields_to_select)
+    if req["admin"] == "true":
+      # profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
+      user = User.objects.get(id=req["id"])
+      address = user.user_address if hasattr(user, 'user_address') else None
+      city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
+      phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
+      occupation = user.user_occupation if hasattr(user, 'user_occupation') else None
+    else:
+      profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
+      print(profile[0])
+    
+    data = {
+      'first_name': user.first_name,
+      'middle_name': user.middle_name,
+      'last_name': user.last_name,
+      'initials': user.initials,
+      'nickname': user.nickname,
+      'email': user.email,
+      'phone': phone.number if phone else '',
+      'phone_type': phone.type if phone else '',
+      'apt_num': address.apt_num if address else '',
+      'address': address.street if address else '',
+      'address_line2': address.street2 if address else '',
+      'city': city_state.city if city_state else '',
+      'state': city_state.state if city_state else '',
+      'zipcode': city_state.zipcode if city_state else '',
+      'occupation': occupation.name if occupation else '',
+    }
+    userDetails = UserAdminUpdateForm(data)
+    updatePassword = UpdatePasswordForm()
+    
+    context = {
+      'forms': {
+        'Details': userDetails, 
+        'Update Password': updatePassword, 
+      },
+      'page_title': 'Update User'
+    }
+    return render(request, 'multiForm.html', context)
+    # return JsonResponse(profile[0])

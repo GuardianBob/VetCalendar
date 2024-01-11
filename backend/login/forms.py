@@ -81,13 +81,22 @@ FORM_FIELDS = {
     "zipcode": "Zip Code",
     "password": "Password",
     "verify_password": "Verify Password",
-    "occupation": "Occupation"
+    "occupation": "Occupation",
+    "old_password": "Old Password",
+    "new_password": "New Password",
+    "verify_password": "Verify Password",
 }
 
 PHONE_TYPE = (
   ('mobile', 'Mobile'),
   ('home', 'Home'),
   ('work', 'Work'),
+  ('other', 'Other')
+)
+
+USER_OCCUPATION = (
+  ('doctor', 'Doctor'),
+  ('tech', 'Technician'),
   ('other', 'Other')
 )
 
@@ -103,9 +112,14 @@ class ProfileFields():
   occupation_fields = ['user_occupation__' + f.name for f in Occupation._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
 
 def option_fields(field):
-  form_options = FormOptions.objects.filter(option_field__icontains=field).values()
-  print(form_options[0])
-  return form_options[0]
+  form_options = FormOptions.objects.filter(option_field__icontains=field)
+  print(form_options.values())
+  return form_options
+
+def field_options(field):
+  form_options = FormOptions.objects.filter(option_model=field)
+  print(form_options.values())
+  return form_options
 
 
 class Register_Form(forms.Form):
@@ -179,9 +193,31 @@ class UserAdminUpdateForm(forms.Form):
   def __init__(self, *args, **kwargs):
     super(UserAdminUpdateForm, self).__init__(*args, **kwargs)
     self.fields = set_attributes(self.fields)
+    options = option_fields('phone_type')
+    self.fields['phone_type'].choices = [(option.option, option.option_label) for option in options]
     # self.fields['occupation'] = forms.ChoiceField(choices=option_fields("occupation_type"))
     self.initial['Phone Type'] = 'Mobile'   
-    
+
+class UpdatePasswordForm(forms.Form):
+  old_password = forms.CharField(max_length=50, min_length=8, widget=forms.PasswordInput, required=True)
+  new_password = forms.CharField(max_length=50, min_length=8, widget=forms.PasswordInput, required=True)
+  verify_password = forms.CharField(max_length=50, min_length=8, widget=forms.PasswordInput, required=True)
+
+  def __init__(self, *args, **kwargs):
+    super(UpdatePasswordForm, self).__init__(*args, **kwargs)
+    self.fields = set_attributes(self.fields)
+
+class UpdateOccupationForm(forms.Form):
+  occupation = forms.ChoiceField(widget=forms.Select, required=False)
+
+  def __init__(self, *args, **kwargs):
+    super(UpdateOccupationForm, self).__init__(*args, **kwargs)
+    options = field_options('occupation')
+    self.fields['occupation'].choices = [(option.option, option.option_label) for option in options]
+    self.fields = set_attributes(self.fields)
+
+  def from_user(user):
+      return UpdateOccupationForm(initial=user.user_occupation.values().first())
 
 def set_attributes(fields):
   # print(fields.keys())
