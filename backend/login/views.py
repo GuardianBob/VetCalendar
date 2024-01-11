@@ -439,7 +439,8 @@ def get_user_profile(request):
     # occupation_dict = model_to_dict(user.user_occupation, fields=['name'])
     # user_occupation = UpdateOccupationForm.from_user(user)
     # print(user_occupation)
-    updateOccupation = UpdateOccupationForm.from_user(user)
+    # updateOccupation = UpdateOccupationForm.from_user(user)
+    updateOccupation = UpdateOccupationForm(occupation)
     # updateOccupation = UpdateOccupationForm(user.user_occupation.values().first())
     context = {
       'forms': {

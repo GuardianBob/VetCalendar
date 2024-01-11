@@ -218,6 +218,9 @@ class UpdateOccupationForm(forms.Form):
   occupation = forms.ChoiceField(widget=forms.Select, required=False)
 
   def __init__(self, *args, **kwargs):
+    if args:
+      # Extract the first value from the queryset if it's not None
+      args = (args[0].values().first(),) if args[0] else args
     super(UpdateOccupationForm, self).__init__(*args, **kwargs)
     self.initial['occupation'] = 'None'
     self = identify_choice_fields(self)
