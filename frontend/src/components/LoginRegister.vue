@@ -1,9 +1,12 @@
 <template>
-  <div class="row q-mx-md full-width justify-around" id="Login Form">
+  <div class="row q-mx-md full-width justify-around" id="Login Form" style="width: 700px; max-width: 60vw;">
     <div
-      class="col-4 text-center"
-      style="border: 4px solid #1976d2; border-radius: 10px"
+    class="col-8 bg-white text-dark"
+    style="border: 4px solid #1976d2; border-radius: 10px"
     >
+      <div class="text-right" v-show="closeButton">
+        <q-btn flat v-close-popup icon="close"/>
+      </div>  
       <div class="text-center q-ma-md">
         <q-form @submit="submit" method="POST" id="login_form">
           <div v-html="python_form"></div>
@@ -24,6 +27,8 @@ export default defineComponent({
   props: [
     "title",
     "api_string",
+    "closeButton",
+    "editButton",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -85,14 +90,14 @@ export default defineComponent({
     async get_form() {
       console.log(this.api_call);
       await api.get(this.api_call).then(async (results) => {
-        console.log(results);
+        // console.log(results);
         this.python_form = results.data;
         if (this.api_call == "/login") {
           add_password_watcher("#password");
         }
-        if ("login" in this.api_call || "register" in this.api_call) {
-          add_verify_watcher("#verify_password");
-        }
+        // if ("login" in this.api_call || "register" in this.api_call) {
+        //   add_verify_watcher("#verify_password");
+        // }
       });
     },
 
@@ -127,7 +132,7 @@ export default defineComponent({
   mounted() {
     // let urlParams = this.$route.path;
     // urlParams = urlParams.replace(/^\/+/, "");
-    // console.log(urlParams);
+    console.log(this.api_string);
     this.api_call = this.api_string;
     this.get_form();
     // this.get_csrf()

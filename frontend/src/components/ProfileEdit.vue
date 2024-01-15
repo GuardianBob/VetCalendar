@@ -2,7 +2,10 @@
   <!-- <q-page class="items-center flex flex-center"> -->
     <div class="row q-mx-md full-width justify-around" style="width: 700px; max-width: 60vw;">
       <div class="col-12 text-center bg-white text-dark" style="border: 4px solid #1976d2; border-radius: 10px">
-        <div class="text-center q-ma-md">
+        <div class="text-right">
+          <q-btn flat v-close-popup icon="close"/>
+        </div>  
+        <div class="text-center q-ma-md" ref="form">
           <q-form @submit="submit" method="POST" id="login_form">
             <div v-html="python_form"></div>
             <q-btn id="submit_btn" label="Submit" type="submit" color="primary" />
@@ -110,12 +113,27 @@ export default defineComponent({
     },
 
     async get_form() {
-      let body = { "id": this.user_id, "admin": this.adminEdit}
-      console.log(body)
-      console.log(this.api_call, body);
-      await api.post(this.api_call, body).then(async (results) => {
-        console.log(results);
+      let params = { "id": this.user_id, "admin": this.adminEdit}
+      // console.log(params)
+      // console.log(this.api_call, params);
+      await api.get(this.api_call, { params }).then(async (results) => {
+        // console.log(results);
         this.python_form = results.data;
+        // Add watcher to make address, city, state, zip fields required if address is filled
+        this.$nextTick(() => {
+          const addressInput = this.$refs.form.querySelector('#address');
+          const cityInput = this.$refs.form.querySelector('#city');
+          const stateInput = this.$refs.form.querySelector('#state');
+          const zipInput = this.$refs.form.querySelector('#zip');
+          if (addressInput && cityInput ) {
+            addressInput.addEventListener('input', () => {
+              const isAddressFilled = !!addressInput.value;
+              cityInput.required = isAddressFilled;
+              stateInput.required = isAddressFilled;
+              zipInput.required = isAddressFilled;
+            });
+          }
+        });
       });
     },
 
@@ -132,10 +150,11 @@ export default defineComponent({
     // let urlParams = this.$route.path;
     // urlParams = urlParams.replace(/^\/+/, "");
     // console.log(urlParams);
-    console.log(this.user_data)
+    // console.log(this.user_data)
     this.api_call = this.api_string;
     this.api_data = this.userId;
     this.get_form();
+    
     // this.get_csrf()
   },
 });

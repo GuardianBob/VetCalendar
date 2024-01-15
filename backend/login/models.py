@@ -1,37 +1,45 @@
 from django.db import models
 from django.core import serializers
 import json
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
-class User(models.Model):
-  email = models.CharField(max_length=100)
-  # password = models.CharField(max_length=50)
-  first_name = models.CharField(max_length=50)
-  middle_name = models.CharField(max_length=50, blank=True)
-  last_name = models.CharField(max_length=50)
-  initials = models.CharField(max_length=10, blank=True)
-  nickname = models.CharField(max_length=50, blank=True)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now=True)
-  # @property
-  # def full_name(self):
-  #   return f"{self.first_name} {self.last_name}"
+# class User(models.Model):
+#   email = models.CharField(max_length=100)
+#   # password = models.CharField(max_length=50)
+#   first_name = models.CharField(max_length=50)
+#   middle_name = models.CharField(max_length=50, blank=True)
+#   last_name = models.CharField(max_length=50)
+#   initials = models.CharField(max_length=10, blank=True)
+#   nickname = models.CharField(max_length=50, blank=True)
+#   created_at = models.DateTimeField(auto_now_add=True)
+#   updated_at = models.DateTimeField(auto_now=True)
+#   # @property
+#   # def full_name(self):
+#   #   return f"{self.first_name} {self.last_name}"
   
-  @property
-  def password(self):
-    return self.user_password.password
+#   @property
+#   def password(self):
+#     return self.user_password.password
 
-  @property
-  def address(self):
-    return {
-        'number': self.user_address.number,
-        'street': self.user_address.street,
-        'street2': self.user_address.street2,
-        'apt_num': self.user_address.apt_num,
-        'city': self.user_city_state.city,
-        'state': self.user_city_state.state,
-        'zipcode': self.user_city_state.zipcode,
-    }
+#   @property
+#   def address(self):
+#     return {
+#         'number': self.user_address.number,
+#         'street': self.user_address.street,
+#         'street2': self.user_address.street2,
+#         'apt_num': self.user_address.apt_num,
+#         'city': self.user_city_state.city,
+#         'state': self.user_city_state.state,
+#         'zipcode': self.user_city_state.zipcode,
+#     }
+  
+class User(AbstractUser):
+    middle_name = models.CharField(max_length=50, blank=True)
+    initials = models.CharField(max_length=10, blank=True)
+    nickname = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
   
 class UserPass(models.Model):
   password = models.CharField(max_length=100)
@@ -42,7 +50,7 @@ class UserPass(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
 
 class Address(models.Model):
-  number = models.IntegerField()
+  number = models.IntegerField(blank=True)
   street= models.CharField(max_length=100)
   street2 = models.CharField(max_length=100, blank=True)
   apt_num = models.CharField(max_length=15, blank=True)

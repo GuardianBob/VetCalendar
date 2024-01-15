@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, UserPass, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
@@ -9,13 +9,63 @@ from django.middleware import csrf
 from .forms import Register_Form, Login_Form, UserCreationForm, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.forms.models import model_to_dict
-import random, secrets, re
+import random, secrets, re, traceback, sys
+from itertools import count
+from django.contrib.auth import authenticate, login
+from django.conf import settings
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework import exceptions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.backends import TokenBackend
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+# class TokenVerifyView(APIView):
+#   def post(self, request):
+#     print("hit token verify")
+#     token = request.data.get('token')
+#     print(token)
+#     if token is None:
+#       print("token is None")
+#       return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+#       # return JsonResponse({'message': 'Token is required'}, status=500)
+#     try:
+#       print("refresh token")
+#       RefreshToken(token).check_blacklist()
+#     except Exception as e:
+#       print("exception")
+#       return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+
+#     return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
+  
+@csrf_exempt
+def validate_token(request):
+  # print(request.body)
+  token = request.body.decode('utf-8')
+  print(token)
+  if token is None:
+    print("token is None")
+    return Response({'error': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+    # return JsonResponse({'message': 'Token is required'}, status=500)
+  token_backend = TokenBackend(algorithm=settings.SIMPLE_JWT['ALGORITHM'])
+  try:
+      print("validate access token")
+      validated_token = token_backend.decode(token, verify=True)
+      print(validated_token)
+  except TokenError as e:
+      print("exception")
+      return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+  return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
 
 class SingleUser():
-    pass
+  pass
 
 class UserProfile():
-    pass
+  pass
 
 class ProfileFields():
     user_fields = [f.name for f in User._meta.get_fields()]
@@ -66,7 +116,7 @@ def response_msg(status=200, message=""):
 
 # Create your views here.
 @csrf_exempt
-def login(request):
+def user_login(request):
   if request.method == 'POST':
     # print(request.POST)
     form = Login_Form(request.POST)
@@ -75,12 +125,17 @@ def login(request):
       # print("it worked!")
       email = form.cleaned_data['email']
       password = form.cleaned_data['password']
-      user = validate_login(email, password)
+      # user = validate_login(email, password)
+      user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
       # print(user)
       if user is not None:
-        # login(request, user)
-        # return response_msg(200, 'Successfully logged in')
-        return JsonResponse({"message":'Successfully logged in'}, status=200)
+        login(request, user)
+        # Generate JWT token:
+        refresh = TokenObtainPairSerializer.get_token(user)
+        return JsonResponse({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=200)
       else:
         # return response_msg(400, 'Incorrect Login or Password')
         return JsonResponse({"message":'Incorrect Login or Password'}, status=400)
@@ -96,6 +151,7 @@ def login(request):
     return render(request, 'form.html', context)
   # return JsonResponse({'form': login_form.as_table()})
 
+
 @csrf_exempt
 def login2(request, login_form = Login_Form()):
   if request.method == 'POST':
@@ -103,15 +159,21 @@ def login2(request, login_form = Login_Form()):
     form = Login_Form(request.POST)
     if form.is_valid():
       print("it worked!")
-      email = form.cleaned_data['email']
-      password = form.cleaned_data['password']
-      user = validate_login(email, password)
-      if user is not None:
-        # login(request, user)
-        return HttpResponseRedirect('/users/')
-      else:
-        # Show an error message
-        pass
+      # email = form.cleaned_data['email']
+      # password = form.cleaned_data['password']
+      # print(email, password )
+      # user = validate_login(email, password)
+      user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
+      # print('auth worked')
+      # print(user)
+      login(request, user)
+      # if user is not None:
+      #   # login(request, user)
+      #   return HttpResponseRedirect('/users/')
+      # else:
+      #   # Show an error message
+      pass
+
   else:
       login_form = Login_Form()
   context = {
@@ -143,41 +205,50 @@ def create_user(request):
     # print(request.POST)
     form = UserCreationForm(request.POST)
     if form.is_valid():
-      print('valid')
-      print(form.cleaned_data)
-      form.cleaned_data["password"] = generate_password()
-      # print('new password: ', form.cleaned_data["password"])
+      # print('valid')
+      # print(form.cleaned_data)
       if not verify_new_user(form.cleaned_data["email"]):
-        form.cleaned_data["initials"] = get_unique_initials(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
-        # print("returned: ", form.cleaned_data["initials"])
         # print('verified new')
-        # print(form.cleaned_data["first_name"], form.cleaned_data["middle_name"], form.cleaned_data["last_name"])
-        # print(form.cleaned_data["initials"])
-        save_new_user(form.cleaned_data)
+        new_user = save_new_user(form.cleaned_data)
         return JsonResponse({'message':'New User Being Added'}, status=200)
       else:
         print('user exists')
         return JsonResponse({'message':'E-Mail already exists'}, status=500)
     print('guess not valid')
-    response_data = {
-      'code': 500, # Replace this with your desired response code
-      'message': 'Something went wrong' # Replace this with your desired response message
-    }
     return JsonResponse({'message':'Something went wrong'}, status=500)
   else:
     form = UserCreationForm()
     context = {
-      'form': form,
+      'forms': {
+        '': form, 
+      },
       'page_title': 'Create New User'
     }
-  return render(request, 'form.html', context)
+  return render(request, 'multiForm.html', context)
 
 def verify_new_user(email):
   print(email)
   user = User.objects.filter(email__icontains=email)
   return user
 
-def get_unique_initials(user_first_name='', user_middle_name='', user_last_name=''):
+def get_unique_initials(first_name='', middle_name='', last_name=''):
+    user_initials = first_name[0] + last_name[0]
+    user_full_initials = f"{first_name[0]}{middle_name[0]}{last_name[0]}" if middle_name else user_initials
+    initial_dict = set(User.objects.filter(
+        Q(initials__icontains=user_initials) | 
+        Q(initials__icontains=user_full_initials)
+    ).values_list("initials", flat=True))
+    if user_initials in initial_dict:
+        if middle_name:
+            if user_full_initials not in initial_dict:
+                return user_full_initials
+        for counter in count(1):
+            new_initials = f"{user_initials}{counter:02d}"
+            if new_initials not in initial_dict:
+                return new_initials
+    return user_initials
+
+def get_unique_initials_old(user_first_name='', user_middle_name='', user_last_name=''):
     print(f'First: {user_first_name}, Middle: {user_middle_name}, Last: {user_last_name}')
     user_initials = user_first_name[0] + user_last_name[0] 
     initial_dict = User.objects.filter(initials__icontains=user_initials).values("initials")
@@ -202,25 +273,27 @@ def get_unique_initials(user_first_name='', user_middle_name='', user_last_name=
 
 def save_new_user(user):
   print(user["first_name"])
-  # Create a new user
-  
-  phone = re.sub('\D', '', user["phone"])
+  # Create a new user  
+  new_initials=get_unique_initials(user["first_name"], user["middle_name"], user["last_name"])
   new_user = User.objects.create(
       first_name=user["first_name"],
       middle_name=user["middle_name"],
       last_name=user["last_name"],
       email=user["email"],
-      initials=user["initials"].upper()
+      initials=new_initials.upper()
   )  
   # Create a new user password
+  new_password=generate_password()
   new_user_password = UserPass.objects.create(
       user=new_user,
-      password=user["password"]["decrypted"],
+      password=new_password["encrypted"],
+      pw_reset = True,
+      pw_reset_code = new_password["reset_code"]
   )  
   # Create a new phone for the new user
   new_phone = Phone.objects.create(
       number=re.sub('\D', '', user["phone"]),
-      type="mobile",
+      type=user["phone_type"],
   )
   # Add the new phone to the new user's phones
   new_phone.users.add(new_user)
@@ -228,7 +301,12 @@ def save_new_user(user):
   # new_user.save()
   # new_user_password.save()
   # new_phone.save()
-  return
+  user_info = {
+    "user": new_user,
+    "user_password": new_password['decrypted'],
+    "user_phone": new_phone
+  }
+  return user_info
 
 @csrf_exempt
 def validate(request):
@@ -257,63 +335,18 @@ def register(request):
   print("works!")
   return (HttpResponse("Hi."))
 
-@csrf_exempt
-def add_user(request):
-  # try:
-  data = eval(request.body.decode("utf-8"))
-  if User.objects.filter(email=data["user__email"].lower()).count() > 0:
-    print("User already exists")
-    return HttpResponse("User already exists")
-  # print(json.dumps(data))
-  # print(type(data))
-  password = ''
-  pw_reset = False
-  if "user__password" in data: 
-    password = data["user__password"] 
-  else: 
-    password = generate_password()
-    pw_reset = True
-  initials = set_initials(data)
-  # print(initials)
-  # print(f'Password: {password}')
-  middle_name = None
-  middle_name = data["user__middle_name"].lower().capitalize() if "user__middle_name" in data else None
-  new_user = User(
-    first_name=data["user__first_name"].lower().capitalize(),
-    last_name=data["user__last_name"].lower().capitalize(),
-    middle_name = middle_name,
-    email=data["user__email"].lower(),
-    password=password["encrypted"],
-    initials=initials,
-    pw_reset=pw_reset
-  )
-  print(f'new user: {new_user.first_name} {new_user.last_name}')
-  new_user.save()
-  print(new_user.id)
-  User_Info.objects.create(user=new_user)
-
-  return HttpResponse("done")
-  # except Exception as e:
-  #   print(e)
-  #   return HttpResponse(e)
-
-def generate_password():
-  password_length = 20
+def generate_password(password_length=20):
   password = secrets.token_urlsafe(password_length)
+  reset_code = secrets.token_urlsafe(50)
   # print(password)
   salted_pass = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
   # print(salted_pass)
   new_password = {
     "decrypted" : password,
-    "encrypted" : salted_pass
+    "encrypted" : salted_pass,
+    "reset_code": reset_code
   }
   return new_password
-
-# def generate_password():
-#   password_length = 20
-#   new_password = secrets.token_urlsafe(password_length)
-#   print(new_password)
-#   return new_password
 
 def set_initials(data):
   print(data)
@@ -333,7 +366,12 @@ def set_initials(data):
   return initials
 
 @csrf_exempt
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_user_list(request):
+    print(request.META.get('HTTP_AUTHORIZATION'))
+    print(request.session)
     users = User.objects.select_related('user_level').values('id', 'first_name', 'last_name', 'initials', 'email', 'user_level__name')
     print(users)
     user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
@@ -341,124 +379,186 @@ def get_user_list(request):
     print(user_data)
     return HttpResponse(user_data)
 
+# class UserListView(APIView):
+#     # authentication_classes = [JWTAuthentication]
+#     # permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         print(request.META.get('HTTP_AUTHORIZATION'))
+#         print(request.session)
+#         users = User.objects.select_related('user_level').values('id', 'first_name', 'last_name', 'initials', 'email', 'user_level__name')
+#         print(users)
+#         user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
+#         user_data = json.dumps(user_dict)   
+#         print(user_data)
+#         return Response(user_data)
+
 @csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_user_profile(request):
-    req = eval(request.body.decode("utf-8"))
-    # req = request.body
-    # print(req["id"], req["admin"])
-    print(req)
-    remove = ['created_at', 'updated_at', 'user_shifts', 'user_password']
-    fields = ProfileFields()    
-    fields_to_select = (
-      fields.user_fields 
-      + fields.address_fields 
-      + fields.citystate_fields 
-      + fields.phone_fields
-    )
-    fields_to_select = list(set(fields_to_select) - set(remove))
-    # fields.userpass_fields = list(set(fields.userpass_fields) - set(remove))
-    print(fields_to_select)
-    if req["admin"] == "true":
-      # profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
-      user = User.objects.get(id=req["id"])
-      address = user.user_address if hasattr(user, 'user_address') else None
-      city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
-      phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
-      occupation = user.user_occupation if hasattr(user, 'user_occupation') else None
-    else:
-      profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
-      print(profile[0])
-    # profile = User.objects.filter(id=user_id).select_related('user_address', 'user_city_state', 'user_phone', 'user_level', 'user_privileges', 'user_occupation').prefetch_related(
-    #   Prefetch('address_set', queryset=Address.objects.select_related(*fields.address_fields)),
-    #   Prefetch('phone_set', queryset=Phone.objects.select_related(*fields.phone_fields)),
-    #   Prefetch('citystate_set', queryset=CityState.objects.select_related(*fields.citystate_fields)),
-    #   Prefetch('accesslevel_set', queryset=AccessLevel.objects.select_related(*fields.level_fields)),
-    #   Prefetch('userprivileges_set', queryset=UserPrivileges.objects.select_related(*fields.privileges_fields)),
-    #   Prefetch('occupation_set', queryset=Occupation.objects.select_related(*fields.occupation_fields))
-    #   # Add other prefetch related calls for related models like 'citystate_set', etc.
-    # )
-    # form = UserAdminUpdateForm(profile[0])
-    # users = User.objects.values(*user_info_fields)
-    # users = User.objects.select_related('user_password', 'user_address', 'user_city_state').all()
-    data = {
-      'first_name': user.first_name,
-      'middle_name': user.middle_name,
-      'last_name': user.last_name,
-      'initials': user.initials,
-      'nickname': user.nickname,
-      'email': user.email,
-      'phone': phone.number if phone else '',
-      'phone_type': phone.type if phone else '',
-      'apt_num': address.apt_num if address else '',
-      'address': address.street if address else '',
-      'address_line2': address.street2 if address else '',
-      'city': city_state.city if city_state else '',
-      'state': city_state.state if city_state else '',
-      'zipcode': city_state.zipcode if city_state else '',
-      # 'occupation': occupation.name if occupation else '',
-    }
-    userDetails = UserAdminUpdateForm(data)
-    # Loop through the QuerySet
-    # for user in users:
-    #     # Get the data for this user as a dictionary
-    #     user_data = {
-    #         "email": user.email,
-    #         "first_name": user.first_name,
-    #         "middle_name": user.middle_name,
-    #         "last_name": user.last_name,
-    #         "password": user.user_password.password,
-    #         "pw_reset_code": user.user_password.pw_reset_code,
-    #         "pw_reset": user.user_password.pw_reset,
-    #         "number": user.user_address.number,
-    #         "street": user.user_address.street,
-    #         "street2": user.user_address.street2,
-    #         "apt_num": user.user_address.apt_num,
-    #     }
+    if request.method == 'GET':
+      # req = json.loads(request.body.decode("utf-8"))
+      req = request.GET
+      # print(req["id"], req["admin"])
+      print(req)
+      remove = ['created_at', 'updated_at', 'user_shifts', 'user_password']
+      fields = ProfileFields()    
+      fields_to_select = (
+        fields.user_fields 
+        + fields.address_fields 
+        + fields.citystate_fields 
+        + fields.phone_fields
+      )
+      fields_to_select = list(set(fields_to_select) - set(remove))
+      # fields.userpass_fields = list(set(fields.userpass_fields) - set(remove))
+      print(fields_to_select)
+      if req["admin"] == "true":
+        # profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
+        user = User.objects.get(id=req["id"])
+        address = user.user_address if hasattr(user, 'user_address') else None
+        city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
+        phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
+        occupation = user.user_occupation if hasattr(user, 'user_occupation') else None
+      else:
+        profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
+        print(profile[0])
+      
+      data = {
+        'first_name': user.first_name,
+        'middle_name': user.middle_name,
+        'last_name': user.last_name,
+        'initials': user.initials,
+        'nickname': user.nickname,
+        'email': user.email,
+        'phone': phone.number if phone else '',
+        'phone_type': phone.type if phone else '',
+        'apt_num': address.apt_num if address else '',
+        'address': address.street if address else '',
+        'address_line2': address.street2 if address else '',
+        'city': city_state.city if city_state else '',
+        'state': city_state.state if city_state else '',
+        'zipcode': city_state.zipcode if city_state else '',
+        # 'occupation': occupation.name if occupation else '',
+      }
+      userDetails = UserAdminUpdateForm(data)
+      # Loop through the QuerySet
+      # for user in users:
+      #     # Get the data for this user as a dictionary
+      #     user_data = {
+      #         "email": user.email,
+      #         "first_name": user.first_name,
+      #         "middle_name": user.middle_name,
+      #         "last_name": user.last_name,
+      #         "password": user.user_password.password,
+      #         "pw_reset_code": user.user_password.pw_reset_code,
+      #         "pw_reset": user.user_password.pw_reset,
+      #         "number": user.user_address.number,
+      #         "street": user.user_address.street,
+      #         "street2": user.user_address.street2,
+      #         "apt_num": user.user_address.apt_num,
+      #     }
 
-    #     # Add this user's data to the list
-    #     data.append(user_data)
-    # print("Data: \n", data)
-    # profile = User.objects.select_related('user_password', 'user_address').values(
-    #     'email', 'first_name', 'middle_name', 'last_name',
-    #     'user_password__password', 'user_password__pw_reset_code', 'user_password__pw_reset',
-    #     'user_address__number', 'user_address__street', 'user_address__street2', 'user_address__apt_num'
-    # )
-    # print("Users 2: \n:", list(profile))
-    
-    # address = Address.objects.get(pk=1)
-    # users.user_address_set(address)
-    # users.save()
-    # print(users.values('email', 'first_name', 'last_name', 'user_password__password', 'user_address__number'))
-    # print(users.address)
-    # print(address.user.first_name)
-    # user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
-    # print(user_dict)
-    # print(user_data)
-    # updatePassword = UpdatePasswordForm()
-    # print(Occupation.objects.filter(user=user).values())
-    # occupation_dict = model_to_dict(user.user_occupation, fields=['name'])
-    # user_occupation = UpdateOccupationForm.from_user(user)
-    # print(user_occupation)
-    # updateOccupation = UpdateOccupationForm.from_user(user)
-    updateOccupation = UpdateOccupationForm(occupation)
-    # updateOccupation = UpdateOccupationForm(user.user_occupation.values().first())
-    context = {
-      'forms': {
-        'Details': userDetails, 
-        # 'Update Password': updatePassword,
-        'Occupation': updateOccupation,  
-      },
-      'page_title': 'Update User'
-    }
-    return render(request, 'multiForm.html', context)
+      #     # Add this user's data to the list
+      #     data.append(user_data)
+      # print("Data: \n", data)
+      # profile = User.objects.select_related('user_password', 'user_address').values(
+      #     'email', 'first_name', 'middle_name', 'last_name',
+      #     'user_password__password', 'user_password__pw_reset_code', 'user_password__pw_reset',
+      #     'user_address__number', 'user_address__street', 'user_address__street2', 'user_address__apt_num'
+      # )
+      # print("Users 2: \n:", list(profile))
+      
+      # address = Address.objects.get(pk=1)
+      # users.user_address_set(address)
+      # users.save()
+      # print(users.values('email', 'first_name', 'last_name', 'user_password__password', 'user_address__number'))
+      # print(users.address)
+      # print(address.user.first_name)
+      # user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
+      # print(user_dict)
+      # print(user_data)
+      # updatePassword = UpdatePasswordForm()
+      # print(Occupation.objects.filter(user=user).values())
+      # occupation_dict = model_to_dict(user.user_occupation, fields=['name'])
+      # user_occupation = UpdateOccupationForm.from_user(user)
+      # print(user_occupation)
+      # updateOccupation = UpdateOccupationForm.from_user(user)
+      updateOccupation = UpdateOccupationForm(occupation)
+      # updateOccupation = UpdateOccupationForm(user.user_occupation.values().first())
+      context = {
+        'forms': {
+          'Details': userDetails, 
+          # 'Update Password': updatePassword,
+          'Occupation': updateOccupation,  
+        },
+        'page_title': 'Update User'
+      }
+      return render(request, 'multiForm.html', context)
     # return JsonResponse(profile[0])
+    else:
+      return update_user(request)
 
-# @csrf_exempt
-# def add_new_user:
+@csrf_exempt
+def update_user(request):
+  try:
+    data = request.POST
+    print(data)
+    # Create or update User
+    user, created = User.objects.update_or_create(
+        initials=data['initials'],
+        defaults={
+            'first_name': data['first_name'],
+            'middle_name': data['middle_name'],
+            'last_name': data['last_name'],
+            'email': data['email'],
+            'occupation': data['occupation'],
+        }
+    )
+
+    # Create or update Address
+    if data['address'].strip():
+      address, created = Address.objects.update_or_create(
+          user=user,
+          defaults={
+              'street': data['address'],
+              'street2': data['address_line2'],
+              'apt_num': data['apt_num'],
+          }
+      )
+
+      # Create or update CityState
+      city_state, created = CityState.objects.update_or_create(
+          user=user,
+          defaults={
+              'city': data['city'],
+              'state': data['state'],
+              'zipcode': data['zipcode'],
+          }
+      )
+
+    # Create or update Address
+    if data['phone'].strip():
+      phone, created = Phone.objects.update_or_create(
+          users=user,
+          defaults={
+              'number': data['phone'],
+              'type': data['phone_type'],
+          }
+      )
+
+    return JsonResponse({'message': 'User updated'}, status=200)
+  except Exception as e:
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+    print(f"An error occurred in file {filename} on line {line_number}")
+    print(e)
+    return JsonResponse({'message': 'an error occurred'}, status=500)
 
 @csrf_exempt 
 def get_user_profile2(request):
-    req = eval(request.body.decode("utf-8"))
+    req = json.loads(request.body.decode("utf-8"))
     # req = request.body
     # print(req["id"], req["admin"])
     print(req)

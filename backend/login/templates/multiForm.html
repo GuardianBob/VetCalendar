@@ -1,8 +1,11 @@
 {% load static %}
 
 <div class="container">
-  <div><h4 style="color: #581fc2">{{ page_title }}</h4></div>
-  {% csrf_token %} {% for form_name, form in forms.items %}
+  <div>
+    <h4 style="color: #581fc2; margin: 0px 0px 5px 0px">{{ page_title }}</h4>
+  </div>
+  {% csrf_token %} 
+  {% for form_name, form in forms.items %}
   <h5 style="color: #581fc2; align-items: center; margin: 5px">
     {{ form_name }}
   </h5>

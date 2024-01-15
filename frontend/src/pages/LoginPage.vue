@@ -88,6 +88,8 @@ export default defineComponent({
         .post(this.api_call, formData)
         .then((res) => {
           console.log(res);
+          localStorage.setItem('access_token', res.data.access);
+          localStorage.setItem('refresh_token', res.data.refresh);
           Notify.create({
             message: "Logged in successfully",
             color: "green",
@@ -95,7 +97,7 @@ export default defineComponent({
             position: "center",
             timeout: 3000,
           });
-          this.$router.push("/schedule");
+          this.$router.push("/");
         })
         .catch((error) => {
           console.log(error.response);

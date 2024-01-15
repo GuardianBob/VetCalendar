@@ -5,7 +5,7 @@ import bcrypt
 
 
 STATE_SELECT = (
-    ('', ''),
+    ('', 'Select State'),
     ('AL', 'Alabama'),
     ('AK', 'Alaska'),
     ('AS', 'American Samoa'),
@@ -87,18 +87,18 @@ FORM_FIELDS = {
     "verify_password": "Verify Password",
 }
 
-PHONE_TYPE = (
-  ('mobile', 'Mobile'),
-  ('home', 'Home'),
-  ('work', 'Work'),
-  ('other', 'Other')
-)
+# PHONE_TYPE = (
+#   ('mobile', 'Mobile'),
+#   ('home', 'Home'),
+#   ('work', 'Work'),
+#   ('other', 'Other')
+# )
 
-USER_OCCUPATION = (
-  ('doctor', 'Doctor'),
-  ('tech', 'Technician'),
-  ('other', 'Other')
-)
+# USER_OCCUPATION = (
+#   ('doctor', 'Doctor'),
+#   ('tech', 'Technician'),
+#   ('other', 'Other')
+# )
 
 def option_fields(field):
   form_options = FormOptions.objects.filter(option_field__icontains=field)
@@ -128,17 +128,17 @@ class Register_Form(forms.Form):
     super(Register_Form, self).__init__(*args, **kwargs)
     self.fields = set_attributes(self.fields)
 
-  def clean(self):
-    super(Register_Form, self).clean()
-    first_name = self.cleaned_data.get('first_name')
-    last_name = self.cleaned_data.get('last_name')
-    email = self.cleaned_data.get('email')
-    address = self.cleaned_data.get('address')
-    address_line2 = self.cleaned_data.get('address_line2')
-    apt_num = self.cleaned_data.get('apt_num')
-    city = self.cleaned_data.get('city')
-    state = self.cleaned_data.get('state')
-    zipcode = self.cleaned_data.get('zipcode')
+  # def clean(self):
+  #   super(Register_Form, self).clean()
+  #   first_name = self.cleaned_data.get('first_name')
+  #   last_name = self.cleaned_data.get('last_name')
+  #   email = self.cleaned_data.get('email')
+  #   address = self.cleaned_data.get('address')
+  #   address_line2 = self.cleaned_data.get('address_line2')
+  #   apt_num = self.cleaned_data.get('apt_num')
+  #   city = self.cleaned_data.get('city')
+  #   state = self.cleaned_data.get('state')
+  #   zipcode = self.cleaned_data.get('zipcode')
     # password = self.cleaned_data.get('password')
     # verify_password = self.cleaned_data.get('verify_password')
 
@@ -156,10 +156,13 @@ class UserCreationForm(forms.Form):
   last_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)  
   email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=True)
   phone = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
+  phone_type = forms.ChoiceField(widget=forms.Select, required=False)
 
   def __init__(self, *args, **kwargs):
     super(UserCreationForm, self).__init__(*args, **kwargs)
     self.fields = set_attributes(self.fields)
+    self = identify_choice_fields(self)
+    # self.initial['phone_type'] = 'mobile'
 
 # Split into individual forms that display on the same page to look like different form sections.
 class UserAdminUpdateForm(forms.Form):
@@ -169,7 +172,7 @@ class UserAdminUpdateForm(forms.Form):
   initials = forms.CharField(max_length=200, widget=forms.TextInput, required=False)
   nickname = forms.CharField(max_length=200, widget=forms.TextInput, required=False)
   email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=True)
-  phone = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
+  phone = forms.CharField(max_length=200, widget=forms.TextInput, required=False)
   phone_type = forms.ChoiceField(widget=forms.Select, required=False)
   apt_num = forms.CharField(max_length=10, widget=forms.TextInput, required=False)
   address = forms.CharField(max_length=150, widget=forms.TextInput, required=False)
@@ -181,11 +184,11 @@ class UserAdminUpdateForm(forms.Form):
 
   def __init__(self, *args, **kwargs):
     super(UserAdminUpdateForm, self).__init__(*args, **kwargs)
-    self.initial['phone_type'] = 'Mobile'  
     self.fields = set_attributes(self.fields)
     # options = option_fields('phone_type')
     # self.fields['phone_type'].choices = [(option.option, option.option_label) for option in options]
     self = identify_choice_fields(self)
+    # self.initial['phone_type'] = 'mobile'
     # for field_name, field in self.fields.items():
     #   if isinstance(field, forms.ChoiceField):
     #     f_options = option_fields(field_name) 
@@ -215,7 +218,6 @@ class UpdateOccupationForm(forms.ModelForm):
       # Extract the first value from the queryset if it's not None
       args = (args[0].values().first(),) if args[0] else args
     super(UpdateOccupationForm, self).__init__(*args, **kwargs)
-    # self.initial['occupation'] = 'None'
     self.fields['occupation'] = forms.ChoiceField(widget=forms.Select, required=False)
     self = identify_choice_fields(self)
     # options = field_options('occupation')
@@ -243,5 +245,8 @@ def identify_choice_fields(form):
       print(f"{field_name} is a ChoiceField")
       f_options = option_fields(field_name) 
       if f_options:
-        form.fields[field_name].choices = [('', '')] + [(option.option, option.option_label) for option in f_options]
+        if field_name == 'phone_type':
+          form.fields['phone_type'].choices = [('', 'Phone Type')] + [(option.option, option.option_label) for option in f_options]
+        else:
+          form.fields[field_name].choices = [('', '')] + [(option.option, option.option_label) for option in f_options]
   return form

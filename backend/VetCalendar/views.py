@@ -23,17 +23,6 @@ class SingleUser():
 class UserProfile():
     pass
 
-class ProfileFields():
-    user_fields = [f.name for f in User._meta.get_fields()]
-    # userpass_fields = ['user_password__' + f.name for f in UserPass._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    userpass_fields = ['user_password__password']
-    address_fields = ['user_address__' + f.name for f in Address._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    citystate_fields = ['user_city_state__' + f.name for f in CityState._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    phone_fields = ['user_phone__' + f.name for f in Phone._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    level_fields = ['user_level__' + f.name for f in AccessLevel._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    privileges_fields = ['user_privileges__' + f.name for f in UserPrivileges._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    occupation_fields = ['user_occupation__' + f.name for f in Occupation._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-
 @ensure_csrf_cookie
 def get_csrf(request):
     token = get_token(request)
@@ -172,7 +161,7 @@ def return_shifts(request):
             })
             if not shift.user_initials in users: users.append(shift.user_initials)
         results = {'shifts': events, 'users': users}
-        # print(users)
+        print(users, events)
         # print(timezone.now())
         return JsonResponse(results)
     else:

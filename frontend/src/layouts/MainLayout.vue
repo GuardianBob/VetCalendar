@@ -42,7 +42,7 @@
     </q-drawer>
 
     <q-page-container >
-      <router-view @click="drawer = false" />
+      <router-view @click="drawer = false"/>
     </q-page-container>
   </q-layout>
 </template>
@@ -52,6 +52,7 @@ import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { version } from '../../package.json'
 import { useMainStore } from "stores/main-store.js"
+import { useRouter } from 'vue-router';
 
 const mainStore = useMainStore();
 
@@ -114,7 +115,7 @@ const linksList = [
 
 export default defineComponent({
   name: 'MainLayout',
-
+  
   components: {
     EssentialLink
   },
@@ -124,7 +125,7 @@ export default defineComponent({
     }
   },
   setup () {
-    
+    const router = useRouter();
     return {
       drawer: ref(false),
       essentialLinks: linksList,
@@ -132,6 +133,11 @@ export default defineComponent({
       //   leftDrawerOpen.value = !leftDrawerOpen.value
       // }
     }
+  },
+  methods: {
+    // logout() {
+    //   router.push({ name: 'login' });
+    // }
   }
 })
 </script>

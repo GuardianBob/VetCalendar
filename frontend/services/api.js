@@ -1,19 +1,72 @@
 import { api } from "boot/axios";
 import axios from 'axios';
-import { useMainStore } from "stores/main-store.js";
+// import { useMainStore } from "stores/main-store.js";
 
 
+class APIService {  
+  constructor() {    
+    // Add a response interceptor
+    api.interceptors.response.use(undefined, error => {
+      if (error.config && error.response && error.response.status === 401) {
+        // Token expired, try to refresh it
+        return this.refreshToken().then(response => {
+          // Save new tokens in localStorage
+          localStorage.setItem('access_token', response.data.access);
+          localStorage.setItem('refresh_token', response.data.refresh);
 
-class APIService {
+          // Retry the original request
+          const config = error.config;
+          config.headers['Authorization'] = `Bearer ${localStorage.getItem('access_token')}`;
+
+          return api(config);
+        }).catch(error => {
+          console.log(error);
+          // Refresh failed - logout the user
+          this.logout();
+          return Promise.reject(error);
+        });
+      }
+
+      return Promise.reject(error);
+    });
+  }
+
   setTokenHeader() {
-    const mainStore = useMainStore();
-    let cookie = mainStore.getCookie('d_csrfToken')
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      console.log(token)
+    } 
+    // const mainStore = useMainStore();
+    // let cookie = mainStore.getCookie('d_csrfToken')
     // if (cookie) {
-    console.log('cookie: ' + cookie)
-    api.defaults.headers["X-CSRF-TOKEN"] = cookie;
+    // console.log('cookie: ' + cookie)
+    // api.defaults.headers["X-CSRF-TOKEN"] = cookie;
       // api.defaults.headers['Access-Control-Allow-Credentials'] = true
       // api.defaults.headers["Content-Type"] = 'application/json'; 
     // }
+  }
+
+  validateToken(token) {
+    // console.log(api.post('/api/token/verify/', token ))
+    return api.post('/api/token/verify/', token);
+  }
+
+  refreshToken() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken && refreshToken != 'undefined') {
+      return api.post('/api/token/refresh/', { refresh: refreshToken });
+    } else {
+      return Promise.reject('Refresh token not available.');
+    }
+  }
+
+  logout() {
+    // Clear tokens from localStorage and reload page to logout
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');  
+    window.location.replace('/login'); 
+    return 
   }
 
   get_todo() {
@@ -54,7 +107,16 @@ class APIService {
     if (!data) {
       return api.get("/login/")
     } else {
-      return api.post("/login/", data);
+      api.post("/login/", data).then((response) => {
+        console.log(response)
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
+        return response
+      })
+      .catch(error => {
+        console.log(error);
+        return error
+      });
     }
     // return api({
     //   method: "get",
@@ -113,22 +175,12 @@ class APIService {
   // }
 
   get_user_list() {
-    // this.setTokenHeader();
-    // const mainStore = useMainStore();
-    // let new_api = api
-    // let csrfToken = mainStore.getCookie('csrftoken')
-    // if (cookie) {
-    // console.log('csrfToken: ' + csrfToken)
-    // new_api.defaults.xsrfHeaderName = 'x-csrftoken'
-    // new_api.defaults.xsrfCookieName = 'csrftoken'
-    // new_api.defaults.withCredentials = true
-    // new_api.setRequestHeader("X-CSRFToken", csrfToken);
-    // new_api.defaults.headers.common["HTTP_X_CSRFTOKEN"] = csrfToken;
-    // console.log(new_api.defaults)
-    return api.post('/login/get_user_list');
+    this.setTokenHeader();
+    return api.get('/login/get_user_list');
   }
 
   get_user_profile(req) {
+    this.setTokenHeader();
     return api.post('/login/get_user_profile', req);
   }
 
@@ -146,4 +198,4 @@ class APIService {
   }
 }
 
-export default new APIService();
+export default new APIService()

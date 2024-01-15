@@ -9,8 +9,8 @@
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
       <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" editButton="Edit User" page_title="User Details"/>
     </q-dialog>
-    <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileEdit :python_form="python_form" :parentFunc01="add_user" editButton="Add User" page_title="Add User" />
+    <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">      
+      <LoginRegister api_string="login/create_user" editButton="Add User" :closeButton="true" page_title="Add User" />
     </q-dialog>
   </q-page>
 </template>
@@ -24,6 +24,7 @@ import dummyData from "components/dummyData.json"
 import { useMainStore } from "stores/main-store.js"
 import { useFormFields } from "stores/form-fields.js"
 import ProfileEdit from "components/ProfileEdit.vue"
+import LoginRegister from 'src/components/LoginRegister.vue'
 // import { validators } from "app/services/ValidateService";
 const mainStore = useMainStore();
 const api = APIService 
@@ -33,7 +34,8 @@ export default defineComponent({
   name: "UserInfo",
   components: {
     DataTable,
-    ProfileEdit
+    ProfileEdit,
+    LoginRegister,
   },
   setup() {
     return {
@@ -89,7 +91,7 @@ export default defineComponent({
     },
 
     add_user() {
-      this.userInfo = []
+      // this.userInfo = []
       this.new_user = true
     },
 
