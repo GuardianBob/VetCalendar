@@ -321,25 +321,33 @@ export default defineComponent({
     },
 
     async handleMonthChange(newValue, oldValue) {
-      // let calendarApi = this.$refs.fullCalendar.getApi()
       let new_date = new Date('01 ' + this.date)
-      // calendarApi.gotoDate(new_date.toISOString())
       this.handleCalendarChange(new_date.toString())
       // console.log(newValue, oldValue)
-      if (newValue.slice(0, 3) == "Jan" && oldValue.slice(0, 3) == "Dec" && newValue.slice(4, 8) > oldValue.slice(4, 8)) {
-        console.log("moved forward year")
+      let oldYear = oldValue.slice(0, 4);
+      let newYear = newValue.slice(0, 4);
+      // console.log(oldYear, newYear)
+      if (newYear !== oldYear) {
+        // console.log("Year changed")
         await this.getShiftsYear()
         if (this.user) {
           this.filterShifts()
         }
       }
-      if (newValue.slice(0, 3) == "Dec" && oldValue.slice(0, 3) == "Jan" && newValue.slice(4, 8) < oldValue.slice(4, 8)) {
-        console.log("moved backward year")
-        await this.getShiftsYear()
-        if (this.user) {
-          this.filterShifts()
-        }
-      }
+      // if (newValue.slice(0, 3) == "Jan" && oldValue.slice(0, 3) == "Dec" && newValue.slice(4, 8) > oldValue.slice(4, 8)) {
+      //   console.log("moved forward year")
+      //   await this.getShiftsYear()
+      //   if (this.user) {
+      //     this.filterShifts()
+      //   }
+      // }
+      // if (newValue.slice(0, 3) == "Dec" && oldValue.slice(0, 3) == "Jan" && newValue.slice(4, 8) < oldValue.slice(4, 8)) {
+      //   console.log("moved backward year")
+      //   await this.getShiftsYear()
+      //   if (this.user) {
+      //     this.filterShifts()
+      //   }
+      // }
       // await this.getShiftsYear()
       // if (this.user) {
       //   this.filterShifts()
