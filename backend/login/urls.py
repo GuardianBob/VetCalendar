@@ -11,6 +11,7 @@ urlpatterns = [
     path('get_csrf', views.get_csrf, name='get_csrf'),
     path('register', views.register, name="register"),
     path('get_user_profile', views.get_user_profile, name='get_user_profile'),
+    path('get_user_data<int:user_id>', views.get_user_data, name='get_user_data'),
     path('get_user_list', views.get_user_list, name='get_user_list'),
     path('create_user', views.create_user, name='create_user'),
     path('forms_page', views.login, name='login'),

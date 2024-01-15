@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email
+from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email, PasswordReset, FormOptions
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -15,6 +15,7 @@ from django.contrib.auth import authenticate, login
 from django.conf import settings
 from datetime import timedelta
 from django.core import serializers
+from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -215,6 +216,7 @@ def validate_login(email, password):
 @csrf_exempt
 def create_user(request):
   if request.method == 'POST':
+    post_data = request.POST.copy()
   #   # print(request.POST)
   #   form = UserCreationForm(request.POST)
   #   if form.is_valid():
@@ -230,6 +232,8 @@ def create_user(request):
   #   print('guess not valid')
   #   return JsonResponse({'message':'Something went wrong'}, status=500)
   # else:
+    post_data['initials'] = get_unique_initials(post_data['first_name'], post_data['middle_name'], post_data['last_name'])
+    post_data['username'] = post_data['email']
     user_form = UserInfoForm(request.POST)
     phone_form = PhoneForm(request.POST)
     # email_form = EmailForm(request.POST)
@@ -282,21 +286,33 @@ def verify_new_user(email):
   return user
 
 def get_unique_initials(first_name='', middle_name='', last_name=''):
-    user_initials = first_name[0] + last_name[0]
-    user_full_initials = f"{first_name[0]}{middle_name[0]}{last_name[0]}" if middle_name else user_initials
-    initial_dict = set(User.objects.filter(
-        Q(initials__icontains=user_initials) | 
-        Q(initials__icontains=user_full_initials)
-    ).values_list("initials", flat=True))
-    if user_initials in initial_dict:
-        if middle_name:
-            if user_full_initials not in initial_dict:
-                return user_full_initials
-        for counter in count(1):
-            new_initials = f"{user_initials}{counter:02d}"
-            if new_initials not in initial_dict:
-                return new_initials
-    return user_initials
+  user_initials = first_name[0] + last_name[0]
+  user_full_initials = f"{first_name[0]}{middle_name[0]}{last_name[0]}" if middle_name else user_initials
+  initial_dict = set(User.objects.filter(
+    Q(initials__icontains=user_initials) | 
+    Q(initials__icontains=user_full_initials)
+  ).values_list("initials", flat=True))
+  if user_initials in initial_dict:
+    if middle_name:
+      if user_full_initials not in initial_dict:
+        return user_full_initials
+    for counter in count(1):
+      new_initials = f"{user_initials}{counter:02d}"
+      if new_initials not in initial_dict:
+        return new_initials
+  return user_initials
+
+def get_unique_username(first_name='', middle_name='', last_name=''):
+  base_username = f"{first_name[0]}{middle_name[0] if middle_name else ''}{last_name}".lower()
+  username_set = set(User.objects.filter(
+    Q(username__icontains=base_username)
+  ).values_list("username", flat=True))
+  if base_username in username_set:
+    for counter in count(1):
+      new_username = f"{base_username}{counter:02d}"
+      if new_username not in username_set:
+        return new_username
+  return base_username
 
 def get_unique_initials_old(user_first_name='', user_middle_name='', user_last_name=''):
     print(f'First: {user_first_name}, Middle: {user_middle_name}, Last: {user_last_name}')
@@ -330,16 +346,12 @@ def save_new_user(user):
       middle_name=user["middle_name"],
       last_name=user["last_name"],
       email=user["email"],
-      initials=new_initials.upper()
+      username=user["email"],
+      initials=new_initials.upper(),
   )  
   # Create a new user password
-  new_password=generate_password()
-  new_user_password = UserPass.objects.create(
-      user=new_user,
-      password=new_password["encrypted"],
-      pw_reset = True,
-      pw_reset_code = new_password["reset_code"]
-  )  
+  new_password=generate_password(new_user)
+  
   # Create a new phone for the new user
   new_phone = Phone.objects.create(
       number=re.sub('\D', '', user["phone"]),
@@ -385,16 +397,29 @@ def register(request):
   print("works!")
   return (HttpResponse("Hi."))
 
-def generate_password(password_length=20):
+def generate_password(user, password_length=20):
   password = secrets.token_urlsafe(password_length)
-  reset_code = secrets.token_urlsafe(50)
+  reset_link = secrets.token_urlsafe(50)
+  reset_code = random.randint(100000, 999999)
   # print(password)
-  salted_pass = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-  # print(salted_pass)
+  hashed_pass = make_password(password)
+  # print(hashed_pass)
+  new_user_password, created = PasswordReset.objects.update_or_create(
+      user=user,
+      defaults={
+        'temp_password': hashed_pass,
+        'reset_requested': True,
+        'pw_reset_code': reset_code,
+        'pw_reset_link': reset_link,
+      }
+  )  
+  user.password = hashed_pass
+  user.save()
   new_password = {
     "decrypted" : password,
-    "encrypted" : salted_pass,
-    "reset_code": reset_code
+    "encrypted" : hashed_pass,
+    "reset_code": reset_code,
+    "reset_link": reset_link,
   }
   return new_password
 
@@ -466,7 +491,7 @@ def get_user_profile(request):
         address = Address.objects.get(user=user) if Address.objects.filter(user=user).count() > 0 else None
         city_state = CityState.objects.get(user=user) if CityState.objects.filter(user=user).count() > 0 else None
         phone = Phone.objects.get(users=user) if Phone.objects.filter(users=user).count() > 0 else None
-        email = Email.objects.get(user=user) if Email.objects.filter(user=user).count() > 0 else None
+        # email = Email.objects.get(user=user) if Email.objects.filter(user=user).count() > 0 else None
         occupation = Occupation.objects.get(user=user) if Occupation.objects.filter(user=user).count() > 0 else None
         if user:
           user_info_form = UserInfoForm(instance=user)
@@ -475,7 +500,7 @@ def get_user_profile(request):
           #   field.required = True
           city_state_form = CityStateForm(instance=city_state) if city_state else CityStateForm()
           phone_form = PhoneForm(instance=phone) if phone else PhoneForm()
-          email_form = EmailForm(instance=email) if email else EmailForm()
+          # email_form = EmailForm(instance=email) if email else EmailForm()
           occupation_form = UpdateOccupationForm(instance=occupation) if occupation else UpdateOccupationForm()
           context = {
             'forms': {
@@ -483,26 +508,12 @@ def get_user_profile(request):
               'Address': address_form,
               'CityState': city_state_form,
               'Phone': phone_form,
-              'Additional Email': email_form,
+              # 'Additional Email': email_form,
               'Occupation': occupation_form,
             },
             'page_title': 'Update User',
             'id': 'update_user'
           }
-          # data = {
-          #   'User Info': dict(user_info_form.data),
-          #   'Address': dict(address_form.data) if address else {},
-          #   'CityState': dict(city_state_form.data) if city_state else {},
-          #   'Phone': dict(phone_form.data) if phone else {},
-          #   'Additional Email': dict(email_form.data) if email else {},
-          #   'Occupation': dict(occupation_form.data) if occupation else {},
-          # }
-          # print(form_to_dict(user_info_form))
-          # context = {
-          #     'forms': data,
-          #     'page_title': 'Update User',
-          #     'id': 'update_user'
-          # }
           return render(request, 'multiForm.html', context)
           # return JsonResponse(context, status=200)
     # return JsonResponse(profile[0])
@@ -513,49 +524,63 @@ def get_user_profile(request):
 def update_user(request):
   try:
     data = request.POST
-    print(data)
+    print("data: ", data)
     # Create or update User
     user, created = User.objects.update_or_create(
-        initials=data['initials'],
-        defaults={
-            'first_name': data['first_name'],
-            'middle_name': data['middle_name'],
-            'last_name': data['last_name'],
-            'email': data['email'],
-            'occupation': data['occupation'],
-        }
+      username=data['email'],
+      defaults={
+        'first_name': data['first_name'],
+        'middle_name': data['middle_name'],
+        'last_name': data['last_name'],
+        'email': data['email'],
+      }
     )
+    if created:
+      generate_password(user)
+    if user.initials == '' and user.first_name != '' and user.last_name != '':
+      initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
+      user.initials = initials
+      user.save()
 
-    # Create or update Address
-    if data['address'].strip():
-      address, created = Address.objects.update_or_create(
-          user=user,
-          defaults={
-              'street': data['address'],
-              'street2': data['address_line2'],
-              'apt_num': data['apt_num'],
-          }
-      )
+    # # Create or update Address
+    # if data['address'].strip():
+    #   address, created = Address.objects.update_or_create(
+    #     user=user,
+    #     defaults={
+    #       'street': data['address'],
+    #       'street2': data['address_line2'],
+    #       'apt_num': data['apt_num'],
+    #     }
+    #   )
 
-      # Create or update CityState
-      city_state, created = CityState.objects.update_or_create(
-          user=user,
-          defaults={
-              'city': data['city'],
-              'state': data['state'],
-              'zipcode': data['zipcode'],
-          }
-      )
+    #   # Create or update CityState
+    #   city_state, created = CityState.objects.update_or_create(
+    #     user=user,
+    #     defaults={
+    #       'city': data['city'],
+    #       'state': data['state'],
+    #       'zipcode': data['zipcode'],
+    #     }
+    #   )
 
-    # Create or update Address
-    if data['phone'].strip():
-      phone, created = Phone.objects.update_or_create(
-          users=user,
-          defaults={
-              'number': data['phone'],
-              'type': data['phone_type'],
-          }
-      )
+    # # Create or update Address
+    # if data['phone'].strip():
+    #   phone, created = Phone.objects.update_or_create(
+    #     users=user,
+    #     defaults={
+    #       'number': data['phone'],
+    #       'type': data['phone_type'],
+    #     }
+    #   )
+      
+    # # Create or update Occupation
+    # if data['occupation'].strip():
+    #   occupation, created = Occupation.objects.update_or_create(
+    #   user=user,
+    #   defaults={
+    #     'name': data['occupation'],
+    #   }
+    #   )
 
     return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
@@ -563,7 +588,7 @@ def update_user(request):
     filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
     print(f"An error occurred in file {filename} on line {line_number}")
     print(e)
-    return JsonResponse({'message': 'an error occurred'}, status=500)
+  return JsonResponse({'message': 'an error occurred'}, status=500)
 
 @csrf_exempt 
 def get_user_profile2(request):
@@ -622,3 +647,77 @@ def get_user_profile2(request):
     }
     return render(request, 'multiForm.html', context)
     # return JsonResponse(profile[0])
+
+def get_user_address(user, data):
+  address = user.user_address if hasattr(user, 'user_address') else None
+  city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
+  if address:
+    data['address'] = {'type': 'input', 'value': address.street}
+    data['address_line2'] = {'type': 'input', 'value': address.street2}
+    data['apt_num'] = {'type': 'input', 'value': address.apt_num}
+  if city_state:
+    data['city'] = {'type': 'input', 'value': city_state.city}
+    data['state'] = {'type': 'select', 'value': city_state.state}
+    data['zipcode'] = {'type': 'input', 'value': city_state.zipcode}
+  return data
+
+def get_user_phone(user, data):
+  phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
+  if phone:
+    # print(phone)
+    data['phone_number'] = {'type': 'input', 'value': phone.phone_number}
+    data['phone_type'] = {'type': 'select', 'value': phone.phone_type}
+  return data
+
+def get_user_occupation(user, data):
+  occupation = user.user_occupation.first() if hasattr(user, 'user_occupation') else None
+  if occupation:
+    # print("occupation: ", occupation.occupation)
+    data['occupation'] = {'type': 'select', 'value': occupation.occupation}
+  return data
+
+def get_user_data(user_id, admin=False):
+    if request.method == 'GET':
+      req = request.GET
+      print(req['id'])
+      # if req["admin"] == "true":
+      # Fetch the user
+      user = get_object_or_404(User, pk=req['id'])
+      # print(user.user_address.street)
+      
+      # Fetch the user's info
+      # user_info = get_object_or_404(User_Info, user=user)
+
+      # # Fetch the user's occupation
+      # occupation = get_object_or_404(Occupation, user=user)
+
+      # Fetch the form options
+      form_options = FormOptions.objects.filter(Q(option_model='phone') | Q(option_model='occupation'))
+
+      # Create a dictionary with the user's data
+      data = {
+        'first_name': { 'type': 'input', 'value': user.first_name},
+        'middle_name': { 'type': 'input', 'value': user.middle_name},
+        'last_name': { 'type': 'input', 'value': user.last_name},
+        'email': { 'type': 'input', 'value': user.email},
+        'nickname': { 'type': 'input', 'value': user.nickname},
+        # 'address': {
+        #   'street': user.address.street,
+        #   'street2': user.address.street2,
+        #   'apt_num': user.address.apt_num,
+        # },
+        # 'city': user.city_state.city,
+        # 'state': user.city_state.state,
+        # 'zipcode': user.address.zipcode,
+        # 'phone_number': user.phone.phone_number,
+        # 'phone_type': user.phone.phone_type,
+        # 'occupation': user.occupation.occupation,
+        'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
+        }
+      data = get_user_address(user, data)
+      data = get_user_phone(user, data)
+      data = get_user_occupation(user, data)      
+      options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
+      
+      # Return the data as JSON
+      return JsonResponse({'data': data, 'options': options})

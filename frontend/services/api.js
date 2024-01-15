@@ -7,7 +7,7 @@ class APIService {
   constructor() {    
     // Add a response interceptor
     api.interceptors.response.use(undefined, error => {
-      console.log(error)
+      // console.log(error)
       if (error.config && error.response && error.response.status === 401) {
         // If the request is for token refresh, reject the promise
         console.log(error.config.url)
@@ -42,14 +42,14 @@ class APIService {
     const token = localStorage.getItem('access_token');
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log(token)
+      // console.log(token)
     } 
   }
 
   refreshToken() {
     console.log("refreshing token")
     const refreshToken = localStorage.getItem('refresh_token');
-    console.log(refreshToken)
+    // console.log(refreshToken)
     if (refreshToken) {
       return api.post('/api/token/refresh/', { refresh: refreshToken });
     } else {

@@ -7,8 +7,8 @@
         </div>  
         <div class="text-center q-ma-md" ref="form">
           <q-form @submit="submit" method="POST" id="login_form">
-            <div v-html="python_form" class="text-left"></div>
-            <q-btn id="submit_btn" label="Submit" type="submit" color="primary" />
+            <div v-html="data" class="text-left"></div>
+            <q-btn id="submit_btn" label="Submit" type="submit" color="primary" v-close-popup/>
           </q-form>
         </div>
       </div>
@@ -40,7 +40,7 @@ export default defineComponent({
   data() {
     return {
       loading: false,
-      python_form: ref([]),
+      data: ref([]),
       csrf_token: ref(""),
       info: ref(false),
       userData: ref(),
@@ -81,16 +81,11 @@ export default defineComponent({
       event.preventDefault();
       const formData = new FormData(event.target);
       console.log(formData);
-      // this.$q.cookies.set('csrftoken', dataObj.csrfmiddlewaretoken) //, {
-      //   path: '/',
-      //   sameSite: 'strict',
-      //   secure: false
-      // });
-      // console.log(this.getCookie('csrftoken'))
       api
         .post(this.api_call, formData)
         .then((res) => {
           console.log(res.data);
+          this.parentFunc02();
           Notify.create({
             message: res.data.message,
             color: "green",
@@ -98,7 +93,6 @@ export default defineComponent({
             position: "center",
             timeout: 3000,
           });
-          // this.$router.push('/schedule')
         })
         .catch((error) => {
           console.log(error.response.data);
@@ -117,25 +111,9 @@ export default defineComponent({
       // console.log(params)
       // console.log(this.api_call, params);
       await api.get(this.api_call, { params }).then(async (results) => {
-        console.log(results);
-        this.python_form = results.data;
-        // Add watcher to make address, city, state, zip fields required if address is filled
-        this.$nextTick(() => {
-          setTimeout(() => {
-            const $addressInput = $('#street');
-            const $cityInput = $('#city');
-            const $stateInput = $('#state');
-            const $zipInput = $('#zipcode');
-            if (addressInput.length) {
-              addressInput.on('input', () => {
-                const isAddressFilled = !!$addressInput.val();
-                $cityInput.prop('required', isAddressFilled);
-                $stateInput.prop('required', isAddressFilled);
-                $zipInput.prop('required', isAddressFilled);
-              });
-            }
-          }, 0);
-        });
+        console.log(results.data);
+        this.data = results.data;
+        
       });
     },
 
@@ -143,21 +121,13 @@ export default defineComponent({
       await APIService.get_csrf().then((results) => {
         console.log(results);
         this.csrf_token = results.data;
-        // document.head.querySelector('meta[name="csrf-token"]');
-        // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
       });
     },
   },
   mounted() {
-    // let urlParams = this.$route.path;
-    // urlParams = urlParams.replace(/^\/+/, "");
-    // console.log(urlParams);
-    // console.log(this.user_data)
     this.api_call = this.api_string;
     this.api_data = this.userId;
     this.get_form();
-    
-    // this.get_csrf()
   },
 });
 </script>

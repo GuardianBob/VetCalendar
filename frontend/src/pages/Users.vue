@@ -7,7 +7,7 @@
     </div>
     <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" editButton="Edit User" page_title="User Details"/>
+      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" :parent-func02="get_user_list" editButton="Edit User" page_title="User Details"/>
     </q-dialog>
     <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">      
       <LoginRegister api_string="login/create_user" editButton="Add User" :closeButton="true" page_title="Add User" />
@@ -124,7 +124,7 @@ export default defineComponent({
   mounted() {
     // console.log(this.getCookie('d_csrfToken'))
     // mainStore.get_csrf()
-    console.log("refresh token: ", localStorage.getItem("refresh_token"))
+    // console.log("refresh token: ", localStorage.getItem("refresh_token"))
     this.get_user_list()
     console.log(formStore.formFields.columns);
     // console.log(mainStore.getCookie('csrftoken'))

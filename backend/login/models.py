@@ -1,6 +1,7 @@
 from django.db import models
 from django.core import serializers
 import json
+from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
@@ -15,7 +16,18 @@ class Email(models.Model):
   user = models.ForeignKey(User, related_name='user_email', on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
-  
+
+class PasswordReset(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    temp_password = models.CharField(max_length=128)
+    reset_code = models.CharField(max_length=128)
+    reset_link = models.CharField(max_length=128)
+    reset_requested = models.BooleanField(default=False)
+    reset_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    expires_at = models.DateTimeField(default=timezone.now() + timezone.timedelta(hours=24))
+
 class Address(models.Model):
   number = models.IntegerField(blank=True)
   street= models.CharField(max_length=100)
