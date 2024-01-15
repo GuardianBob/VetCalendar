@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
+from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -14,6 +14,7 @@ from itertools import count
 from django.contrib.auth import authenticate, login
 from django.conf import settings
 from datetime import timedelta
+from django.core import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -442,66 +443,68 @@ def get_user_list(request):
 #         print(user_data)
 #         return Response(user_data)
 
+def form_to_dict(form):
+  form.is_valid()
+  print("cleaned data here:")
+  print(name for name, field in form.fields.items())
+  return {
+    'fields': {name: str(field) for name, field in form.fields.items()},
+    'data': form,
+  }
+
 @csrf_exempt 
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
     if request.method == 'GET':
-      # req = json.loads(request.body.decode("utf-8"))
       req = request.GET
-      # print(req["id"], req["admin"])
       print(req)
-      remove = ['created_at', 'updated_at', 'user_shifts', 'user_password']
-      fields = ProfileFields()    
-      fields_to_select = (
-        fields.user_fields 
-        + fields.address_fields 
-        + fields.citystate_fields 
-        + fields.phone_fields
-      )
-      fields_to_select = list(set(fields_to_select) - set(remove))
-      # fields.userpass_fields = list(set(fields.userpass_fields) - set(remove))
-      print(fields_to_select)
       if req["admin"] == "true":
         # profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
-        user = User.objects.get(id=req["id"])
-        address = user.user_address if hasattr(user, 'user_address') else None
-        city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
-        phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
-        occupation = user.user_occupation if hasattr(user, 'user_occupation') else None
-      else:
-        profile = User.objects.filter(id=req["id"]).values(*fields_to_select)
-        print(profile[0])
-      
-      data = {
-        'first_name': user.first_name,
-        'middle_name': user.middle_name,
-        'last_name': user.last_name,
-        'initials': user.initials,
-        'nickname': user.nickname,
-        'email': user.email,
-        'phone': phone.phone_number if phone else '',
-        'phone_type': phone.phone_type if phone else '',
-        'apt_num': address.apt_num if address else '',
-        'address': address.street if address else '',
-        'address_line2': address.street2 if address else '',
-        'city': city_state.city if city_state else '',
-        'state': city_state.state if city_state else '',
-        'zipcode': city_state.zipcode if city_state else '',
-        # 'occupation': occupation.name if occupation else '',
-      }
-      userDetails = UserAdminUpdateForm(data)
-      updateOccupation = UpdateOccupationForm(occupation)
-      context = {
-        'forms': {
-          'Details': userDetails, 
-          # 'Update Password': updatePassword,
-          'Occupation': updateOccupation,  
-        },
-        'page_title': 'Update User'
-      }
-      return render(request, 'multiForm.html', context)
+        user = User.objects.get(pk=req["id"])
+        address = Address.objects.get(user=user) if Address.objects.filter(user=user).count() > 0 else None
+        city_state = CityState.objects.get(user=user) if CityState.objects.filter(user=user).count() > 0 else None
+        phone = Phone.objects.get(users=user) if Phone.objects.filter(users=user).count() > 0 else None
+        email = Email.objects.get(user=user) if Email.objects.filter(user=user).count() > 0 else None
+        occupation = Occupation.objects.get(user=user) if Occupation.objects.filter(user=user).count() > 0 else None
+        if user:
+          user_info_form = UserInfoForm(instance=user)
+          address_form = AddressForm(instance=address) if address else AddressForm()
+          # for field in address_form.fields.values():
+          #   field.required = True
+          city_state_form = CityStateForm(instance=city_state) if city_state else CityStateForm()
+          phone_form = PhoneForm(instance=phone) if phone else PhoneForm()
+          email_form = EmailForm(instance=email) if email else EmailForm()
+          occupation_form = UpdateOccupationForm(instance=occupation) if occupation else UpdateOccupationForm()
+          context = {
+            'forms': {
+              'User Info': user_info_form,
+              'Address': address_form,
+              'CityState': city_state_form,
+              'Phone': phone_form,
+              'Additional Email': email_form,
+              'Occupation': occupation_form,
+            },
+            'page_title': 'Update User',
+            'id': 'update_user'
+          }
+          # data = {
+          #   'User Info': dict(user_info_form.data),
+          #   'Address': dict(address_form.data) if address else {},
+          #   'CityState': dict(city_state_form.data) if city_state else {},
+          #   'Phone': dict(phone_form.data) if phone else {},
+          #   'Additional Email': dict(email_form.data) if email else {},
+          #   'Occupation': dict(occupation_form.data) if occupation else {},
+          # }
+          # print(form_to_dict(user_info_form))
+          # context = {
+          #     'forms': data,
+          #     'page_title': 'Update User',
+          #     'id': 'update_user'
+          # }
+          return render(request, 'multiForm.html', context)
+          # return JsonResponse(context, status=200)
     # return JsonResponse(profile[0])
     else:
       return update_user(request)

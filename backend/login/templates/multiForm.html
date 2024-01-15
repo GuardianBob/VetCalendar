@@ -1,14 +1,16 @@
 {% load static %}
 
-<div class="container">
+<div class="container" id="{{ id }}"">
   <div>
-    <h4 style="color: #581fc2; margin: 0px 0px 5px 0px">{{ page_title }}</h4>
+    <h4 style="color: #581fc2; margin: 0px 0px 5px 0px; display: flex;
+    justify-content: center;
+    align-items: center;">{{ page_title }}</h4>
   </div>
   {% csrf_token %} 
   {% for form_name, form in forms.items %}
-  <h5 style="color: #581fc2; align-items: center; margin: 5px">
+  <h6 style="margin: 5px; padding: 0px 5px">
     {{ form_name }}
-  </h5>
+  </h6>
   <div class="form-group">{{ form }}</div>
   {% endfor %}
 </div>

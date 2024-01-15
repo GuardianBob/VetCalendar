@@ -18,9 +18,8 @@ class APIService {
         // Token expired, try to refresh it
         return this.refreshToken().then(response => {
           // Save new tokens in localStorage
-          console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
+          // console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
           localStorage.setItem('access_token', response.data.access);
-          // localStorage.setItem('refresh_token', response.data.refresh);
 
           // Retry the original request
           const config = error.config;
@@ -45,20 +44,7 @@ class APIService {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       console.log(token)
     } 
-    // const mainStore = useMainStore();
-    // let cookie = mainStore.getCookie('d_csrfToken')
-    // if (cookie) {
-    // console.log('cookie: ' + cookie)
-    // api.defaults.headers["X-CSRF-TOKEN"] = cookie;
-      // api.defaults.headers['Access-Control-Allow-Credentials'] = true
-      // api.defaults.headers["Content-Type"] = 'application/json'; 
-    // }
   }
-
-  // validateToken(token) {
-  //   // console.log(api.post('/api/token/verify/', token ))
-  //   return api.post('/api/token/verify/', token);
-  // }
 
   refreshToken() {
     console.log("refreshing token")

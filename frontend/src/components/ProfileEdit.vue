@@ -7,7 +7,7 @@
         </div>  
         <div class="text-center q-ma-md" ref="form">
           <q-form @submit="submit" method="POST" id="login_form">
-            <div v-html="python_form"></div>
+            <div v-html="python_form" class="text-left"></div>
             <q-btn id="submit_btn" label="Submit" type="submit" color="primary" />
           </q-form>
         </div>
@@ -117,22 +117,24 @@ export default defineComponent({
       // console.log(params)
       // console.log(this.api_call, params);
       await api.get(this.api_call, { params }).then(async (results) => {
-        // console.log(results);
+        console.log(results);
         this.python_form = results.data;
         // Add watcher to make address, city, state, zip fields required if address is filled
         this.$nextTick(() => {
-          const addressInput = this.$refs.form.querySelector('#address');
-          const cityInput = this.$refs.form.querySelector('#city');
-          const stateInput = this.$refs.form.querySelector('#state');
-          const zipInput = this.$refs.form.querySelector('#zip');
-          if (addressInput && cityInput ) {
-            addressInput.addEventListener('input', () => {
-              const isAddressFilled = !!addressInput.value;
-              cityInput.required = isAddressFilled;
-              stateInput.required = isAddressFilled;
-              zipInput.required = isAddressFilled;
-            });
-          }
+          setTimeout(() => {
+            const $addressInput = $('#street');
+            const $cityInput = $('#city');
+            const $stateInput = $('#state');
+            const $zipInput = $('#zipcode');
+            if (addressInput.length) {
+              addressInput.on('input', () => {
+                const isAddressFilled = !!$addressInput.val();
+                $cityInput.prop('required', isAddressFilled);
+                $stateInput.prop('required', isAddressFilled);
+                $zipInput.prop('required', isAddressFilled);
+              });
+            }
+          }, 0);
         });
       });
     },

@@ -187,6 +187,9 @@ class UserInfoForm(forms.ModelForm):
         return email.lower()
 
 class AddressForm(forms.ModelForm):
+    street = forms.CharField(max_length=100, widget=forms.TextInput, required=False)
+    street2 = forms.CharField(max_length=100, widget=forms.TextInput, required=False)
+    apt_num = forms.CharField(max_length=15, widget=forms.TextInput, required=False)
     class Meta:
         model = Address
         fields = ['street', 'street2', 'apt_num']
@@ -196,12 +199,12 @@ class AddressForm(forms.ModelForm):
       self.fields = set_attributes(self.fields)
 
 class CityStateForm(forms.ModelForm):
+    city = forms.CharField(max_length=100, widget=forms.TextInput, required=False)
+    state = forms.ChoiceField(widget=forms.Select, choices=STATE_SELECT, required=False)
+    zipcode = forms.IntegerField(widget=forms.TextInput, required=False)
     class Meta:
         model = CityState
         fields = ['city', 'state', 'zipcode']
-        widgets = {
-            'state': forms.Select(choices=STATE_SELECT),
-        }
 
     def __init__(self, *args, **kwargs):
       super(CityStateForm, self).__init__(*args, **kwargs)
@@ -209,6 +212,7 @@ class CityStateForm(forms.ModelForm):
       self = identify_choice_fields(self)
 
 class PhoneForm(forms.ModelForm):
+    phone_number = forms.CharField(max_length=50, widget=forms.TextInput, required=False)
     phone_type = forms.ChoiceField(required=False)
 
     class Meta:
@@ -225,6 +229,7 @@ class PhoneForm(forms.ModelForm):
       self = identify_choice_fields(self)
 
 class EmailForm(forms.ModelForm):
+    email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=False)
     class Meta:
         model = Email
         fields = ['email']
