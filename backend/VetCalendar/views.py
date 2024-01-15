@@ -5,7 +5,7 @@ from .serializers import TodoSerializer, CalendarSerializer
 from django.core import serializers
 from .models import Todo, Calendar, Shift, ShiftType, Shift, ScheduleShift
 from django.forms.models import model_to_dict
-from login.models import User, UserPass, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
+from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, test_calendar, test_event, get_users, load_schedule
 import datetime, json
@@ -161,7 +161,7 @@ def return_shifts(request):
             })
             if not shift.user_initials in users: users.append(shift.user_initials)
         results = {'shifts': events, 'users': users}
-        print(users, events)
+        # print(users, events)
         # print(timezone.now())
         return JsonResponse(results)
     else:

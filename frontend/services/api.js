@@ -7,12 +7,20 @@ class APIService {
   constructor() {    
     // Add a response interceptor
     api.interceptors.response.use(undefined, error => {
+      console.log(error)
       if (error.config && error.response && error.response.status === 401) {
+        // If the request is for token refresh, reject the promise
+        console.log(error.config.url)
+        if (error.config.url === '/api/token/refresh/') {
+          this.logout();
+          return Promise.reject(error);
+        }
         // Token expired, try to refresh it
         return this.refreshToken().then(response => {
           // Save new tokens in localStorage
+          console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
           localStorage.setItem('access_token', response.data.access);
-          localStorage.setItem('refresh_token', response.data.refresh);
+          // localStorage.setItem('refresh_token', response.data.refresh);
 
           // Retry the original request
           const config = error.config;
@@ -22,7 +30,7 @@ class APIService {
         }).catch(error => {
           console.log(error);
           // Refresh failed - logout the user
-          this.logout();
+          // this.logout();
           return Promise.reject(error);
         });
       }
@@ -47,14 +55,16 @@ class APIService {
     // }
   }
 
-  validateToken(token) {
-    // console.log(api.post('/api/token/verify/', token ))
-    return api.post('/api/token/verify/', token);
-  }
+  // validateToken(token) {
+  //   // console.log(api.post('/api/token/verify/', token ))
+  //   return api.post('/api/token/verify/', token);
+  // }
 
   refreshToken() {
+    console.log("refreshing token")
     const refreshToken = localStorage.getItem('refresh_token');
-    if (refreshToken && refreshToken != 'undefined') {
+    console.log(refreshToken)
+    if (refreshToken) {
       return api.post('/api/token/refresh/', { refresh: refreshToken });
     } else {
       return Promise.reject('Refresh token not available.');

@@ -124,6 +124,7 @@ export default defineComponent({
   mounted() {
     // console.log(this.getCookie('d_csrfToken'))
     // mainStore.get_csrf()
+    console.log("refresh token: ", localStorage.getItem("refresh_token"))
     this.get_user_list()
     console.log(formStore.formFields.columns);
     // console.log(mainStore.getCookie('csrftoken'))

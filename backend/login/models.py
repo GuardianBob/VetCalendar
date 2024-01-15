@@ -3,52 +3,19 @@ from django.core import serializers
 import json
 from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
-# class User(models.Model):
-#   email = models.CharField(max_length=100)
-#   # password = models.CharField(max_length=50)
-#   first_name = models.CharField(max_length=50)
-#   middle_name = models.CharField(max_length=50, blank=True)
-#   last_name = models.CharField(max_length=50)
-#   initials = models.CharField(max_length=10, blank=True)
-#   nickname = models.CharField(max_length=50, blank=True)
-#   created_at = models.DateTimeField(auto_now_add=True)
-#   updated_at = models.DateTimeField(auto_now=True)
-#   # @property
-#   # def full_name(self):
-#   #   return f"{self.first_name} {self.last_name}"
-  
-#   @property
-#   def password(self):
-#     return self.user_password.password
-
-#   @property
-#   def address(self):
-#     return {
-#         'number': self.user_address.number,
-#         'street': self.user_address.street,
-#         'street2': self.user_address.street2,
-#         'apt_num': self.user_address.apt_num,
-#         'city': self.user_city_state.city,
-#         'state': self.user_city_state.state,
-#         'zipcode': self.user_city_state.zipcode,
-#     }
-  
 class User(AbstractUser):
     middle_name = models.CharField(max_length=50, blank=True)
     initials = models.CharField(max_length=10, blank=True)
     nickname = models.CharField(max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-  
-class UserPass(models.Model):
-  password = models.CharField(max_length=100)
-  user = models.OneToOneField(User, related_name='user_password', on_delete=models.CASCADE)
-  pw_reset_code = models.CharField(max_length=50, blank=True)
-  pw_reset = models.BooleanField(default=False)
+
+class Email(models.Model):
+  email = models.EmailField(max_length=100)
+  user = models.ForeignKey(User, related_name='user_email', on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
-
+  
 class Address(models.Model):
   number = models.IntegerField(blank=True)
   street= models.CharField(max_length=100)
@@ -71,8 +38,8 @@ class CityState(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
 
 class Phone(models.Model):
-  number = models.IntegerField()
-  type = models.CharField(max_length=50, default="mobile")
+  phone_number = models.IntegerField()
+  phone_type = models.CharField(max_length=50, default="mobile")
   users = models.ManyToManyField(User, related_name='user_phone')
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)

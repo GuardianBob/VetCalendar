@@ -1,18 +1,19 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, UserPass, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
+from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
 from django.middleware import csrf
-from .forms import Register_Form, Login_Form, UserCreationForm, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm
+from .forms import Register_Form, Login_Form, UserCreationForm, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, EmailForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.forms.models import model_to_dict
 import random, secrets, re, traceback, sys
 from itertools import count
 from django.contrib.auth import authenticate, login
 from django.conf import settings
+from datetime import timedelta
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -118,8 +119,10 @@ def response_msg(status=200, message=""):
 @csrf_exempt
 def user_login(request):
   if request.method == 'POST':
-    # print(request.POST)
-    form = Login_Form(request.POST)
+    req = request.POST
+    form = Login_Form(req)
+    remember_me = req['remember_me']
+    # print(remember_me)
     # print(form)
     if form.is_valid():
       # print("it worked!")
@@ -131,10 +134,19 @@ def user_login(request):
       if user is not None:
         login(request, user)
         # Generate JWT token:
-        refresh = TokenObtainPairSerializer.get_token(user)
+        # refresh = TokenObtainPairSerializer.get_token(user)
+        if remember_me:
+          # Set refresh token lifetime to 30 days if "Remember Me" is checked
+          RefreshToken.lifetime = timedelta(days=30)
+        else:
+          # Otherwise, set it to 1 day
+          RefreshToken.lifetime = timedelta(days=1)
+
+        # Generate JWT token:
+        refresh = RefreshToken.for_user(user)
         return JsonResponse({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
+          'refresh': str(refresh),
+          'access': str(refresh.access_token),
         }, status=200)
       else:
         # return response_msg(400, 'Incorrect Login or Password')
@@ -202,29 +214,66 @@ def validate_login(email, password):
 @csrf_exempt
 def create_user(request):
   if request.method == 'POST':
-    # print(request.POST)
-    form = UserCreationForm(request.POST)
-    if form.is_valid():
-      # print('valid')
-      # print(form.cleaned_data)
-      if not verify_new_user(form.cleaned_data["email"]):
-        # print('verified new')
-        new_user = save_new_user(form.cleaned_data)
-        return JsonResponse({'message':'New User Being Added'}, status=200)
-      else:
-        print('user exists')
-        return JsonResponse({'message':'E-Mail already exists'}, status=500)
-    print('guess not valid')
-    return JsonResponse({'message':'Something went wrong'}, status=500)
+  #   # print(request.POST)
+  #   form = UserCreationForm(request.POST)
+  #   if form.is_valid():
+  #     # print('valid')
+  #     # print(form.cleaned_data)
+  #     if not verify_new_user(form.cleaned_data["email"]):
+  #       # print('verified new')
+  #       new_user = save_new_user(form.cleaned_data)
+  #       return JsonResponse({'message':'New User Being Added'}, status=200)
+  #     else:
+  #       print('user exists')
+  #       return JsonResponse({'message':'E-Mail already exists'}, status=500)
+  #   print('guess not valid')
+  #   return JsonResponse({'message':'Something went wrong'}, status=500)
+  # else:
+    user_form = UserInfoForm(request.POST)
+    phone_form = PhoneForm(request.POST)
+    # email_form = EmailForm(request.POST)
+    # address_form = AddressForm(request.POST)
+    # city_state_form = CityStateForm(request.POST)
+    print(user_form.is_valid(), phone_form.is_valid())
+    if user_form.is_valid() and phone_form.is_valid(): #and address_form.is_valid() and city_state_form.is_valid() 
+      if not User.objects.filter(email__icontains=user_form.cleaned_data["email"]):
+        user = user_form.save()
+        phone = phone_form.save()
+        phone.users.add(user)
+        phone.save()
+        # email = email_form.save(commit=False)
+        # email.user = user
+        # email.save()
+        # address = address_form.save(commit=False)
+        # address.user = user
+        # address.save()
+        # city_state = city_state_form.save(commit=False)
+        # city_state.user = user
+        # city_state.save()
+        # login(request, user)
+        return JsonResponse({'message':'New User Successfully Added'}, status=200)
+      return JsonResponse({'message':'Email already exists'}, status=500)
+    return JsonResponse({'message':'Form is invalid'}, status=500)
   else:
-    form = UserCreationForm()
+    user_form = UserInfoForm()
+    phone_form = PhoneForm()
+    # email_form = EmailForm()
+    # address_form = AddressForm()
+    # city_state_form = CityStateForm()
+    # form = UserCreationForm()
+
     context = {
       'forms': {
-        '': form, 
+        '': user_form, 
+        'Phone': phone_form,
+        # 'E-Mail': email_form,
+        # 'Address': address_form,
+        # 'CityState': city_state_form,
       },
       'page_title': 'Create New User'
     }
-  return render(request, 'multiForm.html', context)
+    return render(request, 'multiForm.html', context)
+  return JsonResponse({'message':'Something went wrong'}, status=500)
 
 def verify_new_user(email):
   print(email)
@@ -432,8 +481,8 @@ def get_user_profile(request):
         'initials': user.initials,
         'nickname': user.nickname,
         'email': user.email,
-        'phone': phone.number if phone else '',
-        'phone_type': phone.type if phone else '',
+        'phone': phone.phone_number if phone else '',
+        'phone_type': phone.phone_type if phone else '',
         'apt_num': address.apt_num if address else '',
         'address': address.street if address else '',
         'address_line2': address.street2 if address else '',
@@ -443,50 +492,7 @@ def get_user_profile(request):
         # 'occupation': occupation.name if occupation else '',
       }
       userDetails = UserAdminUpdateForm(data)
-      # Loop through the QuerySet
-      # for user in users:
-      #     # Get the data for this user as a dictionary
-      #     user_data = {
-      #         "email": user.email,
-      #         "first_name": user.first_name,
-      #         "middle_name": user.middle_name,
-      #         "last_name": user.last_name,
-      #         "password": user.user_password.password,
-      #         "pw_reset_code": user.user_password.pw_reset_code,
-      #         "pw_reset": user.user_password.pw_reset,
-      #         "number": user.user_address.number,
-      #         "street": user.user_address.street,
-      #         "street2": user.user_address.street2,
-      #         "apt_num": user.user_address.apt_num,
-      #     }
-
-      #     # Add this user's data to the list
-      #     data.append(user_data)
-      # print("Data: \n", data)
-      # profile = User.objects.select_related('user_password', 'user_address').values(
-      #     'email', 'first_name', 'middle_name', 'last_name',
-      #     'user_password__password', 'user_password__pw_reset_code', 'user_password__pw_reset',
-      #     'user_address__number', 'user_address__street', 'user_address__street2', 'user_address__apt_num'
-      # )
-      # print("Users 2: \n:", list(profile))
-      
-      # address = Address.objects.get(pk=1)
-      # users.user_address_set(address)
-      # users.save()
-      # print(users.values('email', 'first_name', 'last_name', 'user_password__password', 'user_address__number'))
-      # print(users.address)
-      # print(address.user.first_name)
-      # user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
-      # print(user_dict)
-      # print(user_data)
-      # updatePassword = UpdatePasswordForm()
-      # print(Occupation.objects.filter(user=user).values())
-      # occupation_dict = model_to_dict(user.user_occupation, fields=['name'])
-      # user_occupation = UpdateOccupationForm.from_user(user)
-      # print(user_occupation)
-      # updateOccupation = UpdateOccupationForm.from_user(user)
       updateOccupation = UpdateOccupationForm(occupation)
-      # updateOccupation = UpdateOccupationForm(user.user_occupation.values().first())
       context = {
         'forms': {
           'Details': userDetails, 

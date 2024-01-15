@@ -8,7 +8,13 @@
         <div class="text-center q-ma-md">
           <q-form @submit="submit" method="POST" id="login_form">
             <div v-html="python_form"></div>
-            <q-checkbox label="Remember me" v-model="remember"></q-checkbox>
+            <q-checkbox 
+              label="Remember Me" 
+              v-model="remember" 
+              id="remember_me" 
+              name="remember_me"
+              class="form_control input_field">
+            </q-checkbox>
             <br />
             <q-btn
               id="submit_btn"
@@ -76,7 +82,10 @@ export default defineComponent({
       console.log(event);
       event.preventDefault();
       const formData = new FormData(event.target);
-      // console.log(formData)
+      if (this.remember == false) {
+        formData.append("remember_me", false)
+      }
+      console.log(formData)
       // this.$q.cookies.set('csrftoken', dataObj.csrfmiddlewaretoken) //, {
       //   path: '/',
       //   sameSite: 'strict',
