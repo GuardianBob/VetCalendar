@@ -266,25 +266,28 @@ export default defineComponent({
     file(newValue, oldValue) {
       if (newValue != null) {
         console.log(this.date)
-        let new_month = ""
-        let new_year = this.date.slice(0,5)
-        new_year = parseInt(new_year)
+        // let new_year = this.date.slice(0,5)
         let file_name = newValue["name"].toLowerCase()
         console.log(file_name)
-        console.log(new_year)
-        month_abbrev.forEach((month) => {
-          if (file_name.includes(month.toLowerCase())) {
-            console.log(month)
-            new_month = month
-          }
-        })
-        if (file_name.includes(new_year + 1)) {
-          new_year = (new_year + 1).toString()
-          console.log(new_year)
+        
+        // Extract the month from the file name
+        const monthMatch = file_name.match(/(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|jun(e)?|jul(y)?|aug(ust)?|sep(tember)?|oct(ober)?|nov(ember)?|dec(ember)?)/);
+        let new_month = monthMatch ? monthMatch[0] : '';
+        if (new_month) {
+          // Convert the month to its 3-character shorthand
+          const date = new Date(new_month + ' 1 1970');
+          new_month = date.toLocaleString('default', { month: 'short' });
         }
+
+        // Extract the year from the file name
+        let yearMatch = file_name.match(/\d{4}/);
+        if (!yearMatch) {
+          yearMatch = file_name.match(/\d{2}/);
+        }
+        let new_year = yearMatch ? yearMatch[0] : this.date.slice(0, 5);
+        new_year = parseInt(new_year)
+        console.log(new_year)
         this.date = new_year.toString() + " " + new_month
-        // this.user = null
-        // this.get_users()      
       }
     },
     date(newValue, oldValue) {
