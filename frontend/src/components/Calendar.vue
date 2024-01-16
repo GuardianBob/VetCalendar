@@ -2,10 +2,21 @@
   <!-- <div class="row align-start justify-center"> -->
     <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
       class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
+      <div class="column items-center" >
+        <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
+          @update:model-value="filterShifts()" style="max-width: 400px; min-width: 250px;">
+          <template v-slot:prepend>
+            <q-icon name="filter_alt" round color="primary" />
+          </template>
+          <template v-slot:append>
+            <q-btn v-if="user !== null" class="q-ml-md q-px-sm" color="negative" size="md" flat rounded
+              id="clear_filters_button" @click.stop.prevent="clearFilters" icon="cancel" />
+          </template>
+          <q-tooltip class="bg-accent" anchor="center start">Filter Schedule</q-tooltip>
+        </q-select>
+      </div>
       <FullCalendar id="fullCalendar" ref="fullCalendar" :options='calendarOptions' />
       <q-dialog v-model="show_picker" transition-show="scale" transition-hide="scale">
-        <!-- <q-tooltip class="bg-accent" anchor="bottom middle">Select Date</q-tooltip> -->
-        <!-- <q-popup-proxy cover transition-show="scale" transition-hide="scale"> -->
           <q-date v-model="date" mask="YYYY MMM">
             <div class="row items-center justify-end">
               <q-btn v-close-popup label="Close" color="accent" flat />
@@ -22,17 +33,16 @@ import { defineComponent, ref, nextTick, createApp } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
-// import { splitDate } from 'components/MainFunctions.js'
 import MainFunctions from '../../services/MainFunctions'
 import IconButton from './IconButton.vue'
-
+import APIService from "../../services/api"
 
 const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 export default {
   name: "VetCalendar",
   props: [
-    "calEvents", 
+    // "calEvents", 
     "calDate", 
     "parHandleCalChange",
     "parentFunction01",
@@ -83,11 +93,6 @@ export default {
             }
           },
         },
-        // headerToolbar: {
-        //   left: 'title',
-        //   center: 'datepicker',
-        //   right: 'today prev next'
-        // },
         headerToolbar: $q.screen.xs
           ? {
               left: '',
@@ -107,10 +112,11 @@ export default {
         eventDisplay: 'block', // Highlights events with colored bar
         eventColor: 'white',
         eventTextColor: 'black',
+        fixedWeekCount: false,
         // eventBorderColor: 'primary',
         events: [
           {}
-        ]
+        ],
       }),
     }
   },
@@ -120,6 +126,12 @@ export default {
       // date: ref(new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' })),
       date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + " " + new Date().toLocaleString('en-US', { month: 'short' })),
       show_picker: ref(false),
+      // events: ref([{}]),
+      users: ref([]),
+      user: ref(null),
+      loading: ref(false),
+      shifts: ref([]),
+      button_size: ref('sm'),
     }
   },
 
@@ -129,12 +141,13 @@ export default {
       this.handleMonthChange(newValue, oldValue)
       // this.parHandleCalChange(newValue, oldValue)
     },
-    calEvents(newValue, oldValue) {
-      let calendarApi = this.$refs.fullCalendar.getApi()
-      console.log(newValue)
-      this.calendarOptions.events = newValue
-      calendarApi.updateSize()
-    },
+    // THis was used to update the calendar events each time events were loaded
+    // events(newValue, oldValue) {
+    //   let calendarApi = this.$refs.fullCalendar.getApi()
+    //   console.log(newValue)
+    //   this.calendarOptions.events = newValue
+    //   calendarApi.updateSize()
+    // },
 
   },
 
@@ -190,14 +203,14 @@ export default {
     async handleMonthChange(newValue, oldValue) {
       let new_date = new Date('01 ' + this.date)      
       this.handleCalendarChange(new_date.toString())
-      this.parHandleCalChange(newValue, oldValue)
+      // this.parHandleCalChange(newValue, oldValue)
       console.log(newValue, oldValue)
       let oldYear = oldValue.slice(0, 4);
       let newYear = newValue.slice(0, 4);
       // console.log(oldYear, newYear)
       if (newYear !== oldYear) {
         console.log("Year changed")
-        // await this.getShiftsYear()
+        await this.getShiftsYear()
         if (this.user) {
           this.filterShifts()
         }
@@ -223,9 +236,81 @@ export default {
       //   }
       // }
     },
+
+    async getShiftsYear() {
+      console.log(this.date)
+      this.$q.loading.show()
+      // let calendarApi = this.$refs.fullCalendar.getApi()
+      let year_start = new Date("01 " + this.date).getFullYear()
+      let year_end = new Date("01 " + this.date).getFullYear()
+      // console.log(year_start, year_end)
+      if (year_end - year_start <= 1) {
+        year_end += 1
+      }
+      let new_start = new Date((year_start - 1).toString() + "/12/15")
+      let new_end = new Date((year_end).toString() + "/01/15")
+      // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
+      console.log(new_start, new_end)
+      await APIService.return_shifts({ "start": new_start, "end": new_end })
+        .then(res => {
+          console.log(res.data)
+          if (res.data != "No Shifts") {
+            this.calendarOptions.events = []
+            this.shifts = []
+            // console.log(events)
+            this.users = res.data.users.sort()
+            res.data.shifts.map(event => {
+              // console.log(event)
+              this.calendarOptions.events.push({
+                // Add event to displayed calendar
+                "title": event["user"],
+                "start": event["start"],
+                // "end": shift["end"]["dateTime"],
+              })
+              this.shifts.push({
+                // Add event to displayed calendar
+                "title": event["user"],
+                "start": event["start"],
+                // "end": shift["end"]["dateTime"],
+              })
+            })
+            // console.log(this.shifts)
+            // 
+          }
+        })
+      console.log(this.shifts)
+      // calendarApi.updateSize()
+      this.$q.loading.hide()
+    },
+
+    async filterShifts() {
+      // console.log(this.user)
+      this.calendarOptions.events = []
+      this.shifts.map(shift => {
+        if (shift["title"] == this.user) {
+          // console.log("matches")
+          this.calendarOptions.events.push(shift)
+          localStorage.setItem("filtered_user", this.user)
+          // this.$router.replace({ query: { user: this.user } })
+        }
+      })
+    },
+
+    async clearFilters() {
+      this.calendarOptions.events = this.shifts
+      // console.log(this.shifts.length)
+      this.user = null
+      localStorage.removeItem("filtered_user")
+      // this.$router.replace({ query: null })
+    },
   },
 
   mounted() {
+    this.getShiftsYear().then(() => {
+      if (this.user) {
+        this.filterShifts()
+      }
+    })    
     nextTick(() => {
       const buttonEl = document.querySelector('.fc-datepicker-button')
       if (buttonEl) {
@@ -233,22 +318,8 @@ export default {
         app.mount(buttonEl)
       }
     })
-    // this.$nextTick(() => {
-    //   let datepickerButton = document.querySelector('.fc-datepicker-button');
-    //   if (datepickerButton) {
-    //     let datepicker = this.$refs.datepicker.$el;
-    //     datepickerButton.innerHTML = `<div class="tooltip bg-accent">Select Date</div>
-    //     <div class="popup-proxy cover scale">
-    //       <input type="date" id="date" name="date" />
-    //       <div class="row items-center justify-end">
-    //         <button class="btn accent flat" onclick="closePopup()">Close</button>
-    //       </div>
-    //     </div>`;
-    //     datepickerButton.appendChild(datepicker);
-    //   }
-    // });
+    
   }
 };
 </script>
-
 
