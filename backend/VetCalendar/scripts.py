@@ -85,7 +85,7 @@
 # ==== Google Calendar API reqs =====
 from __future__ import print_function
 
-import datetime
+import datetime, pytz
 from datetime import timedelta
 import os.path
 from .models import Calendar
@@ -232,18 +232,17 @@ def load_schedule(schedule, month, year):
   user_month = month
   user_year = year
   wordDoc = Document(schedule)
+  user_tz = pytz.timezone('America/Los_Angeles')
   while not user_month in month_variables:
     # user_month = simpledialog.askstring(title="Month", prompt="Please enter the 2-digit month")
     user_month = "08"
 
   while not int(user_year) > 2021:
-    # user_year = simpledialog.askstring(title="Year", prompt="Please enter the 4-digit year")
     user_year = "2022"
-  # wordDoc = Document('SEP21_schedule.docx')
-  # wordDoc = Document('Aug 2022(CORRECT).docx')
   month = user_month
   # year = "2022"
   shifts = []
+  shift_times = {2: "07:00", 3: "10:00", 4: "14:00", 5: "18:00"}
   for table in wordDoc.tables:
       date = []
       j = 0
@@ -264,42 +263,45 @@ def load_schedule(schedule, month, year):
             if j % 6 == 1:
                 date.append(cell.text)
                 # print(f'date {date}')
-            else:
-              if i % 2 == 0:
+            # else:
+            #   if i % 2 == 0:
+            elif i % 2 == 0:
                 shift = cell.text
-                if j % 6 == 2:
-                  time = "07:00"
-                if j % 6 == 3:
-                  time = "10:00"
-                if j % 6 == 4:
-                  time = "14:00"
-                if j % 6 == 5:
-                  time = "18:00"
-              # if "MA" in cell.text:
+                # if j % 6 == 2:
+                #   time = "07:00"
+                # if j % 6 == 3:
+                #   time = "10:00"
+                # if j % 6 == 4:
+                #   time = "14:00"
+                # if j % 6 == 5:
+                #   time = "18:00"
               # print(user)
-              elif cell.text != "":
-                cell_user = cell.text
+            elif cell.text != "":
+              cell_user = cell.text
+              try:
                 shift_start = datetime.datetime(
                   int(user_year),
                   int(user_month),
                   int(date[i]),
-                  int(time[:2]),
+                  int(shift_times[j % 6][:2]),
                   00,
                   00
                 )
+                shift_start = timezone.make_aware(shift_start, timezone=user_tz)
                 # print(shift_start)
                 # print(f'user: {cell_user}')
                 shifts.append({
                   "user": cell_user,
                   "shift": shift, 
                   "date": user_year + "-" + user_month + "-" + date[i], 
-                  "time": time, 
+                  "time": shift_times[j % 6], 
                   "month": month,
                   "year": user_year,
                   "shift_start": str(shift_start),
                   "shift_end": str(shift_start + timedelta(hours=12)),
                 })
-                
+              except ValueError:
+                print(f"Invalid date: {user_year}-{user_month}-{date[i]}")
           i += 1
 
         # print(row_text, "row", j)

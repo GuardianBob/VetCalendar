@@ -126,46 +126,44 @@ class CalendarService {
   }
 
   async getShiftsYear() {
-    let calendarApi = this.$refs.fullCalendar.getApi();
-    let year_start = new Date(calendarApi.view.activeStart).getFullYear();
-    let year_end = new Date(calendarApi.view.activeEnd).getFullYear();
-    // console.log(year_start, year_end)
-    if (year_end - year_start <= 1) {
-      year_end += 1;
-    }
-    let new_start = new Date((year_start - 1).toString() + "/12/15");
-    let new_end = new Date(year_end.toString() + "/01/15");
-    // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
-    // console.log(new_start, new_end)
-    await APIService.return_shifts({ start: new_start, end: new_end }).then(
-      (res) => {
-        // console.log(res.data)
-        if (res.data != "No Shifts") {
-          this.calendarOptions.events = [];
-          this.shifts = [];
-          // console.log(events)
-          this.users = res.data.users;
-          res.data.shifts.map((event) => {
-            // console.log(event)
-            this.calendarOptions.events.push({
-              // Add event to displayed calendar
-              title: event["user"],
-              start: event["start"],
-              // "end": shift["end"]["dateTime"],
-            });
-            this.shifts.push({
-              // Add event to displayed calendar
-              title: event["user"],
-              start: event["start"],
-              // "end": shift["end"]["dateTime"],
-            });
-          });
-          //
-        }
+    let year_start = new Date("01 " + this.date).getFullYear()
+      let year_end = new Date("01 " + this.date).getFullYear()
+      // console.log(year_start, year_end)
+      if (year_end - year_start <= 1) {
+        year_end += 1
       }
-    );
-    // console.log(this.shifts)
-    calendarApi.updateSize();
+      let new_start = new Date((year_start - 1).toString() + "/12/15")
+      let new_end = new Date((year_end).toString() + "/01/15")
+      // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
+      console.log(new_start, new_end)
+      await APIService.return_shifts({ "start": new_start, "end": new_end })
+        .then(res => {
+          // console.log(res.data)
+          if (res.data != "No Shifts") {
+            this.events = []
+            this.shifts = []
+            // console.log(events)
+            this.users = res.data.users.sort()
+            res.data.shifts.map(event => {
+              // console.log(event)
+              this.events.push({
+                // Add event to displayed calendar
+                "title": event["user"],
+                "start": event["start"],
+                // "end": shift["end"]["dateTime"],
+              })
+              this.shifts.push({
+                // Add event to displayed calendar
+                "title": event["user"],
+                "start": event["start"],
+                // "end": shift["end"]["dateTime"],
+              })
+            })
+            // 
+          }
+        })
+      // console.log(this.shifts)
+      // calendarApi.updateSize()
   }
 
   async set_view() {

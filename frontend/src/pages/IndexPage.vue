@@ -128,11 +128,11 @@
     </q-form>
     <!-- </div> -->
     <div class="row align-start justify-center">
-      <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
-        class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
+      <!-- <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
+        class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;"> -->
         <!-- <FullCalendar id="fullCalendar" ref="fullCalendar" :custom-buttons="customButtons" :options='calendarOptions' v-show="false" /> -->
         <Calendar :calEvents="events" :calDate="date" :parHandleCalChange="handleCalendarChange" />
-      </div>
+      <!-- </div> -->
     </div>
     <q-dialog v-model="info" transition-show="slide-down" transition-hide="slide-up">
       <ButtonDefinitions />
@@ -308,17 +308,17 @@ export default defineComponent({
       return date_string
     },
 
-    async handleRightSwipe() {
-      let new_date = new Date("01 " + this.date)
-      new_date.setMonth(new_date.getMonth() - 1)
-      this.handleCalendarChange(new_date.toString(), -1)
-    },
+    // async handleRightSwipe() {
+    //   let new_date = new Date("01 " + this.date)
+    //   new_date.setMonth(new_date.getMonth() - 1)
+    //   this.handleCalendarChange(new_date.toString(), -1)
+    // },
 
-    async handleLeftSwipe() {
-      let new_date = new Date("01 " + this.date)
-      new_date.setMonth(new_date.getMonth() + 1)
-      this.handleCalendarChange(new_date.toString(), 1)
-    },
+    // async handleLeftSwipe() {
+    //   let new_date = new Date("01 " + this.date)
+    //   new_date.setMonth(new_date.getMonth() + 1)
+    //   this.handleCalendarChange(new_date.toString(), 1)
+    // },
 
     async handleMonthChange(newValue, oldValue) {
       let new_date = new Date('01 ' + this.date)
@@ -329,7 +329,7 @@ export default defineComponent({
       // console.log(oldYear, newYear)
       if (newYear !== oldYear) {
         console.log("Year changed")
-        // await this.getShiftsYear()
+        await this.getShiftsYear()
         if (this.user) {
           this.filterShifts()
         }
@@ -355,16 +355,16 @@ export default defineComponent({
       })
     },
 
-    async handleCalendarChange(cal_date) {
-      let new_date = cal_date.slice(11, 15) + " " + cal_date.slice(4, 7)
-      this.date = new_date
-      console.log(this.date)
-      let newPath = MainFunctions.update_path_date(cal_date)
-      // console.log(newPath)
-      // console.log(this.$route.query.user)
-      this.$router.replace({ path: newPath, query: this.$route.query })
-      // APIService.return_shifts(this.date)
-    },
+    // async handleCalendarChange(cal_date) {
+    //   let new_date = cal_date.slice(11, 15) + " " + cal_date.slice(4, 7)
+    //   this.date = new_date
+    //   console.log(this.date)
+    //   let newPath = MainFunctions.update_path_date(cal_date)
+    //   // console.log(newPath)
+    //   // console.log(this.$route.query.user)
+    //   this.$router.replace({ path: newPath, query: this.$route.query })
+    //   // APIService.return_shifts(this.date)
+    // },
 
     async file_upload() {
       console.log("and for ALL the marbles...!")

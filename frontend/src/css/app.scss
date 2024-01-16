@@ -48,3 +48,43 @@ ul.errorlist {
   max-width: 25vw;
   margin: 5px 10px;
 }
+
+.fc-button.fc-button-primary.fc-prev-button {
+  background-color: #581FC2; 
+  color: #ffffff; /* white */
+  border-style: none;
+}
+
+/* Change the background color of the 'next' button */
+.fc-button.fc-button-primary.fc-next-button {
+  background-color: #581FC2; 
+  color: #ffffff; 
+  border-style: none;
+}
+
+/* Change the background color of the 'today' button */
+.fc-button.fc-button-primary.fc-today-button {
+  background-color: #581FC2;
+  color: #ffffff; /* white */
+  border-style: none;
+}
+
+.fc-datepicker-button.fc-button.fc-button-primary {
+  background-color: #581FC2;
+  color: #ffffff; /* white */
+  border-style: none;
+}
+
+#fullCalendar .fc-toolbar-title {
+  font-size: 1em; /* default font size */
+}
+
+@media (max-width: 599px) { /* xs breakpoint in Quasar */
+  #fullCalendar .fc-toolbar-title {
+    font-size: 1em; /* smaller font size for mobile devices */
+  }
+}
+
+.fc .fc-toolbar {
+  flex-wrap: wrap;
+}
