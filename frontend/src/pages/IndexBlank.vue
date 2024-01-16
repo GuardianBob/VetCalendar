@@ -1,25 +1,8 @@
 <template>
   <q-page class="q-pt-xl">
-    <!-- <div class="col-10 col-sm-5 col-md-5 col-lg-5"> -->
     <q-form @submit="upload_shifts">
-      <div class="row align-start justify-center q-mx-sm items-center">
-        <!-- <q-input filled v-model="gmail" required type="email" label="Gmail"></q-input> -->
-        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-0"></div>
-        <div class="col-1 q-mx-md text-right">
-          <q-btn color="primary" round :size="button_size" id="enable_date" @click="enable_date = !enable_date"
-            icon="event">
-            <!-- <q-icon name="event" /> -->
-            <q-tooltip class="bg-accent" anchor="bottom middle">Select Date</q-tooltip>
-            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date v-model="date" mask="YYYY MMM">
-                <div class="row items-center justify-end">
-                  <q-btn v-close-popup label="Close" color="accent" flat />
-                </div>
-              </q-date>
-            </q-popup-proxy>
-          </q-btn>
-        </div>
-        <div class="col-xs-8 col-lg-2 col-md-2 col-sm-2 q-mr-sm">
+      <div class="row align-start justify-end q-mx-sm items-center">
+        <div class="col-xs-8 col-lg-2 col-md-2 col-sm-2 q-mr-xl">
           <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
             @update:model-value="filterShifts()">
             <template v-slot:prepend>
@@ -28,7 +11,6 @@
             <template v-slot:append>
               <q-btn v-if="user !== null" class="q-ml-md q-px-sm" color="negative" size="md" flat rounded
                 id="clear_filters_button" @click.stop.prevent="clearFilters" icon="cancel" />
-              <!-- <q-icon name="close" @click.stop.prevent="clearFilters" class="cursor-pointer" v-if="user !== null" /> -->
             </template>
             <q-tooltip class="bg-accent" anchor="center start">Filter Schedule</q-tooltip>
           </q-select>
@@ -43,9 +25,6 @@
         <Calendar :calEvents="events" :calDate="date" :parHandleCalChange="handleMonthChange" />
       <!-- </div> -->
     </div>
-    <q-dialog v-model="info" transition-show="slide-down" transition-hide="slide-up">
-      <ButtonDefinitions />
-    </q-dialog>
     <!-- Place scroller at bottom -->
   </q-page>
 </template>
@@ -55,54 +34,32 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
-// import FullCalendar from '@fullcalendar/vue3'
-// import dayGridPlugin from '@fullcalendar/daygrid'
-import ButtonDefinitions from 'components/ButtonDefinitions.vue'
 import Calendar from 'components/Calendar.vue'
 import MainFunctions from '../../services/MainFunctions'
 import CalendarFunctions from 'app/services/CalendarFunctions'
 import GoogleFunctions from 'app/services/GoogleFunctions'
 // import google from 'googleapis'
 
-const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
 export default defineComponent({
   name: "FileUpload",
   components: {
-    // FullCalendar, // make the <FullCalendar> tag available
-    ButtonDefinitions,
     Calendar
   },
   data() {
-    
     return {
-      
     }
   },
   setup() {
-    const $q = useQuasar()
-    const progress = ref(false)
     
     return {
       // calStore,
       // label: "Select File",
       events: ref([{}]),
-      file: ref(null),
       date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + " " + new Date().toLocaleString('en-US', { month: 'short' })),
       users: ref([]),
       user: ref(null),
-      show_users: ref(false),
-      user_shifts: ref([]),
-      submit_button: ref(false),
-      disabled: ref(true),
       loading: ref(false),
       shifts: ref([]),
-      shift_data: ref([]),
-      calendar_id: ref([]),
-      show_add2Cal: ref(false),
-      enable_file: ref(false),
-      enable_date: ref(false),
-      info: ref(false),
       button_size: ref('sm'),
       // onFileSelected(file) {
       //   this.file = file

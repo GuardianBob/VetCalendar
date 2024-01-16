@@ -18,12 +18,14 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, nextTick, createApp } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 // import { splitDate } from 'components/MainFunctions.js'
 import MainFunctions from '../../services/MainFunctions'
+import IconButton from './IconButton.vue'
+
 
 const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -38,6 +40,8 @@ export default {
   ],
   components: {
     FullCalendar, // make the <FullCalendar> tag available
+    // eslint-disable-next-line vue/no-unused-components
+    IconButton,
   },
   data() {
     const $q = useQuasar()
@@ -45,7 +49,7 @@ export default {
       calendarOptions: ref({
         customButtons: {
           datepicker: {
-            text: 'Datepicker',
+            text: '',
             click: () => {
               // Handle click event if necessary
               this.show_picker = !this.show_picker
@@ -86,8 +90,8 @@ export default {
         // },
         headerToolbar: $q.screen.xs
           ? {
-              left: 'title',
-              center: 'today,datepicker,prev,next',
+              left: '',
+              center: 'title datepicker today prev next',
               right: ''
             }
           : {
@@ -151,6 +155,7 @@ export default {
       let date = new Date(date_string)
       let new_date = date_string.slice(11, 15) + " " + date_string.slice(4, 7)
       this.calDate, this.date = new_date
+      // this.date = new_date
       // console.log(this.date)
       let set_date = date.toISOString().slice(0, 10); // Convert to 'YYYY-MM-DD'
       this.handleDateChange(set_date)
@@ -221,6 +226,13 @@ export default {
   },
 
   mounted() {
+    nextTick(() => {
+      const buttonEl = document.querySelector('.fc-datepicker-button')
+      if (buttonEl) {
+        const app = createApp(IconButton, { icon: 'event', text: "Select Date" })
+        app.mount(buttonEl)
+      }
+    })
     // this.$nextTick(() => {
     //   let datepickerButton = document.querySelector('.fc-datepicker-button');
     //   if (datepickerButton) {

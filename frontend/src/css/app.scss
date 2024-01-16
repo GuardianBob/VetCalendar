@@ -73,18 +73,29 @@ ul.errorlist {
   background-color: #581FC2;
   color: #ffffff; /* white */
   border-style: none;
-}
+  // Add rounded corners to the button
+  
 
-#fullCalendar .fc-toolbar-title {
-  font-size: 1em; /* default font size */
 }
 
 @media (max-width: 599px) { /* xs breakpoint in Quasar */
   #fullCalendar .fc-toolbar-title {
-    font-size: 1em; /* smaller font size for mobile devices */
+    font-size: 1.5em; /* smaller font size for mobile devices */
+  }
+
+  #fullCalendar .fc-datepicker-button.fc-button.fc-button-primary {
+    border-radius: 50%;
+  }
+
+  #date_picker_button {
+    display: none;
   }
 }
 
 .fc .fc-toolbar {
   flex-wrap: wrap;
+}
+
+.fc-toolbar-chunk {
+  text-align: center;
 }
