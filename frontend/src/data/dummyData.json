@@ -1,7 +1,7 @@
 {
   "columns" : [
-    { "name": "lastName", "align": "left", "label": "Last Name", "field": "name", "sortable": true },
-    { "name": "firstName", "align": "left", "label": "First Name", "field": "name", "sortable": true },
+    { "name": "lastName", "align": "left", "label": "Last Name", "field": "lastName", "sortable": true },
+    { "name": "firstName", "align": "left", "label": "First Name", "field": "firstName", "sortable": true },
     { "name": "email", "align": "center", "label": "Email", "field": "email", "sortable": true },
     { "name": "userGroup", "align": "center", "label": "User Group", "field": "userGroup", "sortable": true },
     { "name": "userLevel", "align": "center", "label": "User Level", "field": "userLevel", "sortable": true },
@@ -65,5 +65,11 @@
     "city": "City",
     "state": "State",
     "zipCode": "Zip Code"
-  }
+  },
+
+  "shiftCountColumns": [
+    { "name": "employee", "align": "left", "label": "Employee", "field": "employee", "sortable": true },
+    { "name": "monthTotal", "align": "left", "label": "Month Total", "field": "monthTotal", "sortable": true },
+    { "name": "yearTotal", "align": "left", "label": "Year Total", "field": "yearTotal", "sortable": true }
+  ]
 }

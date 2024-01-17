@@ -1,0 +1,15 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/jbearcre/public_html/python/VetCalBackend"
+PassengerBaseURI "/"
+PassengerPython "/home/jbearcre/virtualenv/public_html/python/VetCalBackend/3.10/bin/python"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+SetEnv DB_PASS Vet.Cal.B@nd!t2006
+SetEnv DB_TABLE jbearcre_vet_calendar
+SetEnv DB_USER jbearcre_cal_admin
+SetEnv DEBUG "False"
+SetEnv DEVELOPMENT_MODE "False"
+SetEnv SECRET_KEY 'X-1HugS4t4L4d%*6PqmI)zlBwOdT(Qw8#Wx7YX'
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END

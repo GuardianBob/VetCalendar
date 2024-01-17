@@ -15,14 +15,29 @@ if (process.env.DEV_ENV == "true") {
 }
 const api = axios.create({
   // baseURL: 'https://api.example.com'
-  // withCredentials: false,
+  // withCredentials: true,
   baseURL: HTTP,
   // baseURL: 'https://vet-cal.jmeyer-dev.com/backend',
-  headers: {
+  // headers: {
     // "Content-Type": "application/json; charset=utf-8",
     // "Access-Control-Allow-Origin": "*",
-  },
+    // "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-TOKEN",
+    // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE,OPTIONS",
+    // 'Access-Control-Allow-Methods': '*',
+    // 'Access-Control-Allow-Credentials': 'true',
+  // },
 })
+// console.log(this.$q.cookies)
+// let csrftoken = this.$q.cookies.get('csrftoken')
+// api.interceptors.request.use((config) => {
+//   // If the CSRF token exists, add it to the headers
+//   if (csrftoken) {
+//     config.headers['X-CSRFToken'] = csrftoken
+//   }
+//   return config
+// }, (error) => {
+//   return Promise.reject(error)
+// })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -36,4 +51,4 @@ export default boot(({ app }) => {
   //       so you can easily perform requests against your app's API
 })
 
-export { api }
+export { api, axios }

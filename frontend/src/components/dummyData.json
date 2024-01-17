@@ -1,0 +1,20 @@
+{
+  "columns" : [
+    { "name": "name", "align": "left", "label": "Name", "field": "name", "sortable": true },
+    { "name": "email", "align": "center", "label": "Email", "field": "email", "sortable": true },
+    { "name": "userGroup", "align": "center", "label": "User Group", "field": "userGroup", "sortable": true },
+    { "name": "userLevel", "align": "center", "label": "User Level", "field": "userLevel", "sortable": true },
+    { "name": "actions", "label": "Actions", "field": "actions", "sortable": true } 
+  ],
+
+  "users" : [
+    { "id": "13", "name": "Jesse Meyer", "email": "mail@mail.com", "userGroup": "Staff", "userLevel": "Admin" },
+    { "id": "12", "name": "John Dorian", "email": "mail@mail.com", "userGroup": "ER Vet", "userLevel": "User" },
+    { "id": "11", "name": "Perry Cox", "email": "mail@mail.com", "userGroup": "ER Vet", "userLevel": "User" }
+  ],
+
+  "columnLabels" : {
+    "firstName": "First Name",
+    "lastName": "Last Name"
+  }
+}

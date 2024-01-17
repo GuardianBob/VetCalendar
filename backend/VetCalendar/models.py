@@ -45,3 +45,20 @@ class Calendar(models.Model):
   year = models.IntegerField()
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
+
+# class AccessLevel(models.Model):
+#   level = models.CharField(max_length=50)
+#   created_at = models.DateTimeField(auto_now_add=True)
+#   updated_at = models.DateTimeField(auto_now=True)
+
+# class Occupation(models.Model):
+#   occupation = models.CharField(max_length=50)
+#   created_at = models.DateTimeField(auto_now_add=True)
+#   updated_at = models.DateTimeField(auto_now=True)
+
+# class UserRelations(models.Model):
+#   user = models.ForeignKey(User, related_name='user_relations', on_delete=models.CASCADE)
+#   level = models.ForeignKey(AccessLevel, related_name='user_level', on_delete=models.CASCADE)
+#   occupation = models.ForeignKey(Occupation, related_name='user_occupation', on_delete=models.CASCADE)
+#   created_at = models.DateTimeField(auto_now_add=True)
+#   updated_at = models.DateTimeField(auto_now=True)

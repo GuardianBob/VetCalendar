@@ -1,119 +1,134 @@
 <template>
-  <div class="">
-    <q-form @submit="submit" method="POST">
-      <h5 class="text-primary q-py-none q-my-sm">{{ pageTitle }}</h5>
-      <div class="row justify-around text-center q-ma-md">
-        <div v-for="(label, key) in userInfoLabels" :key="key" outline class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData[key]" :label="label" dense class="q-my-sm"></q-input>
-        </div>
-        <!-- <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.email" label="E-mail address" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.firstName" label="First Name" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.lastName" label="Last Name" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.nickname" label="Nickname" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.address" label="Address" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.address2" label="Address2" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.userLevel" label="User Level" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.apt" label="Apt" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.city" label="City" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.state" label="State" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input v-model="userData.zip" label="Zip" dense outlined class="q-my-sm"></q-input>
-        </div> -->
-        <div class="col-4 q-px-md q-mx-md"></div>          
-        <div class="col-10 q-px-md q-mx-md">
-          <q-btn class="full-width" label="Save Changes" type="submit" color="primary" />
+  <!-- <q-page class="items-center flex flex-center"> -->
+    <div class="row q-mx-md full-width justify-around" style="width: 700px; max-width: 60vw;">
+      <div class="col-12 text-center bg-white text-dark" style="border: 4px solid #1976d2; border-radius: 10px">
+        <div class="text-right">
+          <q-btn flat v-close-popup icon="close"/>
+        </div>  
+        <div class="text-center q-ma-md" ref="form">
+          <q-form @submit="submit" method="POST" id="login_form">
+            <div v-html="data" class="text-left"></div>
+            <q-btn id="submit_btn" label="Submit" type="submit" color="primary" v-close-popup/>
+          </q-form>
         </div>
       </div>
-    </q-form>
-    <q-form @submit="update_pass" method="POST">
-      <div class="row justify-around text-center q-ma-md">
-        <div class="col-8 q-px-md q-mx-md">
-          <h5 class="text-primary q-py-none q-my-sm">Update Password</h5>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input label="Password" type="password" v-model="password" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-4 q-px-md q-mx-md">
-          <q-input label="Re-enter password" type="password" v-model="password2" dense outlined class="q-my-sm"></q-input>
-        </div>
-        <div class="col-10 q-px-md q-mx-md">
-          <q-btn class="full-width" label="Update Password" type="submit" color="primary" :disabled="passDisabled" />
-        </div>
-      </div>
-    </q-form>
-  </div>
+    </div>
+  <!-- </q-page> -->
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
-import { useQuasar, Notify } from "quasar"
+import { defineComponent, ref } from "vue";
+import { useQuasar, Notify } from "quasar";
+import APIService from "../../services/api";
+import { api } from "boot/axios";
 
-export default {
-  name: "ProfileEdit",
-  props: ["userInfoLabels", "userInfo"],
+export default defineComponent({
+  name: "ProfileForm",
+  props: [
+    "user_id",
+    "adminEdit",
+    "api_string",
+    "editButton",
+    "page_title",
+    "parentFunc01",
+    "parentFunc02",
+    "parentFunc03",
+  ],
   setup() {
+    return {};
+  },
+  data() {
     return {
+      loading: false,
+      data: ref([]),
+      csrf_token: ref(""),
       info: ref(false),
-      userData: ref({}),
-      labels: ref({}),
+      userData: ref(),
+      api_call: ref(""),
+      api_data: ref(),
+      editLabel: ref("Edit User"),
+      pageTitle: ref('User Details'),
+      // columnLabels: store.formFields.columnLabels,
+      user: ref({}),
+      userInfoLabels: ref({}),
+      edit: ref(false),
+      edit_pw: ref(false),
+      remember: ref(false),
       passDisabled: ref(true),
-      password: ref(''),
-      password2: ref(''),
-      pageTitle: ref('Update User Details')
-    }
+      passError: ref(false),
+      password: ref(""),
+      password2: ref(""),
+    };
+
   },
 
   watch: {
     userInfo(newValue, oldValue) {
       this.userData = this.userInfo
     },
-    password2(newValue, oldValue) {
-      // form_pass.value = newValue
-      console.log(newValue)
-      if (newValue.length >= 8 && newValue == this.password) {
-        this.passDisabled = false
-      } else if (newValue.length >= 8 && newValue != this.password) {
+    edit(newValue, oldValue) {
+      if (newValue == true) {
+        this.editLabel = "Done"
+        this.edit_pw = true ? this.editButton != "Add User" : false
       } else {
-        this.passDisabled = true
+        this.editLabel = this.editButton
       }
     },
-  },
+  },  
 
   methods: {
-    submit() { 
-
-    }, 
-    update_pass() {
-
+    submit(event) {
+      console.log(event);
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      console.log(formData);
+      api
+        .post(this.api_call, formData)
+        .then((res) => {
+          console.log(res.data);
+          this.parentFunc02();
+          Notify.create({
+            message: res.data.message,
+            color: "green",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          Notify.create({
+            message: error.response.data.message,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        });
     },
-    
+
+    async get_form() {
+      let params = { "id": this.user_id, "admin": this.adminEdit}
+      // console.log(params)
+      // console.log(this.api_call, params);
+      await api.get(this.api_call, { params }).then(async (results) => {
+        console.log(results.data);
+        this.data = results.data;
+        
+      });
+    },
+
+    async get_csrf() {
+      await APIService.get_csrf().then((results) => {
+        console.log(results);
+        this.csrf_token = results.data;
+      });
+    },
   },
-
   mounted() {
-    // this.userData = this.userInfo
-    console.log(this.userInfo)
-  }
-};
+    this.api_call = this.api_string;
+    this.api_data = this.userId;
+    this.get_form();
+  },
+});
 </script>
-
-

@@ -156,3 +156,6 @@ backend/backend/credentials.json
 backend/VetCalendar/credentials.json
 backend/vet_cal.db.sql
 backend/public_bak
+backend/backend/_backups/*
+backend/login/migrations/*
+backend/VetCalendar/migrations/*

@@ -120,7 +120,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["Notify"],
+      plugins: ["Notify", 'Loading', 'Cookies'],
       define: {
         'VUE_APP_VERSION': JSON.stringify(process.env.npm_package_version),
       },

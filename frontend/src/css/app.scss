@@ -4,3 +4,98 @@
 // div {
 //   border: 1px solid red;
 // }
+
+.bg-dark-navy {
+  background-color: #081329 !important;
+}
+
+.input-field {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin: 5px 0;
+  outline: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  border-color: #3f51b5;
+  box-shadow: 0 0 5px rgba(63, 81, 181, 0.5);
+}
+
+/* Define the form fields to be in one column by default */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  
+}
+
+/* Use a media query to switch to two columns when the viewport height is less than a certain value */
+@media (max-height: 400px) {
+  .form-field {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+ul.errorlist {
+  display: none;
+}
+
+.input-field {
+  max-width: 25vw;
+  margin: 5px 10px;
+}
+
+.fc-button.fc-button-primary.fc-prev-button {
+  background-color: #581FC2; 
+  color: #ffffff; /* white */
+  border-style: none;
+}
+
+/* Change the background color of the 'next' button */
+.fc-button.fc-button-primary.fc-next-button {
+  background-color: #581FC2; 
+  color: #ffffff; 
+  border-style: none;
+}
+
+/* Change the background color of the 'today' button */
+.fc-button.fc-button-primary.fc-today-button {
+  background-color: #581FC2;
+  color: #ffffff; /* white */
+  border-style: none;
+}
+
+.fc-datepicker-button.fc-button.fc-button-primary {
+  background-color: #581FC2;
+  color: #ffffff; /* white */
+  border-style: none;
+  // Add rounded corners to the button
+  
+
+}
+
+@media (max-width: 599px) { /* xs breakpoint in Quasar */
+  #fullCalendar .fc-toolbar-title {
+    font-size: 1.5em; /* smaller font size for mobile devices */
+  }
+
+  #fullCalendar .fc-datepicker-button.fc-button.fc-button-primary {
+    border-radius: 50%;
+  }
+
+  #date_picker_button {
+    display: none;
+  }
+}
+
+.fc .fc-toolbar {
+  flex-wrap: wrap;
+}
+
+.fc-toolbar-chunk {
+  text-align: center;
+}

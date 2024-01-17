@@ -9,13 +9,14 @@
           icon="menu"
           aria-label="Menu"
           @click="drawer = !drawer"
+          color="secondary"
         />
 
         <q-toolbar-title>
-          Vet Scheduler
+          Shift Management
         </q-toolbar-title>
 
-        <div>Version: {{ version }}</div>
+        <div class="text-secondary">v: {{ version }}</div>
       </q-toolbar>
     </q-header>
 
@@ -28,7 +29,7 @@
         <q-item-label
           header
         >
-          <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="primary" @click="drawer = !drawer" ></q-icon>
+          <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="secondary" @click="drawer = !drawer" ></q-icon>
           Essential Links
         </q-item-label>
 
@@ -41,7 +42,7 @@
     </q-drawer>
 
     <q-page-container >
-      <router-view @click="drawer = false" />
+      <router-view @click="drawer = false"/>
     </q-page-container>
   </q-layout>
 </template>
@@ -50,6 +51,10 @@
 import { defineComponent, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { version } from '../../package.json'
+import { useMainStore } from "stores/main-store.js"
+import { useRouter } from 'vue-router';
+
+const mainStore = useMainStore();
 
 const linksList = [
   {
@@ -58,12 +63,24 @@ const linksList = [
     icon: 'home',
     link: '/'
   },
-  // {
-  //   title: 'Schedule Import',
-  //   caption: '',
-  //   icon: 'code',
-  //   link: '/schedule_import'
-  // },
+  {
+    title: 'Schedule Import',
+    caption: '',
+    icon: 'upload_file',
+    link: '/schedule_import'
+  },
+  {
+    title: 'Manage Users',
+    caption: '',
+    icon: 'people',
+    link: '/users'
+  },
+  {
+    title: 'Manage Schedule',
+    caption: '',
+    icon: 'calendar_month',
+    link: '/schedule'
+  },
   // {
   //   title: 'Discord Chat Channel',
   //   caption: 'chat.quasar.dev',
@@ -98,17 +115,17 @@ const linksList = [
 
 export default defineComponent({
   name: 'MainLayout',
-
+  
   components: {
     EssentialLink
   },
   data() {
     return {
-      version: version
+      version: version,
     }
   },
   setup () {
-    
+    const router = useRouter();
     return {
       drawer: ref(false),
       essentialLinks: linksList,
@@ -116,6 +133,11 @@ export default defineComponent({
       //   leftDrawerOpen.value = !leftDrawerOpen.value
       // }
     }
+  },
+  methods: {
+    // logout() {
+    //   router.push({ name: 'login' });
+    // }
   }
 })
 </script>
