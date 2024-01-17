@@ -1,5 +1,6 @@
 <template>
   <q-page class="items-center flex-center q-my-xl ">
+
     <div class="row q-mx-md full-width justify-around ">
       <div class="col-10 text-center" style="border: 4px solid #1976D2; border-radius: 10px;">
         <!-- <div class="col-4 q-mx-xl text-center"> -->

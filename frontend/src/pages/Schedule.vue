@@ -79,6 +79,7 @@ export default defineComponent({
       store,
       events: ref([{}]),
       date: ref(new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' })),
+
       calendar_button: ref(false),
       auth_token: ref(false),
       users: ref([]),
@@ -102,8 +103,9 @@ export default defineComponent({
     file(newValue, oldValue) {
       if (newValue != null) {
         console.log("triggered")
+        console.log(this.date)
         let new_month = ""
-        let new_year = parseInt(this.date.slice(-4))
+        let new_year = parseInt(this.date.slice(0, 4))
         let file_name = newValue["name"].toLowerCase()
         console.log(file_name)
         month_abbrev.forEach((month) => {
@@ -111,14 +113,26 @@ export default defineComponent({
             console.log(month)
             new_month = month
           }        
-        })      
-        if (file_name.includes(new_year + 1)) {
-          new_year = (new_year + 1).toString()
-        }
-        this.date = new_month + " " + new_year.toString()
+        })
+        console.log(new_year)    
+        if (!file_name.includes(new_year)) {
+          if (file_name.includes(new_year + 1)) {
+            new_year = (new_year + 1).toString()
+          } else {
+            Notify.create({
+              message: "Something went wrong, please check the current calendar date and compare it with the date of the file you are trying to upload.",
+              color: "red",
+              position: 'center',
+              timeout: 3000,
+            })
+          }
+        } 
+        this.date = new_year.toString() + " " + new_month
+        this.file_date = new_month + " " + new_year.toString()
         console.log(new_year)
         // this.user = null
         // this.get_user_list()      
+
       }
     },
     date(newValue, oldValue) {
@@ -180,6 +194,7 @@ export default defineComponent({
 
     async handleCalendarChange(cal_date) {
       let new_date = cal_date.slice(11, 15) + " " + cal_date.slice(4, 7)
+      console.log(this.date)
       this.date = new_date
       // console.log(this.date)
       // let newPath = MainFunctions.update_path_date(cal_date)
@@ -223,6 +238,7 @@ export default defineComponent({
     //   calendarApi.updateSize()
     // },
 
+
     async getShiftsYear() {
       this.$q.loading.show()
       // let calendarApi = this.$refs.fullCalendar.getApi()
@@ -262,9 +278,39 @@ export default defineComponent({
             // 
           }
         })
+
       // console.log(this.shifts)
       // calendarApi.updateSize()
       this.$q.loading.hide()
+    },
+
+    async getShiftsAPI(start, end) {
+      await APIService.return_shifts({ "start": start, "end": end })
+        .then(res => {
+          // console.log(res.data)
+          if (res.data != "No Shifts") {
+            this.calendarOptions.events = []
+            this.shifts = []
+            // console.log(events)
+            this.users = res.data.users
+            res.data.shifts.map(event => {
+              // console.log(event)
+              this.calendarOptions.events.push({
+                // Add event to displayed calendar
+                "title": event["user"],
+                "start": event["start"],
+                // "end": shift["end"]["dateTime"],
+              })
+              this.shifts.push({
+                // Add event to displayed calendar
+                "title": event["user"],
+                "start": event["start"],
+                // "end": shift["end"]["dateTime"],
+              })
+            })
+            // 
+          }
+        })      
     },
 
     async set_view() {
@@ -299,6 +345,7 @@ export default defineComponent({
           // console.log("matches")
           this.events.push(shift)
           localStorage.setItem("filtered_user", this.user)
+
           this.$router.replace({ query: { user: this.user } })
         }
       })
@@ -310,7 +357,7 @@ export default defineComponent({
       this.events = this.shifts
       // console.log(this.shifts.length)
       this.user = null
-      localStorage.removeItem("filtered_user")
+      // localStorage.removeItem("filtered_user")
       this.$router.replace({ query: null })
       this.filtered_shifts = this.user_shifts
     },
@@ -335,6 +382,7 @@ export default defineComponent({
   
   mounted() {
     this.set_view()
+    this.getShifts()
     this.getShiftsYear().then(() => {
       this.shift_count();
       if (this.user) {

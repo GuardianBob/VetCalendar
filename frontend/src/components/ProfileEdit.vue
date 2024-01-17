@@ -59,6 +59,7 @@ export default defineComponent({
       password: ref(""),
       password2: ref(""),
     };
+
   },
 
   watch: {

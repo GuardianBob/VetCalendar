@@ -94,6 +94,7 @@ const routes = [
         // beforeEnter: requireAuth,
       },
     ],
+
   },
   
   // Always leave this as last one,

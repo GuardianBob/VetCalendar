@@ -21,6 +21,7 @@ export const useDummyData = defineStore('dummy-data', {
     // getCsrfToken() {
     //   return this.csrfToken;
     // },
+
     // increment() {
     //   this.counter++;
     // },
