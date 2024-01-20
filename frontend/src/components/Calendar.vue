@@ -140,6 +140,7 @@ export default {
       console.log(newValue, oldValue)
       this.handleMonthChange(newValue, oldValue)
       this.show_picker = false
+      
       // this.parHandleCalChange(newValue, oldValue)
     },
     // THis was used to update the calendar events each time events were loaded
@@ -169,6 +170,7 @@ export default {
       let date = new Date(date_string)
       let new_date = date_string.slice(11, 15) + " " + date_string.slice(4, 7)
       this.calDate, this.date = new_date
+      this.$emit("send_date", new_date)
       // this.date = new_date
       // console.log(this.date)
       let set_date = date.toISOString().slice(0, 10); // Convert to 'YYYY-MM-DD'
@@ -239,7 +241,7 @@ export default {
     },
 
     async getShiftsYear() {
-      console.log(this.date)
+      // console.log(this.date)
       this.$q.loading.show()
       // let calendarApi = this.$refs.fullCalendar.getApi()
       let year_start = new Date("01 " + this.date).getFullYear()
@@ -251,10 +253,10 @@ export default {
       let new_start = new Date((year_start - 1).toString() + "/12/15")
       let new_end = new Date((year_end).toString() + "/01/15")
       // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
-      console.log(new_start, new_end)
+      // console.log(new_start, new_end)
       await APIService.return_shifts({ "start": new_start, "end": new_end })
         .then(res => {
-          console.log(res.data)
+          // console.log(res.data)
           if (res.data != "No Shifts") {
             this.calendarOptions.events = []
             this.shifts = []

@@ -1,6 +1,14 @@
 const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 class MainFunctions {
+  date_to_number(date) {
+    let new_date = new Date(date + " 01");
+    let year = new_date.getFullYear();
+    let month = new_date.getMonth() + 1; // getMonth() returns month index starting from 0
+    month = month < 10 ? '0' + month : month; // prepend 0 if month is less than 10
+    let formattedDate = `${year}-${month}`;
+    return(formattedDate);
+  }
 
   update_path_date(date) {
     // console.log(window.location.pathname)
