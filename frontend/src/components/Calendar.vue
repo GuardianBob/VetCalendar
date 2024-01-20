@@ -124,7 +124,7 @@ export default {
     return {
       pageTitle: ref('Calendar'),
       // date: ref(new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' })),
-      date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + " " + new Date().toLocaleString('en-US', { month: 'short' })),
+      date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + "-" + new Date().toLocaleString('en-US', { month: 'short' })),
       show_picker: ref(false),
       // events: ref([{}]),
       users: ref([]),
@@ -139,6 +139,7 @@ export default {
     date(newValue, oldValue) {
       console.log(newValue, oldValue)
       this.handleMonthChange(newValue, oldValue)
+      this.show_picker = false
       // this.parHandleCalChange(newValue, oldValue)
     },
     // THis was used to update the calendar events each time events were loaded
