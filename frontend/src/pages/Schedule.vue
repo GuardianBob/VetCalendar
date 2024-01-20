@@ -10,7 +10,7 @@
               <q-btn color="accent" id="add_shifts" :size="button_size" @click="add_shifts = !add_shifts" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date"/>
+            <Calendar @send_date="set_date" @send_filter="set_filter"/>
           </div>
         </div>
       </div>
@@ -97,6 +97,16 @@ export default defineComponent({
       this.date = date
     },
 
+    set_filter(filter){
+      console.log(filter)
+      this.user = filter
+      if (filter != null){
+        this.filtered_shifts = this.filtered_shifts.filter(shift => shift.employee.includes(filter))
+      } else {
+        this.filtered_shifts = this.user_shifts
+      }
+    },
+
     async shift_count() {
       // calculate on backend with data pull
       // console.log(this.events, this.users)
@@ -113,7 +123,10 @@ export default defineComponent({
         this.user_shifts = [...this.user_shifts, { employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length }];
         this.filtered_shifts = [...this.filtered_shifts, { employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length }];
       }
-      console.log(this.user_shifts)
+      if (this.user != null){
+        this.filtered_shifts = this.filtered_shifts.filter(shift => shift.employee.includes(this.user))
+      }
+      // console.log(this.user_shifts)
     },
 
     async getShiftsYear() {

@@ -140,8 +140,12 @@ export default {
       console.log(newValue, oldValue)
       this.handleMonthChange(newValue, oldValue)
       this.show_picker = false
-      
       // this.parHandleCalChange(newValue, oldValue)
+    },
+    user(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        this.$emit("send_filter", newValue)
+      }
     },
     // THis was used to update the calendar events each time events were loaded
     // events(newValue, oldValue) {
