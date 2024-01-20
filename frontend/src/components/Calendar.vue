@@ -144,7 +144,15 @@ export default {
     },
     user(newValue, oldValue) {
       if (newValue !== oldValue) {
+        console.log(newValue, oldValue)
         this.$emit("send_filter", newValue)
+        if (newValue !== null) {
+          this.calendarOptions.eventColor = '#581fc2'
+          this.calendarOptions.eventTextColor = 'white'
+        } else {
+          this.calendarOptions.eventColor = 'white'
+          this.calendarOptions.eventTextColor = 'black'
+        }
       }
     },
     // THis was used to update the calendar events each time events were loaded

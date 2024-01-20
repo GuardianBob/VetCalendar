@@ -101,7 +101,7 @@ export default defineComponent({
       console.log(filter)
       this.user = filter
       if (filter != null){
-        this.filtered_shifts = this.filtered_shifts.filter(shift => shift.employee.includes(filter))
+        this.filtered_shifts = this.user_shifts.filter(shift => shift.employee.includes(filter))
       } else {
         this.filtered_shifts = this.user_shifts
       }
