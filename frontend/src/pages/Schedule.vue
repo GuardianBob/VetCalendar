@@ -111,13 +111,15 @@ export default defineComponent({
       // calculate on backend with data pull
       // console.log(this.events, this.users)
       let date_filter = MainFunctions.date_to_number(this.date)
-      console.log(date_filter)
+      let year = date_filter.slice(0, 4)
+      console.log(date_filter, year)
       console.log(this.shifts)
       this.user_shifts = []
       this.filtered_shifts = []
       for (let user of this.users) {
         let new_mon_arr = this.shifts.filter(shift => shift.start.includes(date_filter) && shift.title.includes(user));
-        let new_arr = this.shifts.filter((shift) => { return shift.title == user })
+        let new_arr = this.shifts.filter(shift => shift.start.includes(year) && shift.title.includes(user));
+        // let new_arr = this.shifts.filter((shift) => { return shift.title == user })
         // this.user_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
         // this.filtered_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
         this.user_shifts = [...this.user_shifts, { employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length }];
