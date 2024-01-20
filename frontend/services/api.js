@@ -192,6 +192,11 @@ class APIService {
     console.log(JSON.stringify(data))
     return api.post('/login/add_user', data)
   }
+
+  delete_user(data) {
+    // console.log(JSON.stringify(data))
+    return api.post('/login/delete_user', data)
+  }
 }
 
 export default new APIService()

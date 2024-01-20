@@ -1,7 +1,7 @@
 from .models import User, Address, CityState, Phone, Email, AccessLevel, UserPrivileges, Occupation, FormOptions
 from django import forms
 import datetime
-import bcrypt
+import bcrypt, re
 
 
 STATE_SELECT = (
@@ -212,7 +212,7 @@ class CityStateForm(forms.ModelForm):
       self = identify_choice_fields(self)
 
 class PhoneForm(forms.ModelForm):
-    phone_number = forms.CharField(max_length=50, widget=forms.TextInput, required=False)
+    phone_number = forms.CharField(max_length=50, widget=forms.TextInput, required=True)
     phone_type = forms.ChoiceField(required=False)
 
     class Meta:
@@ -227,6 +227,13 @@ class PhoneForm(forms.ModelForm):
       super(PhoneForm, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
       self = identify_choice_fields(self)
+        
+
+    def clean(self):
+      cleaned_data = super().clean()
+      phone_number = cleaned_data.get('phone_number')
+      cleaned_data['phone_number'] = re.sub(r'-', '', phone_number)  # remove all dashes
+      return cleaned_data
 
 class EmailForm(forms.ModelForm):
     email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=False)
@@ -319,6 +326,11 @@ def set_attributes(fields):
       'id' : name,
       'placeholder': str(FORM_FIELDS[name]),
     })
+    if name == 'phone_number':
+      fields[name].widget.attrs.update({
+        'pattern' : '[0-9]{3}-[0-9]{3}-[0-9]{4}',
+        'title' : 'Phone number must be in the format: XXX-XXX-XXXX'
+      })
     fields[name].label = ''
   return fields
 
@@ -334,3 +346,6 @@ def identify_choice_fields(form):
         else:
           form.fields[field_name].choices = [('', '')] + [(option.option, option.option_label) for option in f_options]
   return form
+
+def clean_number(phone_number):
+  return re.sub('\D', '', phone_number)

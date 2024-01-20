@@ -73,6 +73,7 @@ export default defineComponent({
             position: "center",
             timeout: 3000,
           });
+          this.$emit("user-created");
           // this.$router.push('/schedule')
         })
         .catch((error) => {

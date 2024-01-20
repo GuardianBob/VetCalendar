@@ -8,10 +8,25 @@
         <div class="text-center q-ma-md" ref="form">
           <q-form @submit="submit" method="POST" id="login_form">
             <div v-html="data" class="text-left"></div>
-            <q-btn id="submit_btn" label="Submit" type="submit" color="primary" v-close-popup/>
+            <q-btn id="submit_btn" label="Submit" class="q-ma-sm" type="submit" color="primary" v-close-popup/>
+            <q-btn id="delete_btn" label="Delete" class="q-ma-sm" color="negative" @click="confirm = true"/>
+            <q-btn id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
           </q-form>
         </div>
       </div>
+      <q-dialog v-model="confirm" persistent>
+        <q-card>
+          <q-card-section class="row items-center">
+            <q-avatar icon="signal_wifi_off" color="primary" text-color="white" />
+            <span class="q-ml-sm">Are you sure you want to delete this user?</span>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat label="Cancel" color="primary" v-close-popup />
+            <q-btn flat label="Delete" color="negative" v-close-popup @click="delete_user" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog> 
     </div>
   <!-- </q-page> -->
 </template>
@@ -58,6 +73,7 @@ export default defineComponent({
       passError: ref(false),
       password: ref(""),
       password2: ref(""),
+      confirm: ref(false),
     };
 
   },
@@ -65,6 +81,7 @@ export default defineComponent({
   watch: {
     userInfo(newValue, oldValue) {
       this.userData = this.userInfo
+      
     },
     edit(newValue, oldValue) {
       if (newValue == true) {
@@ -106,15 +123,32 @@ export default defineComponent({
           });
         });
     },
-
+    
     async get_form() {
       let params = { "id": this.user_id, "admin": this.adminEdit}
       // console.log(params)
       // console.log(this.api_call, params);
       await api.get(this.api_call, { params }).then(async (results) => {
-        console.log(results.data);
+        // console.log(results.data);
         this.data = results.data;
         
+      });
+    },
+
+    async delete_user() {
+      console.log(this.user_id);
+      this.confirm = true;
+      APIService.delete_user(this.user_id).then((results) => {
+        console.log(results);
+        this.parentFunc02();
+        Notify.create({
+          message: results.data.message,
+          color: "green",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+        });
+        this.$emit('close-dialog')
       });
     },
 
@@ -128,7 +162,16 @@ export default defineComponent({
   mounted() {
     this.api_call = this.api_string;
     this.api_data = this.userId;
-    this.get_form();
+    this.get_form().then(() => {
+      const phoneNumberInput = document.getElementById('phone_number');
+      phoneNumberInput.value = phoneNumberInput.value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
+      phoneNumberInput.addEventListener('input', (event) => {
+        let value = event.target.value;
+        value = value.replace(/\D/g, ""); // Remove non-digits
+        value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3"); // Add dashes
+        event.target.value = value;
+      });
+    });
   },
 });
 </script>
