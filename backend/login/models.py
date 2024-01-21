@@ -11,6 +11,12 @@ class User(AbstractUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def delete(self, *args, **kwargs):
+      self.user_phone.all().delete()  # Delete all related phone numbers
+      self.user_level.all().delete()  # Delete all related access levels
+      self.user_privileges.all().delete()  # Delete all related privileges
+      super().delete(*args, **kwargs)  # Call the original delete method
+
 class Email(models.Model):
   email = models.EmailField(max_length=100)
   user = models.ForeignKey(User, related_name='user_email', on_delete=models.CASCADE)

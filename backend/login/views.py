@@ -575,7 +575,8 @@ def update_user(request):
         }
       )
 
-      # Create or update CityState
+    # Create or update CityState
+    if data['state'].strip():
       city_state, created = CityState.objects.update_or_create(
         user=user,
         defaults={
@@ -601,7 +602,7 @@ def update_user(request):
       occupation, created = Occupation.objects.update_or_create(
       user=user,
       defaults={
-        'name': data['occupation'],
+        'occupation': data['occupation'],
       }
       )
 

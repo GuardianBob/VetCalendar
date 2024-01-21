@@ -122,13 +122,20 @@ export default defineComponent({
     },
 
     async add_phone_formatting() {
-      const phoneNumberInput = document.getElementById('phone_number');
-      phoneNumberInput.value = phoneNumberInput.value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
-      phoneNumberInput.addEventListener('input', (event) => {
-        let value = event.target.value;
+      const phoneNumberInput = $('#phone_number');
+      phoneNumberInput.val(phoneNumberInput.val().replace(/^(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3"));
+      phoneNumberInput.on('input', function() {
+        let value = $(this).val();
         value = value.replace(/\D/g, ""); // Remove non-digits
-        value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3"); // Add dashes
-        event.target.value = value;
+        // value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3"); // Add dashes
+        if (value.length < 3 && value.length > 0) {
+          value = value.replace(/^(\d{0,3})$/, "($1");
+        } else if (value.length < 6) {
+          value = value.replace(/^(\d{3})(\d{0,3})$/, "($1) $2");
+        } else {
+          value = value.replace(/^(\d{3})(\d{3})(\d{0,4})$/, "($1) $2-$3");
+        }
+        $(this).val(value);
       });
     },
 

@@ -8,7 +8,7 @@
         <div class="text-center q-ma-md" ref="form">
           <q-form @submit="submit" method="POST" id="login_form">
             <div v-html="data" class="text-left"></div>
-            <q-btn id="submit_btn" label="Submit" class="q-ma-sm" type="submit" color="primary" v-close-popup/>
+            <q-btn id="submit_btn" label="Submit" class="q-ma-sm" type="submit" color="primary"/>
             <q-btn id="delete_btn" label="Delete" class="q-ma-sm" color="negative" @click="confirm = true"/>
             <q-btn id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
           </q-form>
@@ -175,14 +175,43 @@ export default defineComponent({
     },
 
     async add_phone_formatting() {
-      const phoneNumberInput = document.getElementById('phone_number');
-      phoneNumberInput.value = phoneNumberInput.value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
-      phoneNumberInput.addEventListener('input', (event) => {
-        let value = event.target.value;
+      const phoneNumberInput = $('#phone_number');
+      phoneNumberInput.val(phoneNumberInput.val().replace(/^(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3"));
+      phoneNumberInput.on('input', function() {
+        let value = $(this).val();
         value = value.replace(/\D/g, ""); // Remove non-digits
-        value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3"); // Add dashes
-        event.target.value = value;
+        // value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3"); // Add dashes
+        if (value.length < 3 && value.length > 0) {
+          value = value.replace(/^(\d{0,3})$/, "($1");
+        } else if (value.length < 6) {
+          value = value.replace(/^(\d{3})(\d{0,3})$/, "($1) $2");
+        } else {
+          value = value.replace(/^(\d{3})(\d{3})(\d{0,4})$/, "($1) $2-$3");
+        }
+        $(this).val(value);
       });
+    },
+
+    async add_address_watcher() {
+      const cityInput = $('#city');
+      const stateInput = $('#state');
+      const zipcodeInput = $('#zipcode');
+
+      function updateRequiredStatus() {
+        if (cityInput.val() || stateInput.val() || zipcodeInput.val()) {
+          cityInput.attr('required', true);
+          stateInput.attr('required', true);
+          zipcodeInput.attr('required', true);
+        } else {
+          cityInput.removeAttr('required');
+          stateInput.removeAttr('required');
+          zipcodeInput.removeAttr('required');
+        }
+      }
+
+      cityInput.on('input', updateRequiredStatus);
+      stateInput.on('input', updateRequiredStatus);
+      zipcodeInput.on('input', updateRequiredStatus);
     },
 
     async get_csrf() {
@@ -197,6 +226,7 @@ export default defineComponent({
     this.api_data = this.userId;
     this.get_form().then(() => {
       this.add_phone_formatting();
+      this.add_address_watcher();
     });
   },
 });
