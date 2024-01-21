@@ -328,8 +328,8 @@ def set_attributes(fields):
     })
     if name == 'phone_number':
       fields[name].widget.attrs.update({
-        'pattern' : '[0-9]{3}-[0-9]{3}-[0-9]{4}',
-        'title' : 'Phone number must be in the format: XXX-XXX-XXXX'
+        # 'pattern' : '([0-9]{3}) [0-9]{3}-[0-9]{4}',
+        'title' : 'Please enter numeric digits only.'
       })
     fields[name].label = ''
   return fields
