@@ -146,6 +146,8 @@ def user_login(request):
 
         # Generate JWT token:
         refresh = RefreshToken.for_user(user)
+        refresh['user_id'] = user.id
+        refresh['admin'] = user.is_superuser
         return JsonResponse({
           'refresh': str(refresh),
           'access': str(refresh.access_token),
@@ -213,7 +215,10 @@ def validate_login(email, password):
         return user
     return None
 
-@csrf_exempt
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_user(request):
   if request.method == 'POST':
     post_data = request.POST.copy()
@@ -397,7 +402,10 @@ def get_csrf(request):
   token = csrf.get_token(request)
   return JsonResponse({'token' : token})
 
-@csrf_exempt
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_user(request):
   print(request.body)
   user = User.objects.get(id=request.body)
@@ -553,47 +561,49 @@ def update_user(request):
     if user.initials == '' and user.first_name != '' and user.last_name != '':
       initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
       user.initials = initials
+      user.username = user.email
       user.save()
 
-    # # Create or update Address
-    # if data['address'].strip():
-    #   address, created = Address.objects.update_or_create(
-    #     user=user,
-    #     defaults={
-    #       'street': data['address'],
-    #       'street2': data['address_line2'],
-    #       'apt_num': data['apt_num'],
-    #     }
-    #   )
+    # Create or update Address
+    if data['street'].strip():
+      address, created = Address.objects.update_or_create(
+        user=user,
+        defaults={
+          'street': data['street'],
+          'street2': data['street2'],
+          'apt_num': data['apt_num'],
+        }
+      )
 
-    #   # Create or update CityState
-    #   city_state, created = CityState.objects.update_or_create(
-    #     user=user,
-    #     defaults={
-    #       'city': data['city'],
-    #       'state': data['state'],
-    #       'zipcode': data['zipcode'],
-    #     }
-    #   )
+      # Create or update CityState
+      city_state, created = CityState.objects.update_or_create(
+        user=user,
+        defaults={
+          'city': data['city'],
+          'state': data['state'],
+          'zipcode': data['zipcode'],
+        }
+      )
 
-    # # Create or update Address
-    # if data['phone'].strip():
-    #   phone, created = Phone.objects.update_or_create(
-    #     users=user,
-    #     defaults={
-    #       'number': data['phone'],
-    #       'type': data['phone_type'],
-    #     }
-    #   )
+    # Create or update Phone
+    if data['phone_number'].strip():
+      phone_number = re.sub('\D', '', data['phone_number'])
+      phone, created = Phone.objects.update_or_create(
+        users=user,
+        defaults={
+          'phone_number': phone_number,
+          'phone_type': data['phone_type'],
+        }
+      )
       
-    # # Create or update Occupation
-    # if data['occupation'].strip():
-    #   occupation, created = Occupation.objects.update_or_create(
-    #   user=user,
-    #   defaults={
-    #     'name': data['occupation'],
-    #   }
-    #   )
+    # Create or update Occupation
+    if data['occupation'].strip():
+      occupation, created = Occupation.objects.update_or_create(
+      user=user,
+      defaults={
+        'name': data['occupation'],
+      }
+      )
 
     return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
