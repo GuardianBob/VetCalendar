@@ -146,6 +146,8 @@ def user_login(request):
 
         # Generate JWT token:
         refresh = RefreshToken.for_user(user)
+        refresh['user_id'] = user.id
+        refresh['admin'] = user.is_superuser
         return JsonResponse({
           'refresh': str(refresh),
           'access': str(refresh.access_token),
@@ -213,7 +215,10 @@ def validate_login(email, password):
         return user
     return None
 
-@csrf_exempt
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_user(request):
   if request.method == 'POST':
     post_data = request.POST.copy()
@@ -234,15 +239,20 @@ def create_user(request):
   # else:
     post_data['initials'] = get_unique_initials(post_data['first_name'], post_data['middle_name'], post_data['last_name'])
     post_data['username'] = post_data['email']
-    user_form = UserInfoForm(request.POST)
-    phone_form = PhoneForm(request.POST)
+    user_form = UserInfoForm(post_data)
+    phone_form = PhoneForm(post_data)
     # email_form = EmailForm(request.POST)
     # address_form = AddressForm(request.POST)
     # city_state_form = CityStateForm(request.POST)
     print(user_form.is_valid(), phone_form.is_valid())
+    print(post_data['initials'], phone_form['phone_number'])
     if user_form.is_valid() and phone_form.is_valid(): #and address_form.is_valid() and city_state_form.is_valid() 
       if not User.objects.filter(email__icontains=user_form.cleaned_data["email"]):
         user = user_form.save()
+        user.initials = post_data['initials']  # Set initials
+        user.username = post_data['email']  # Set username
+        user.save()  # Now save to DB
+        print("user: ", user.initials)
         phone = phone_form.save()
         phone.users.add(user)
         phone.save()
@@ -337,38 +347,38 @@ def get_unique_initials_old(user_first_name='', user_middle_name='', user_last_n
         return user_initials
     return user_initials
 
-def save_new_user(user):
-  print(user["first_name"])
-  # Create a new user  
-  new_initials=get_unique_initials(user["first_name"], user["middle_name"], user["last_name"])
-  new_user = User.objects.create(
-      first_name=user["first_name"],
-      middle_name=user["middle_name"],
-      last_name=user["last_name"],
-      email=user["email"],
-      username=user["email"],
-      initials=new_initials.upper(),
-  )  
-  # Create a new user password
-  new_password=generate_password(new_user)
+# def save_new_user(user):
+#   print(user["first_name"])
+#   # Create a new user  
+#   new_initials=get_unique_initials(user["first_name"], user["middle_name"], user["last_name"])
+#   new_user = User.objects.create(
+#       first_name=user["first_name"],
+#       middle_name=user["middle_name"],
+#       last_name=user["last_name"],
+#       email=user["email"],
+#       username=user["email"],
+#       initials=new_initials.upper(),
+#   )  
+#   # Create a new user password
+#   new_password=generate_password(new_user)
   
-  # Create a new phone for the new user
-  new_phone = Phone.objects.create(
-      number=re.sub('\D', '', user["phone"]),
-      type=user["phone_type"],
-  )
-  # Add the new phone to the new user's phones
-  new_phone.users.add(new_user)
-  # Save all of these objects to the database
-  # new_user.save()
-  # new_user_password.save()
-  # new_phone.save()
-  user_info = {
-    "user": new_user,
-    "user_password": new_password['decrypted'],
-    "user_phone": new_phone
-  }
-  return user_info
+#   # Create a new phone for the new user
+#   new_phone = Phone.objects.create(
+#       number=re.sub('\D', '', user["phone"]),
+#       type=user["phone_type"],
+#   )
+#   # Add the new phone to the new user's phones
+#   new_phone.users.add(new_user)
+#   # Save all of these objects to the database
+#   # new_user.save()
+#   # new_user_password.save()
+#   # new_phone.save()
+#   user_info = {
+#     "user": new_user,
+#     "user_password": new_password['decrypted'],
+#     "user_phone": new_phone
+#   }
+#   return user_info
 
 @csrf_exempt
 def validate(request):
@@ -391,6 +401,17 @@ def validate(request):
 def get_csrf(request):
   token = csrf.get_token(request)
   return JsonResponse({'token' : token})
+
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_user(request):
+  print(request.body)
+  user = User.objects.get(id=request.body)
+  print(user.first_name + " " + user.last_name)
+  user.delete()
+  return JsonResponse({'message': 'User deleted'}, status=200)
 
 @csrf_exempt
 def register(request):
@@ -540,47 +561,49 @@ def update_user(request):
     if user.initials == '' and user.first_name != '' and user.last_name != '':
       initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
       user.initials = initials
+      user.username = user.email
       user.save()
 
-    # # Create or update Address
-    # if data['address'].strip():
-    #   address, created = Address.objects.update_or_create(
-    #     user=user,
-    #     defaults={
-    #       'street': data['address'],
-    #       'street2': data['address_line2'],
-    #       'apt_num': data['apt_num'],
-    #     }
-    #   )
+    # Create or update Address
+    if data['street'].strip():
+      address, created = Address.objects.update_or_create(
+        user=user,
+        defaults={
+          'street': data['street'],
+          'street2': data['street2'],
+          'apt_num': data['apt_num'],
+        }
+      )
 
-    #   # Create or update CityState
-    #   city_state, created = CityState.objects.update_or_create(
-    #     user=user,
-    #     defaults={
-    #       'city': data['city'],
-    #       'state': data['state'],
-    #       'zipcode': data['zipcode'],
-    #     }
-    #   )
+      # Create or update CityState
+      city_state, created = CityState.objects.update_or_create(
+        user=user,
+        defaults={
+          'city': data['city'],
+          'state': data['state'],
+          'zipcode': data['zipcode'],
+        }
+      )
 
-    # # Create or update Address
-    # if data['phone'].strip():
-    #   phone, created = Phone.objects.update_or_create(
-    #     users=user,
-    #     defaults={
-    #       'number': data['phone'],
-    #       'type': data['phone_type'],
-    #     }
-    #   )
+    # Create or update Phone
+    if data['phone_number'].strip():
+      phone_number = re.sub('\D', '', data['phone_number'])
+      phone, created = Phone.objects.update_or_create(
+        users=user,
+        defaults={
+          'phone_number': phone_number,
+          'phone_type': data['phone_type'],
+        }
+      )
       
-    # # Create or update Occupation
-    # if data['occupation'].strip():
-    #   occupation, created = Occupation.objects.update_or_create(
-    #   user=user,
-    #   defaults={
-    #     'name': data['occupation'],
-    #   }
-    #   )
+    # Create or update Occupation
+    if data['occupation'].strip():
+      occupation, created = Occupation.objects.update_or_create(
+      user=user,
+      defaults={
+        'name': data['occupation'],
+      }
+      )
 
     return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
