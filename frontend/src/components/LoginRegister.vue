@@ -121,6 +121,17 @@ export default defineComponent({
       }
     },
 
+    async add_phone_formatting() {
+      const phoneNumberInput = document.getElementById('phone_number');
+      phoneNumberInput.value = phoneNumberInput.value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
+      phoneNumberInput.addEventListener('input', (event) => {
+        let value = event.target.value;
+        value = value.replace(/\D/g, ""); // Remove non-digits
+        value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3"); // Add dashes
+        event.target.value = value;
+      });
+    },
+
     async get_csrf() {
       await APIService.get_csrf().then((results) => {
         console.log(results);
@@ -135,7 +146,9 @@ export default defineComponent({
     // urlParams = urlParams.replace(/^\/+/, "");
     console.log(this.api_string);
     this.api_call = this.api_string;
-    this.get_form();
+    this.get_form().then(() => {
+      this.add_phone_formatting();
+    });
     // this.get_csrf()
   },
 });

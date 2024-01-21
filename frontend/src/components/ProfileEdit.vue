@@ -17,13 +17,21 @@
       <q-dialog v-model="confirm" persistent>
         <q-card>
           <q-card-section class="row items-center">
-            <q-avatar icon="signal_wifi_off" color="primary" text-color="white" />
+            <q-avatar icon="report" color="negative" text-color="white" />
             <span class="q-ml-sm">Are you sure you want to delete this user?</span>
           </q-card-section>
-
+          <q-card-section>
+            <q-toggle
+              v-model="verify_delete"
+              checked-icon="check"
+              color="red"
+              label="Click to confirm you want to delete this user."
+              unchecked-icon="clear"
+            />
+          </q-card-section>
           <q-card-actions align="right">
-            <q-btn flat label="Cancel" color="primary" v-close-popup />
-            <q-btn flat label="Delete" color="negative" v-close-popup @click="delete_user" />
+            <q-btn flat label="Cancel" color="primary" v-close-popup @click="verify_delete = false"/>
+            <q-btn flat label="Delete" color="negative" @click="delete_user" />
           </q-card-actions>
         </q-card>
       </q-dialog> 
@@ -74,6 +82,7 @@ export default defineComponent({
       password: ref(""),
       password2: ref(""),
       confirm: ref(false),
+      verify_delete: ref(false),
     };
 
   },
@@ -136,8 +145,20 @@ export default defineComponent({
     },
 
     async delete_user() {
-      console.log(this.user_id);
-      this.confirm = true;
+      // console.log(this.user_id);
+      if (this.verify_delete == false) {
+        Notify.create({
+          message: "Please confirm you want to delete this user",
+          color: "red",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+          actions: [
+            { icon: 'close', color: 'white', round: true, handler: () => { /* ... */ } }
+          ]
+        });
+        return
+      }
       APIService.delete_user(this.user_id).then((results) => {
         console.log(results);
         this.parentFunc02();
@@ -148,7 +169,19 @@ export default defineComponent({
           position: "center",
           timeout: 3000,
         });
+        this.confirm = false;
         this.$emit('close-dialog')
+      });
+    },
+
+    async add_phone_formatting() {
+      const phoneNumberInput = document.getElementById('phone_number');
+      phoneNumberInput.value = phoneNumberInput.value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
+      phoneNumberInput.addEventListener('input', (event) => {
+        let value = event.target.value;
+        value = value.replace(/\D/g, ""); // Remove non-digits
+        value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3"); // Add dashes
+        event.target.value = value;
       });
     },
 
@@ -163,14 +196,7 @@ export default defineComponent({
     this.api_call = this.api_string;
     this.api_data = this.userId;
     this.get_form().then(() => {
-      const phoneNumberInput = document.getElementById('phone_number');
-      phoneNumberInput.value = phoneNumberInput.value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3");
-      phoneNumberInput.addEventListener('input', (event) => {
-        let value = event.target.value;
-        value = value.replace(/\D/g, ""); // Remove non-digits
-        value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "$1-$2-$3"); // Add dashes
-        event.target.value = value;
-      });
+      this.add_phone_formatting();
     });
   },
 });
