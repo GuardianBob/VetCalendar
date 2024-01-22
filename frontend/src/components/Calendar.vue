@@ -1,7 +1,7 @@
 <template>
   <!-- <div class="row align-start justify-center"> -->
     <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
-      class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
+      class="col-10 col-md-10 col-sm-10 col-lg-10 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
       <div class="column items-center" >
         <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
           @update:model-value="filterShifts()" style="max-width: 400px; min-width: 250px;">

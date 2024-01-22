@@ -93,6 +93,11 @@ const routes = [
         component: () => import("pages/IndexBlank.vue"),
         // beforeEnter: requireAuth,
       },
+      {
+        path: "/form",
+        component: () => import("pages/FormsBlank.vue"),
+        // beforeEnter: requireAuth,
+      },
     ],
 
   },

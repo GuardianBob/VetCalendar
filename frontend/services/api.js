@@ -197,6 +197,12 @@ class APIService {
     // console.log(JSON.stringify(data))
     return api.post('/login/delete_user', data)
   }
+
+  get_test_form() {
+    return api.get('/login/get_test_form')
+  }
+
+  
 }
 
 export default new APIService()

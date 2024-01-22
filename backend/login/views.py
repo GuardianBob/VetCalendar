@@ -697,16 +697,42 @@ def get_user_occupation(user, data):
   occupation = user.user_occupation.first() if hasattr(user, 'user_occupation') else None
   if occupation:
     # print("occupation: ", occupation.occupation)
-    data['occupation'] = {'type': 'select', 'value': occupation.occupation}
+    data['occupation_type'] = {'type': 'select', 'value': occupation.occupation}
   return data
 
-def get_user_data(user_id, admin=False):
+FORM_FIELDS = {
+    "first_name": "First Name",
+    "middle_name": "Middle Name",
+    "last_name": "Last Name",
+    "initials": "Initials",
+    "nickname": "Nickname",
+    "email": "E-Mail",
+    "phone_number": "Phone Number",
+    "phone_type": "Phone Type",
+    "street": "Address",
+    "street2": "Address Line 2",
+    "address": "Address",
+    "address_line2": "Address Line 2",
+    "apt_num": "Apt #",
+    "city": "City",
+    "state": "State",
+    "zipcode": "Zip Code",
+    "password": "Password",
+    "verify_password": "Verify Password",
+    "occupation": "Occupation",
+    "old_password": "Old Password",
+    "new_password": "New Password",
+    "verify_password": "Verify Password",
+    "remember_me": "Remember Me",
+}
+
+def get_user_data(request, user_id, admin=False):
     if request.method == 'GET':
       req = request.GET
-      print(req['id'])
+      print(user_id)
       # if req["admin"] == "true":
       # Fetch the user
-      user = get_object_or_404(User, pk=req['id'])
+      user = get_object_or_404(User, pk=user_id)
       # print(user.user_address.street)
       
       # Fetch the user's info
@@ -743,5 +769,41 @@ def get_user_data(user_id, admin=False):
       data = get_user_occupation(user, data)      
       options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
       
+      for key in data:
+        if key in FORM_FIELDS:
+          data[key]['label'] = FORM_FIELDS[key]
       # Return the data as JSON
       return JsonResponse({'data': data, 'options': options})
+    
+@csrf_exempt
+def get_test_form(request):
+  user_data = get_user_data(request, 3, True)
+  print(type(user_data), user_data)
+  
+  # user = get_object_or_404(User, pk=3)  # Get the user with ID 3
+
+  # # Convert the user object to a dictionary and remove the password field
+  # user_dict = model_to_dict(user)
+  # user_dict.pop('password', None)
+
+  # # Get related objects
+  # emails = [model_to_dict(email) for email in user.user_email.all()]
+  # phones = [model_to_dict(phone) for phone in user.user_phone.all()]
+  # address = model_to_dict(user.user_address) if user.user_address else None
+  # city_state = model_to_dict(user.user_city_state) if user.user_city_state else None
+  # access_levels = [model_to_dict(level) for level in user.user_level.all()]
+  # privileges = [model_to_dict(privilege) for privilege in user.user_privileges.all()]
+  # occupation = model_to_dict(user.user_occupation) if user.user_occupation else None
+
+  # # Return the data as JSON
+  # return JsonResponse({
+  #     'user': user_dict,
+  #     'emails': emails,
+  #     'phones': phones,
+  #     'address': address,
+  #     'city_state': city_state,
+  #     'access_levels': access_levels,
+  #     'privileges': privileges,
+  #     'occupation': occupation,
+  # })
+  return user_data
