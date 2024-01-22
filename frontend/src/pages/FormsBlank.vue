@@ -1,6 +1,8 @@
 <template>
   <!-- <q-page class="q-pt-xl"> -->
-    <Forms />
+    <q-dialog v-model="show">
+      <Forms />
+    </q-dialog>
   <!-- </q-page> -->
 </template>
 
@@ -20,6 +22,7 @@ export default defineComponent({
   },
   setup() {    
     return {
+      show: ref(true),
     };
   },
   watch: {

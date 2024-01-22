@@ -198,8 +198,12 @@ class APIService {
     return api.post('/login/delete_user', data)
   }
 
-  get_test_form() {
-    return api.get('/login/get_test_form')
+  get_test_form(id) {
+    return api.get(`/login/get_test_form/${id}`)
+  }
+
+  submit_test_form(data) {
+    return api.post('/login/submit_test_form', data)
   }
 
   

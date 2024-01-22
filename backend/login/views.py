@@ -44,6 +44,32 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 #       return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 #     return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
+
+FORM_FIELDS = {
+    "first_name": "First Name",
+    "middle_name": "Middle Name",
+    "last_name": "Last Name",
+    "initials": "Initials",
+    "nickname": "Nickname",
+    "email": "E-Mail",
+    "phone_number": "Phone Number",
+    "phone_type": "Phone Type",
+    "street": "Address",
+    "street2": "Address Line 2",
+    "address": "Address",
+    "address_line2": "Address Line 2",
+    "apt_num": "Apt #",
+    "city": "City",
+    "state": "State",
+    "zipcode": "Zip Code",
+    "password": "Password",
+    "verify_password": "Verify Password",
+    "occupation": "Occupation",
+    "old_password": "Old Password",
+    "new_password": "New Password",
+    "verify_password": "Verify Password",
+    "remember_me": "Remember Me",
+}
   
 @csrf_exempt
 def validate_token(request):
@@ -672,9 +698,10 @@ def get_user_profile2(request):
     return render(request, 'multiForm.html', context)
     # return JsonResponse(profile[0])
 
-def get_user_address(user, data):
+def get_user_address(user):
   address = user.user_address if hasattr(user, 'user_address') else None
   city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
+  data = {}
   if address:
     data['address'] = {'type': 'input', 'value': address.street}
     data['address_line2'] = {'type': 'input', 'value': address.street2}
@@ -683,6 +710,9 @@ def get_user_address(user, data):
     data['city'] = {'type': 'input', 'value': city_state.city}
     data['state'] = {'type': 'select', 'value': city_state.state}
     data['zipcode'] = {'type': 'input', 'value': city_state.zipcode}
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
   return data
 
 def get_user_phone(user, data):
@@ -691,6 +721,9 @@ def get_user_phone(user, data):
     # print(phone)
     data['phone_number'] = {'type': 'input', 'value': phone.phone_number}
     data['phone_type'] = {'type': 'select', 'value': phone.phone_type}
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
   return data
 
 def get_user_occupation(user, data):
@@ -698,33 +731,13 @@ def get_user_occupation(user, data):
   if occupation:
     # print("occupation: ", occupation.occupation)
     data['occupation_type'] = {'type': 'select', 'value': occupation.occupation}
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
   return data
 
-FORM_FIELDS = {
-    "first_name": "First Name",
-    "middle_name": "Middle Name",
-    "last_name": "Last Name",
-    "initials": "Initials",
-    "nickname": "Nickname",
-    "email": "E-Mail",
-    "phone_number": "Phone Number",
-    "phone_type": "Phone Type",
-    "street": "Address",
-    "street2": "Address Line 2",
-    "address": "Address",
-    "address_line2": "Address Line 2",
-    "apt_num": "Apt #",
-    "city": "City",
-    "state": "State",
-    "zipcode": "Zip Code",
-    "password": "Password",
-    "verify_password": "Verify Password",
-    "occupation": "Occupation",
-    "old_password": "Old Password",
-    "new_password": "New Password",
-    "verify_password": "Verify Password",
-    "remember_me": "Remember Me",
-}
+def get_user_model_data(user_id, admin=False):
+  pass
 
 def get_user_data(request, user_id, admin=False):
     if request.method == 'GET':
@@ -751,59 +764,33 @@ def get_user_data(request, user_id, admin=False):
         'last_name': { 'type': 'input', 'value': user.last_name},
         'email': { 'type': 'input', 'value': user.email},
         'nickname': { 'type': 'input', 'value': user.nickname},
-        # 'address': {
-        #   'street': user.address.street,
-        #   'street2': user.address.street2,
-        #   'apt_num': user.address.apt_num,
-        # },
-        # 'city': user.city_state.city,
-        # 'state': user.city_state.state,
-        # 'zipcode': user.address.zipcode,
-        # 'phone_number': user.phone.phone_number,
-        # 'phone_type': user.phone.phone_type,
-        # 'occupation': user.occupation.occupation,
-        'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
-        }
-      data = get_user_address(user, data)
-      data = get_user_phone(user, data)
-      data = get_user_occupation(user, data)      
-      options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
-      
+        # 'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
+      }
       for key in data:
         if key in FORM_FIELDS:
           data[key]['label'] = FORM_FIELDS[key]
+      
+      # data = get_user_address(user, data)
+      # data = get_user_phone(user, data)
+      # data = get_user_occupation(user, data)      
+      options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
+      context = {
+        'forms': {
+          'Basic Info': data,
+          'Address': get_user_address(user),
+          'Phone': get_user_phone(user, data),
+          'Occupation': get_user_occupation(user, data),
+        },
+        'options': options,
+      }
+      
       # Return the data as JSON
-      return JsonResponse({'data': data, 'options': options})
+      # return JsonResponse({'data': data, 'options': options})
+      return JsonResponse(context)
     
 @csrf_exempt
-def get_test_form(request):
-  user_data = get_user_data(request, 3, True)
+def get_test_form(request, id):
+  print(id)
+  user_data = get_user_data(request, id, True)
   print(type(user_data), user_data)
-  
-  # user = get_object_or_404(User, pk=3)  # Get the user with ID 3
-
-  # # Convert the user object to a dictionary and remove the password field
-  # user_dict = model_to_dict(user)
-  # user_dict.pop('password', None)
-
-  # # Get related objects
-  # emails = [model_to_dict(email) for email in user.user_email.all()]
-  # phones = [model_to_dict(phone) for phone in user.user_phone.all()]
-  # address = model_to_dict(user.user_address) if user.user_address else None
-  # city_state = model_to_dict(user.user_city_state) if user.user_city_state else None
-  # access_levels = [model_to_dict(level) for level in user.user_level.all()]
-  # privileges = [model_to_dict(privilege) for privilege in user.user_privileges.all()]
-  # occupation = model_to_dict(user.user_occupation) if user.user_occupation else None
-
-  # # Return the data as JSON
-  # return JsonResponse({
-  #     'user': user_dict,
-  #     'emails': emails,
-  #     'phones': phones,
-  #     'address': address,
-  #     'city_state': city_state,
-  #     'access_levels': access_levels,
-  #     'privileges': privileges,
-  #     'occupation': occupation,
-  # })
   return user_data

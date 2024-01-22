@@ -1,59 +1,64 @@
 <template>
-  <!-- <q-page class="q-pt-xl"> -->
-      <div class="row align-start justify-center q-mx-sm">
-        <div class="column">
-          <q-form>
-            <div v-for="(field, key) in formData" :key="key" class="col-4 col-md-6 q-px-md q-mx-md">
-              <q-input 
-                v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'tel' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
-                v-model="field.value" 
-                :label="field.label" 
-                dense 
-                class="q-my-sm" 
-                :id="key"
-                :type="field.type"
-              />
-              <q-input 
-                v-else-if="field.type === 'password'"
-                v-model="field.value" 
-                :label="field.label" 
-                dense 
-                class="q-my-sm" 
-                :id="key"
-                :type="isPwd ? 'password' : 'text'"
-              > 
-                <template v-slot:append>
-                  <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
-                </template>
-              </q-input>
-              <q-select
-                v-else-if="field.type === 'select' && key === 'state'"
-                v-model="field.value"
-                :label="field.label"
-                :id="key"
-                :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
-                dense
-                class="q-my-sm"
-              />
-              <q-select
-                v-else-if="field.type === 'select'"
-                :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
-                v-model="field.value"
-                :label="field.label"
-                :id="key"
-                dense
-                class="q-my-sm"
-              />
-            </div>
-            <q-btn @click="submit">Submit</q-btn>
-          </q-form>
+  <div class="c-dialog q-ma-sm q-pa-md">
+    <div class="row justify-center">
+      <h1 class="text-h3">Update User</h1>
+    </div>
+    <q-form>
+      <div v-for="(data, top) in formData" :key="top" class="">
+        <div class="row justify-center">
+          <div class="col-10">
+            <h4 class="text-h5 q-mt-md">{{ top }}</h4>
+          </div>
+          <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-5 col-md-5 col-lg-5 q-mx-sm">
+            <q-input 
+              v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'tel' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs" 
+              :id="key"
+              :type="field.type"
+              outlined
+              label-color="primary"
+            />
+            <q-input 
+              v-else-if="field.type === 'password'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs" 
+              :id="key"
+              :type="isPwd ? 'password' : 'text'"
+              outlined
+            > 
+              <template v-slot:append>
+                <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
+              </template>
+            </q-input>
+            <q-select
+              v-else-if="field.type === 'select' && key === 'state'"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
+              class="q-my-xs"
+              outlined
+            />
+            <q-select
+              v-else-if="field.type === 'select'"
+              :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs"
+              outlined
+            />
+          </div>
         </div>
       </div>
-      <!-- <br> -->
-      <!-- <q-spinner v-show="loading" color="primary" size="3em" :thickness="3" /> -->
-    <!-- <div class="row align-start justify-center">
-    </div> -->
-  <!-- </q-page> -->
+      <div class="row justify-around q-my-md">
+        <q-btn @click="submit" color="primary">Submit</q-btn>
+      </div>
+    </q-form>
+  </div>
 </template>
 
 
@@ -61,8 +66,6 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
-import MainFunctions from '../../services/MainFunctions'
-import { api } from "boot/axios";
 import statesJson from "components/states.json";
 
 export default defineComponent({
@@ -90,7 +93,7 @@ export default defineComponent({
     
   },
   computed: {
-
+    
   },
   methods: {
     async submit() {
@@ -119,6 +122,7 @@ export default defineComponent({
           return { key, value };
         });
         console.log(entries);
+
       } catch (error) {
         console.error(error);
       }
@@ -130,27 +134,11 @@ export default defineComponent({
   },
   
   mounted() {
-    APIService.get_test_form().then((response) => {
+    APIService.get_test_form(3).then((response) => {
       console.log(response.data)
-      this.formData = response.data.data
+      this.formData = response.data.forms
       this.options = response.data.options
-    });
-    // console.log(this.states)
-    // this.formData = {
-    //   login: {
-    //     label: "Login",
-    //     type: "email",
-    //     value: "",
-    //   },
-    //   password: {
-    //     label: "Password",
-    //     type: "password",
-    //     value: "",
-    //   },
-    // }
-    // console.log(this.form_data, this.form_options)
-    // this.formData = this.form_data
-    // this.options = this.form_options
+    });    
   },
 
 })
