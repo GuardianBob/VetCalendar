@@ -157,7 +157,7 @@ export default defineComponent({
   },
   
   mounted() {
-    APIService.get_user_profile(3).then((response) => {
+    APIService.get_test_form(3).then((response) => {
       console.log(response.data)
       this.formData = response.data.forms
       this.options = response.data.options

@@ -528,7 +528,7 @@ def form_to_dict(form):
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def get_user_profile(request):
+def get_user_profile_old(request):
     if request.method == 'GET':
       req = request.GET
       print(req)
@@ -793,10 +793,13 @@ def get_user_data(request, user_id, admin=False):
       return JsonResponse(context)
     
 @csrf_exempt
-def get_test_form(request, id):
+# @api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+def get_user_profile(request, id):
   print(id)
   user_data = get_user_data(request, id, True)
-  print(type(user_data), user_data)
+  # print(type(user_data), user_data)
   return user_data
 
 @csrf_exempt
