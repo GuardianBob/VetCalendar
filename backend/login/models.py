@@ -8,6 +8,8 @@ class User(AbstractUser):
     middle_name = models.CharField(max_length=50, blank=True)
     initials = models.CharField(max_length=10, blank=True)
     nickname = models.CharField(max_length=50, blank=True)
+    phone_number = models.IntegerField()
+    phone_type = models.CharField(max_length=50, default="mobile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

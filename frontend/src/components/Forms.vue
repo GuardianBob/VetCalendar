@@ -4,10 +4,10 @@
       <h1 class="text-h3">Update User</h1>
     </div>
     <q-form>
-      <div v-for="(data, top) in formData" :key="top" class="">
+      <div v-for="(data, title) in formData" :key="title" class="">
         <div class="row justify-center">
           <div class="col-10">
-            <h4 class="text-h5 q-mt-md">{{ top }}</h4>
+            <h4 class="text-h5 q-mt-md text-bold">{{ title }}</h4>
           </div>
           <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-5 col-md-5 col-lg-5 q-mx-sm">
             <q-input 
@@ -50,6 +50,16 @@
               :id="key"
               class="q-my-xs"
               outlined
+            />
+            <q-input
+              v-else-if="field.type === 'hidden'"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs"
+              type="input"
+              disabled
+              hidden
             />
           </div>
         </div>
@@ -111,18 +121,42 @@ export default defineComponent({
         // });
         // console.log(values);
 
-        // RETURNS KEY VALUE PAIRS AND ACCOUNTS FOR NESTED OBJECTS
+        // // RETURNS KEY VALUE PAIRS AND ACCOUNTS FOR NESTED OBJECTS
+        // const entries = Object.entries(this.formData).map(([key, item]) => {
+        //   let value;
+        //   if (typeof item.value === 'object' && item.value !== null) {
+        //     value = item.value.value;
+        //   } else {
+        //     value = item.value;
+        //   }
+        //   return { key, value };
+        // });
+
         const entries = Object.entries(this.formData).map(([key, item]) => {
           let value;
-          if (typeof item.value === 'object' && item.value !== null) {
-            value = item.value.value;
+          if (typeof item === 'object' && item !== null) {
+            console.log("===> ", value)
+            value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
+              if (typeof subItem.value === 'object' && subItem !== null) {
+                console.log(subItem.value)
+                acc[subKey] = subItem.value.value;
+                return acc;
+              } else {
+                acc[subKey] = subItem.value;
+                return acc;
+              }
+              // console.log(subItem.value)
+              // acc[subKey] = subItem.value;
+              // return acc;
+            }, {});
           } else {
-            value = item.value;
+            value = item;
           }
-          return { key, value };
+          console.log(value)
+          return { [key]: value };
         });
         console.log(entries);
-
+        APIService.submit_test_form(entries)
       } catch (error) {
         console.error(error);
       }

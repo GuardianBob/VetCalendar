@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email, PasswordReset, FormOptions
+from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email, FormOptions
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -703,8 +703,8 @@ def get_user_address(user):
   city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
   data = {}
   if address:
-    data['address'] = {'type': 'input', 'value': address.street}
-    data['address_line2'] = {'type': 'input', 'value': address.street2}
+    data['street'] = {'type': 'input', 'value': address.street}
+    data['street2'] = {'type': 'input', 'value': address.street2}
     data['apt_num'] = {'type': 'input', 'value': address.apt_num}
   if city_state:
     data['city'] = {'type': 'input', 'value': city_state.city}
@@ -715,8 +715,9 @@ def get_user_address(user):
       data[key]['label'] = FORM_FIELDS[key]
   return data
 
-def get_user_phone(user, data):
+def get_user_phone(user):
   phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
+  data = {}
   if phone:
     # print(phone)
     data['phone_number'] = {'type': 'input', 'value': phone.phone_number}
@@ -726,11 +727,12 @@ def get_user_phone(user, data):
       data[key]['label'] = FORM_FIELDS[key]
   return data
 
-def get_user_occupation(user, data):
+def get_user_occupation(user):
   occupation = user.user_occupation.first() if hasattr(user, 'user_occupation') else None
+  data = {}
   if occupation:
     # print("occupation: ", occupation.occupation)
-    data['occupation_type'] = {'type': 'select', 'value': occupation.occupation}
+    data['occupation'] = {'type': 'select', 'value': occupation.occupation}
   for key in data:
     if key in FORM_FIELDS:
       data[key]['label'] = FORM_FIELDS[key]
@@ -763,6 +765,8 @@ def get_user_data(request, user_id, admin=False):
         'middle_name': { 'type': 'input', 'value': user.middle_name},
         'last_name': { 'type': 'input', 'value': user.last_name},
         'email': { 'type': 'input', 'value': user.email},
+        'phone_number': { 'type': 'input', 'value': user.phone_number},
+        'phone_type': { 'type': 'select', 'value': user.phone_type},
         'nickname': { 'type': 'input', 'value': user.nickname},
         # 'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
       }
@@ -778,8 +782,8 @@ def get_user_data(request, user_id, admin=False):
         'forms': {
           'Basic Info': data,
           'Address': get_user_address(user),
-          'Phone': get_user_phone(user, data),
-          'Occupation': get_user_occupation(user, data),
+          # 'Phone': get_user_phone(user),
+          'Occupation': get_user_occupation(user),
         },
         'options': options,
       }
@@ -794,3 +798,42 @@ def get_test_form(request, id):
   user_data = get_user_data(request, id, True)
   print(type(user_data), user_data)
   return user_data
+
+@csrf_exempt
+def submit_test_form(request):
+  if request.method == 'POST':
+    # resp = request.data  # or request.data if you're using Django REST Framework
+    data = json.loads(request.body.decode("utf-8"))
+    print(data)
+    # print(resp['Basic Info'])
+
+    for item in data:
+      for key, value in item.items():
+        # print(key)
+        # # Get the user
+        # user = User.objects.get(email=data['Basic Info']['email'])
+        if key == 'Basic Info':
+          user = User.objects.get(email=value['email'])
+
+          user_info_form = UserInfoForm(value, instance=user)
+          if user_info_form.is_valid():
+            user_info_form.save()
+        elif key == 'Address':
+          address_form = AddressForm(value, instance=user.user_address)
+          if address_form.is_valid():
+            address_form.save()
+
+          city_state_form = CityStateForm(value, instance=user.user_city_state)
+          if city_state_form.is_valid():
+            city_state_form.save()
+
+        elif key == 'Occupation':
+          occupation = user.user_occupation.get()
+          occupation_form = UpdateOccupationForm(value, instance=occupation)
+          if occupation_form.is_valid():
+            occupation_form.save() 
+
+    return JsonResponse({'message': 'User updated successfully'})
+
+  else:
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
