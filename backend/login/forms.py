@@ -186,9 +186,15 @@ class UserInfoForm(forms.ModelForm):
       self = identify_choice_fields(self)
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        return email.lower()
+      email = self.cleaned_data.get('email')
+      return email.lower()
 
+    def clean_phone_number(self):
+      phone_number = self.cleaned_data.get('phone_number')
+      if isinstance(phone_number, str):
+        phone_number = re.sub('\D', '', phone_number)
+      return phone_number
+    
 class AddressForm(forms.ModelForm):
     street = forms.CharField(max_length=100, widget=forms.TextInput, required=False)
     street2 = forms.CharField(max_length=100, widget=forms.TextInput, required=False)

@@ -148,15 +148,16 @@ def response_msg(status=200, message=""):
 def user_login(request):
   if request.method == 'POST':
     req = request.POST
+    print(req)
     form = Login_Form(req)
     remember_me = req['remember_me']
-    # print(remember_me)
-    # print(form)
+    print(remember_me)
     if form.is_valid():
       # print("it worked!")
       email = form.cleaned_data['email']
       password = form.cleaned_data['password']
       # user = validate_login(email, password)
+      print(email, password)
       user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
       # print(user)
       if user is not None:
@@ -182,7 +183,8 @@ def user_login(request):
         # return response_msg(400, 'Incorrect Login or Password')
         return JsonResponse({"message":'Incorrect Login or Password'}, status=400)
     else:
-      # print("failed")
+      print("failed")
+      print(form.errors)
       return JsonResponse({'message':'Incorrect Login or Password'}, status=400)
   else:
     form = Login_Form()
@@ -706,10 +708,18 @@ def get_user_address(user):
     data['street'] = {'type': 'input', 'value': address.street}
     data['street2'] = {'type': 'input', 'value': address.street2}
     data['apt_num'] = {'type': 'input', 'value': address.apt_num}
+  else:
+    data['street'] = {'type': 'input', 'value': ''}
+    data['street2'] = {'type': 'input', 'value': ''}
+    data['apt_num'] = {'type': 'input', 'value': ''}
   if city_state:
     data['city'] = {'type': 'input', 'value': city_state.city}
     data['state'] = {'type': 'select', 'value': city_state.state}
     data['zipcode'] = {'type': 'input', 'value': city_state.zipcode}
+  else:
+    data['city'] = {'type': 'input', 'value': ''}
+    data['state'] = {'type': 'select', 'value': ''}
+    data['zipcode'] = {'type': 'input', 'value': ''}
   for key in data:
     if key in FORM_FIELDS:
       data[key]['label'] = FORM_FIELDS[key]
@@ -722,6 +732,9 @@ def get_user_phone(user):
     # print(phone)
     data['phone_number'] = {'type': 'input', 'value': phone.phone_number}
     data['phone_type'] = {'type': 'select', 'value': phone.phone_type}
+  else:
+    data['phone_number'] = {'type': 'input', 'value': ''}
+    data['phone_type'] = {'type': 'select', 'value': ''}
   for key in data:
     if key in FORM_FIELDS:
       data[key]['label'] = FORM_FIELDS[key]
@@ -733,6 +746,8 @@ def get_user_occupation(user):
   if occupation:
     # print("occupation: ", occupation.occupation)
     data['occupation'] = {'type': 'select', 'value': occupation.occupation}
+  else:
+    data['occupation'] = {'type': 'select', 'value': ''}
   for key in data:
     if key in FORM_FIELDS:
       data[key]['label'] = FORM_FIELDS[key]
@@ -742,67 +757,69 @@ def get_user_model_data(user_id, admin=False):
   pass
 
 def get_user_data(request, user_id, admin=False):
-    if request.method == 'GET':
-      # print(user_id)
-      # if req["admin"] == "true":
-      # Fetch the user
-      user = get_object_or_404(User, pk=user_id)
-      # print(user.user_address.street)
-      
-      # Fetch the user's info
-      # user_info = get_object_or_404(User_Info, user=user)
+  # print(user_id)
+  # if req["admin"] == "true":
+  # Fetch the user
+  user = get_object_or_404(User, pk=user_id)
+  # print(user.user_address.street)
+  
+  # Fetch the user's info
+  # user_info = get_object_or_404(User_Info, user=user)
 
-      # # Fetch the user's occupation
-      # occupation = get_object_or_404(Occupation, user=user)
+  # # Fetch the user's occupation
+  # occupation = get_object_or_404(Occupation, user=user)
 
-      # Fetch the form options
-      form_options = FormOptions.objects.filter(Q(option_model='phone') | Q(option_model='occupation'))
+  # Fetch the form options
+  form_options = FormOptions.objects.filter(Q(option_model='phone') | Q(option_model='occupation'))
 
-      # Create a dictionary with the user's data
-      data = {
-        'first_name': { 'type': 'input', 'value': user.first_name},
-        'middle_name': { 'type': 'input', 'value': user.middle_name},
-        'last_name': { 'type': 'input', 'value': user.last_name},
-        'email': { 'type': 'input', 'value': user.email},
-        'phone_number': { 'type': 'tel', 'value': user.phone_number},
-        'phone_type': { 'type': 'select', 'value': user.phone_type},
-        'nickname': { 'type': 'input', 'value': user.nickname},
-        # 'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
-      }
-      for key in data:
-        if key in FORM_FIELDS:
-          data[key]['label'] = FORM_FIELDS[key]
-      
-      # data = get_user_address(user, data)
-      # data = get_user_phone(user, data)
-      # data = get_user_occupation(user, data)      
-      options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
-      context = {
-        'forms': {
-          'Basic Info': data,
-          'Address': get_user_address(user),
-          # 'Phone': get_user_phone(user),
-          'Occupation': get_user_occupation(user),
-        },
-        'options': options,
-      }
-      
-      # Return the data as JSON
-      # return JsonResponse({'data': data, 'options': options})
-      return JsonResponse(context)
+  # Create a dictionary with the user's data
+  data = {
+    'first_name': { 'type': 'input', 'value': user.first_name},
+    'middle_name': { 'type': 'input', 'value': user.middle_name},
+    'last_name': { 'type': 'input', 'value': user.last_name},
+    'email': { 'type': 'input', 'value': user.email},
+    'phone_number': { 'type': 'tel', 'value': user.phone_number},
+    'phone_type': { 'type': 'select', 'value': user.phone_type},
+    'nickname': { 'type': 'input', 'value': user.nickname},
+    # 'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
+  }
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
+  
+  # data = get_user_address(user, data)
+  # data = get_user_phone(user, data)
+  # data = get_user_occupation(user, data)      
+  options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
+  context = {
+    'forms': {
+      'Basic Info': data,
+      'Address': get_user_address(user),
+      # 'Phone': get_user_phone(user),
+      'Occupation': get_user_occupation(user),
+    },
+    'options': options,
+  }
+  
+  # Return the data as JSON
+  # return JsonResponse({'data': data, 'options': options})
+  return JsonResponse(context)
     
 @csrf_exempt
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def get_user_profile(request, id):
-  # print(id)
-  user_data = get_user_data(request, id, True)
-  # print(type(user_data), user_data)
-  return user_data
+def user_profile(request, id = 0):
+  if request.method == 'GET':
+    # print(id)
+    user_data = get_user_data(request, id, True)
+    # print(type(user_data), user_data)
+    return user_data
+  else:
+    return update_user_profile(request)
 
 @csrf_exempt
-def submit_test_form(request):
+def update_user_profile(request):
   if request.method == 'POST':
     # resp = request.data  # or request.data if you're using Django REST Framework
     data = json.loads(request.body.decode("utf-8"))
@@ -816,24 +833,62 @@ def submit_test_form(request):
         # user = User.objects.get(email=data['Basic Info']['email'])
         if key == 'Basic Info':
           user = User.objects.get(email=value['email'])
-
           user_info_form = UserInfoForm(value, instance=user)
+          # value["phone_number"] = re.sub('\D', '', value['phone_number'])
+          # print("phone: ", value['phone_number'])
           if user_info_form.is_valid():
+            print("valid")
             user_info_form.save()
+          else:
+            print("Basic invalid")
+            print(user_info_form.errors)
         elif key == 'Address':
-          address_form = AddressForm(value, instance=user.user_address)
+          try:
+            # Try to get the existing address
+            address = user.user_address
+          except User.user_address.RelatedObjectDoesNotExist:
+            # If the user doesn't have an address, create a new one
+            if value['street'] == '' or value['street2'] == '' or value['apt_num'] == '':
+              continue
+            address = Address.objects.create(user=user)
+          address_form = AddressForm(value, instance=address)
           if address_form.is_valid():
             address_form.save()
 
-          city_state_form = CityStateForm(value, instance=user.user_city_state)
+          try:
+            # Try to get the existing address
+            city_state = user.user_city_state
+          except User.user_city_state.RelatedObjectDoesNotExist:
+            # If the user doesn't have an city_state, create a new one
+            if value['city'] == '' and value['state'] == '' and value['zipcode'] == '':
+              continue
+            city_state = CityState.objects.create(user=user)
+          city_state_form = CityStateForm(value, instance=city_state)
           if city_state_form.is_valid():
             city_state_form.save()
+          # city_state_form = CityStateForm(value, instance=user.user_city_state)
+          # if city_state_form.is_valid():
+          #   city_state_form.save()
 
         elif key == 'Occupation':
-          occupation = user.user_occupation.get()
+          try:
+            # Try to get the existing address
+            occupation = user.user_occupation.first()
+          except User.user_occupation.RelatedObjectDoesNotExist:
+            # If the user doesn't have an occupation, create a new one
+            continue
+          if occupation is None:
+            # If the user doesn't have an occupation, skip to the next iteration
+            if value['occupation'] == '':
+              continue
+            occupation = Occupation.objects.create(user=user)
           occupation_form = UpdateOccupationForm(value, instance=occupation)
           if occupation_form.is_valid():
-            occupation_form.save() 
+            occupation_form.save()
+          # occupation = user.user_occupation.get()
+          # occupation_form = UpdateOccupationForm(value, instance=occupation)
+          # if occupation_form.is_valid():
+          #   occupation_form.save() 
 
     return JsonResponse({'message': 'User updated successfully'})
 

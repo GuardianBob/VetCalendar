@@ -195,15 +195,15 @@ class APIService {
   }
 
   get_user_profile(id) {
-    return api.get(`/login/get_user_profile/${id}`)
+    return api.get(`/login/user_profile/${id}`)
   }
 
   get_test_form(id) {
-    return api.get(`/login/get_user_profile/${id}`)
+    return api.get(`/login/user_profile/${id}`)
   }
 
-  submit_test_form(data) {
-    return api.post('/login/submit_test_form', data)
+  update_user_profile(data) {
+    return api.post('/login/user_profile', data)
   }
 
   

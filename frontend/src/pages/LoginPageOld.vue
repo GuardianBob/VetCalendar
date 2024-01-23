@@ -6,33 +6,8 @@
         style="border: 4px solid #1976d2; border-radius: 10px"
       >
         <div class="text-center q-ma-md">
-          <div class="row justify-center">
-            <h1 class="text-h3 text-primary" >Login</h1>
-          </div>
           <q-form @submit="submit" method="POST" id="login_form">
-            <q-input
-              v-model="email"
-              label="E-mail address"
-              dense
-              outlined
-              class="q-my-sm"
-              id="id_login_email"
-              name="email"
-            />
-            <q-input
-              label="Password"
-              :type="isPwd ? 'password' : 'text'"
-              v-model="password"
-              dense
-              outlined
-              class="q-my-sm"
-              id="login_password"
-              name="password"
-            >
-            <template v-slot:append>
-              <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
-            </template>
-            </q-input>
+            <div v-html="python_form"></div>
             <q-checkbox 
               label="Remember Me" 
               v-model="remember" 
@@ -48,7 +23,6 @@
               color="primary"
             />
           </q-form>
-          <div class="q-my-md">Don't have an account? <a href="#">Register Here</a></div>
         </div>
       </div>
     </div>
@@ -76,7 +50,6 @@ export default defineComponent({
       email: ref(""),
       remember: ref(false),
       api_call: ref(""),
-      isPwd: ref(true),
     };
   },
   data() {
@@ -120,7 +93,8 @@ export default defineComponent({
       // });
       // console.log(this.getCookie('csrftoken'))
       console.log(this.api_call);
-      APIService.login(formData)
+      api
+        .post(this.api_call, formData)
         .then((res) => {
           console.log(res);
           localStorage.setItem('access_token', res.data.access);
@@ -146,7 +120,7 @@ export default defineComponent({
         });
     },
     async get_form() {
-      await APIService.login().then(async (results) => {
+      await api.get(this.api_call).then(async (results) => {
         console.log(results);
         this.python_form = results.data;
       });
@@ -178,7 +152,24 @@ export default defineComponent({
   },
 
   mounted() {
+    this.api_call = this.$route.path;
+    if (!this.api_call.includes("login")) {
+      this.api_call = "/login" + this.api_call;
+    }
+    console.log(this.api_call);
     this.get_form();
+    // APIService.login().then(async (results) => {
+    //   let form = results.data
+    //   this.python_form = form;
+
+    // }).then(() => {
+
+    //   this.add_watcher()
+    // })
+    // this.get_form().then(() => {
+    //   this.add_watcher();
+    // })
+    // this.get_csrf()
   },
 });
 </script>

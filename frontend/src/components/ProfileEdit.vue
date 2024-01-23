@@ -137,7 +137,7 @@ export default defineComponent({
   methods: {
     async get_form() {
       try {
-        APIService.get_test_form(this.user_id).then((response) => {
+        APIService.get_user_profile(this.user_id).then((response) => {
           console.log(response.data)
           this.formData = response.data.forms
           this.options = response.data.options
@@ -196,7 +196,27 @@ export default defineComponent({
           return { [key]: value };
         });
         console.log(entries);
-        APIService.submit_test_form(entries)
+        APIService.update_user_profile(entries).then((res) => {
+          console.log(res.data);
+          this.$emit("user-updated");
+          Notify.create({
+            message: res.data.message,
+            color: "green",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          Notify.create({
+            message: error.response.data.message,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        });
       } catch (error) {
         console.error(error);
       }
@@ -240,20 +260,6 @@ export default defineComponent({
   
   mounted() {
     this.get_form()
-    // this.formData = {
-    //   "Login": {
-    //     "email": {
-    //       "label": "E-Mail",
-    //       "type": "input",
-    //       "value": "test"
-    //     },
-    //     "password": {
-    //       "label": "Password",
-    //       "type": "password",
-    //       "value": ""
-    //     }
-    //   },
-    // }   
   },
 
 })
