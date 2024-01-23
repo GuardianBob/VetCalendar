@@ -1,20 +1,79 @@
 <template>
-  <!-- <q-page class="items-center flex flex-center"> -->
-    <div class="row q-mx-md full-width justify-around" style="width: 700px; max-width: 60vw;">
-      <div class="col-12 text-center bg-white text-dark" style="border: 4px solid #1976d2; border-radius: 10px">
-        <div class="text-right">
-          <q-btn flat v-close-popup icon="close"/>
-        </div>  
-        <div class="text-center q-ma-md" ref="form">
-          <q-form @submit="submit" method="POST" id="login_form">
-            <div v-html="data" class="text-left"></div>
-            <q-btn id="submit_btn" label="Submit" class="q-ma-sm" type="submit" color="primary"/>
-            <q-btn id="delete_btn" label="Delete" class="q-ma-sm" color="negative" @click="confirm = true"/>
-            <q-btn id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
-          </q-form>
+  <div class="c-dialog q-ma-sm" ref="form">
+    <div class="text-right">
+      <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
+    </div>
+    <div class="row justify-center">
+      <h1 class="text-h3 text-primary" >Update User</h1>
+    </div>
+    <q-form @submit="submit" method="POST" id="edit_user">
+      <div v-for="(data, title) in formData" :key="title" class="">
+        <div class="row justify-center">
+          <div class="col-10 col-md-12 col-lg-12">
+            <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ title }}</h4>
+          </div>
+          <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
+            <q-input 
+              v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs" 
+              :id="key"
+              :type="field.type"
+              outlined
+              label-color="primary"
+            />
+            <q-input 
+              v-else-if="field.type === 'tel'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs" 
+              :id="key"
+              mask="(###) ###-####"
+              fill-mask
+              outlined
+            /> 
+            <q-input 
+              v-else-if="field.type === 'password'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs" 
+              :id="key"
+              :type="isPwd ? 'password' : 'text'"
+              outlined
+            > 
+              <template v-slot:append>
+                <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
+              </template>
+            </q-input>
+            <q-select
+              v-else-if="field.type === 'select' && key === 'state'"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
+              class="q-my-xs"
+              outlined
+            />
+            <q-select
+              v-else-if="field.type === 'select'"
+              :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs"
+              outlined
+            />
+          </div>
         </div>
       </div>
-      <q-dialog v-model="confirm" persistent>
+      <div class="row justify-center q-my-md">
+        <q-btn id="submit_btn" label="Submit" class="q-ma-sm" type="submit" color="primary"/>
+        <q-btn id="delete_btn" label="Delete" class="q-ma-sm" color="negative" @click="confirm = true"/>
+        <q-btn id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
+      </div>
+    </q-form>
+    <q-dialog v-model="confirm" persistent>
         <q-card>
           <q-card-section class="row items-center">
             <q-avatar icon="report" color="negative" text-color="white" />
@@ -35,113 +94,112 @@
           </q-card-actions>
         </q-card>
       </q-dialog> 
-    </div>
-  <!-- </q-page> -->
+  </div>
 </template>
 
+
 <script>
-import { defineComponent, ref } from "vue";
-import { useQuasar, Notify } from "quasar";
-import APIService from "../../services/api";
-import { api } from "boot/axios";
+import { defineComponent, ref } from 'vue'
+import { useQuasar, Notify } from "quasar"
+import APIService from "../../services/api"
+import statesJson from "components/states.json";
 
 export default defineComponent({
-  name: "ProfileForm",
+  name: "FormsPage",
   props: [
+    "form_data",
+    "form_options",
     "user_id",
-    "adminEdit",
-    "api_string",
-    "editButton",
-    "page_title",
-    "parentFunc01",
-    "parentFunc02",
-    "parentFunc03",
   ],
-  setup() {
-    return {};
+  components: {
   },
   data() {
     return {
-      loading: false,
-      data: ref([]),
-      csrf_token: ref(""),
-      info: ref(false),
-      userData: ref(),
-      api_call: ref(""),
-      api_data: ref(),
-      editLabel: ref("Edit User"),
-      pageTitle: ref('User Details'),
-      // columnLabels: store.formFields.columnLabels,
-      user: ref({}),
-      userInfoLabels: ref({}),
-      edit: ref(false),
-      edit_pw: ref(false),
-      remember: ref(false),
-      passDisabled: ref(true),
-      passError: ref(false),
-      password: ref(""),
-      password2: ref(""),
+      formData: ref({}),
+      options: ref({}),
+      states: ref(statesJson.states),
+      isPwd: ref(true),
       confirm: ref(false),
       verify_delete: ref(false),
-    };
-
+    }
   },
-
+  setup() {
+    
+    return {
+    };
+  },
   watch: {
-    userInfo(newValue, oldValue) {
-      this.userData = this.userInfo
-      
-    },
-    edit(newValue, oldValue) {
-      if (newValue == true) {
-        this.editLabel = "Done"
-        this.edit_pw = true ? this.editButton != "Add User" : false
-      } else {
-        this.editLabel = this.editButton
+    
+  },
+  computed: {
+    
+  },
+  methods: {
+    async get_form() {
+      try {
+        APIService.get_test_form(this.user_id).then((response) => {
+          console.log(response.data)
+          this.formData = response.data.forms
+          this.options = response.data.options
+        }); 
+      } catch (error) {
+        console.error(error);
       }
     },
-  },  
 
-  methods: {
-    submit(event) {
-      console.log(event);
-      event.preventDefault();
-      const formData = new FormData(event.target);
-      console.log(formData);
-      api
-        .post(this.api_call, formData)
-        .then((res) => {
-          console.log(res.data);
-          this.parentFunc02();
-          Notify.create({
-            message: res.data.message,
-            color: "green",
-            textColor: "white",
-            position: "center",
-            timeout: 3000,
-          });
-        })
-        .catch((error) => {
-          console.log(error.response.data);
-          Notify.create({
-            message: error.response.data.message,
-            color: "red",
-            textColor: "white",
-            position: "center",
-            timeout: 3000,
-          });
+    async submit() {
+      try {
+        console.log(this.formData)
+        // RETURNS VALUES ONLY 
+        // const values = Object.values(this.formData).map(item => item.value);
+
+        // ACCOUNTS FOR NESTED OBJECTS
+        // const values = Object.values(this.formData).map(item => {
+        //   if (typeof item.value === 'object' && item.value !== null) {
+        //     return item.value.value;
+        //   }
+        //   return item.value;
+        // });
+        // console.log(values);
+
+        // // RETURNS KEY VALUE PAIRS AND ACCOUNTS FOR NESTED OBJECTS
+        // const entries = Object.entries(this.formData).map(([key, item]) => {
+        //   let value;
+        //   if (typeof item.value === 'object' && item.value !== null) {
+        //     value = item.value.value;
+        //   } else {
+        //     value = item.value;
+        //   }
+        //   return { key, value };
+        // });
+
+        // RETURNS KEY VALUE PAIRS AND ACCOUNTS FOR NESTED OBJECTS WITHIN NESTED OBJECTS.
+        // YEAH, I know it's bad, but it works.
+        const entries = Object.entries(this.formData).map(([key, item]) => {
+          let value;
+          if (typeof item === 'object' && item !== null) {
+            console.log("===> ", value)
+            value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
+              if (typeof subItem.value === 'object' && subItem !== null) {
+                console.log(subItem.value)
+                acc[subKey] = subItem.value.value;
+                return acc;
+              } else {
+                acc[subKey] = subItem.value;
+                return acc;
+              }
+            }, {});
+          } else {
+            value = item;
+          }
+          console.log(value)
+          return { [key]: value };
         });
-    },
-    
-    async get_form() {
-      let params = { "id": this.user_id, "admin": this.adminEdit}
-      // console.log(params)
-      // console.log(this.api_call, params);
-      await api.get(this.api_call, { params }).then(async (results) => {
-        // console.log(results.data);
-        this.data = results.data;
-        
-      });
+        console.log(entries);
+        APIService.submit_test_form(entries)
+      } catch (error) {
+        console.error(error);
+      }
     },
 
     async delete_user() {
@@ -161,7 +219,8 @@ export default defineComponent({
       }
       APIService.delete_user(this.user_id).then((results) => {
         console.log(results);
-        this.parentFunc02();
+        // this.parentFunc02();
+        this.$emit("user-updated");
         Notify.create({
           message: results.data.message,
           color: "green",
@@ -173,61 +232,29 @@ export default defineComponent({
         this.$emit('close-dialog')
       });
     },
-
-    async add_phone_formatting() {
-      const phoneNumberInput = $('#phone_number');
-      phoneNumberInput.val(phoneNumberInput.val().replace(/^(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3"));
-      phoneNumberInput.on('input', function() {
-        let value = $(this).val();
-        value = value.replace(/\D/g, ""); // Remove non-digits
-        // value = value.replace(/^(\d{3})(\d{3})(\d{4})$/, "($1) $2-$3"); // Add dashes
-        if (value.length < 3 && value.length > 0) {
-          value = value.replace(/^(\d{0,3})$/, "($1");
-        } else if (value.length < 6) {
-          value = value.replace(/^(\d{3})(\d{0,3})$/, "($1) $2");
-        } else {
-          value = value.replace(/^(\d{3})(\d{3})(\d{0,4})$/, "($1) $2-$3");
-        }
-        $(this).val(value);
-      });
-    },
-
-    async add_address_watcher() {
-      const cityInput = $('#city');
-      const stateInput = $('#state');
-      const zipcodeInput = $('#zipcode');
-
-      function updateRequiredStatus() {
-        if (cityInput.val() || stateInput.val() || zipcodeInput.val()) {
-          cityInput.attr('required', true);
-          stateInput.attr('required', true);
-          zipcodeInput.attr('required', true);
-        } else {
-          cityInput.removeAttr('required');
-          stateInput.removeAttr('required');
-          zipcodeInput.removeAttr('required');
-        }
-      }
-
-      cityInput.on('input', updateRequiredStatus);
-      stateInput.on('input', updateRequiredStatus);
-      zipcodeInput.on('input', updateRequiredStatus);
-    },
-
-    async get_csrf() {
-      await APIService.get_csrf().then((results) => {
-        console.log(results);
-        this.csrf_token = results.data;
-      });
-    },
   },
+
+  created() {
+    
+  },
+  
   mounted() {
-    this.api_call = this.api_string;
-    this.api_data = this.userId;
-    this.get_form().then(() => {
-      this.add_phone_formatting();
-      this.add_address_watcher();
-    });
+    this.get_form()
+    // this.formData = {
+    //   "Login": {
+    //     "email": {
+    //       "label": "E-Mail",
+    //       "type": "input",
+    //       "value": "test"
+    //     },
+    //     "password": {
+    //       "label": "Password",
+    //       "type": "password",
+    //       "value": ""
+    //     }
+    //   },
+    // }   
   },
-});
+
+})
 </script>

@@ -743,8 +743,7 @@ def get_user_model_data(user_id, admin=False):
 
 def get_user_data(request, user_id, admin=False):
     if request.method == 'GET':
-      req = request.GET
-      print(user_id)
+      # print(user_id)
       # if req["admin"] == "true":
       # Fetch the user
       user = get_object_or_404(User, pk=user_id)
@@ -765,7 +764,7 @@ def get_user_data(request, user_id, admin=False):
         'middle_name': { 'type': 'input', 'value': user.middle_name},
         'last_name': { 'type': 'input', 'value': user.last_name},
         'email': { 'type': 'input', 'value': user.email},
-        'phone_number': { 'type': 'input', 'value': user.phone_number},
+        'phone_number': { 'type': 'tel', 'value': user.phone_number},
         'phone_type': { 'type': 'select', 'value': user.phone_type},
         'nickname': { 'type': 'input', 'value': user.nickname},
         # 'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
@@ -793,11 +792,11 @@ def get_user_data(request, user_id, admin=False):
       return JsonResponse(context)
     
 @csrf_exempt
-# @api_view(['GET', 'POST'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_user_profile(request, id):
-  print(id)
+  # print(id)
   user_data = get_user_data(request, id, True)
   # print(type(user_data), user_data)
   return user_data

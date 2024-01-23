@@ -1,8 +1,10 @@
 <template>
   <!-- <q-page class="q-pt-xl"> -->
-    <q-dialog v-model="show">
-      <Forms />
-    </q-dialog>
+    <div class="row justify-center">
+      <!-- <q-dialog v-model="show"> -->
+        <Forms />
+      <!-- </q-dialog> -->
+    </div>
   <!-- </q-page> -->
 </template>
 

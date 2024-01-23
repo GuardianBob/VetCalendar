@@ -7,7 +7,7 @@
     </div>
     <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" :parentFunc02="user_updated" editButton="Edit User" page_title="User Details" @close-dialog="view_user = false"/>
+      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" @user-updated="user_updated" @close-dialog="view_user = false"/>
     </q-dialog>
     <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">      
       <LoginRegister api_string="login/create_user" editButton="Add User" :closeButton="true" page_title="Add User" @user-created="user_created"/>
