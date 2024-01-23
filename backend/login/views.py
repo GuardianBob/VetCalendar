@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email, PasswordReset, FormOptions
+from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email, FormOptions
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -44,6 +44,32 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 #       return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 #     return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
+
+FORM_FIELDS = {
+    "first_name": "First Name",
+    "middle_name": "Middle Name",
+    "last_name": "Last Name",
+    "initials": "Initials",
+    "nickname": "Nickname",
+    "email": "E-Mail",
+    "phone_number": "Phone Number",
+    "phone_type": "Phone Type",
+    "street": "Address",
+    "street2": "Address Line 2",
+    "address": "Address",
+    "address_line2": "Address Line 2",
+    "apt_num": "Apt #",
+    "city": "City",
+    "state": "State",
+    "zipcode": "Zip Code",
+    "password": "Password",
+    "verify_password": "Verify Password",
+    "occupation": "Occupation",
+    "old_password": "Old Password",
+    "new_password": "New Password",
+    "verify_password": "Verify Password",
+    "remember_me": "Remember Me",
+}
   
 @csrf_exempt
 def validate_token(request):
@@ -502,7 +528,7 @@ def form_to_dict(form):
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def get_user_profile(request):
+def get_user_profile_old(request):
     if request.method == 'GET':
       req = request.GET
       print(req)
@@ -672,41 +698,56 @@ def get_user_profile2(request):
     return render(request, 'multiForm.html', context)
     # return JsonResponse(profile[0])
 
-def get_user_address(user, data):
+def get_user_address(user):
   address = user.user_address if hasattr(user, 'user_address') else None
   city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
+  data = {}
   if address:
-    data['address'] = {'type': 'input', 'value': address.street}
-    data['address_line2'] = {'type': 'input', 'value': address.street2}
+    data['street'] = {'type': 'input', 'value': address.street}
+    data['street2'] = {'type': 'input', 'value': address.street2}
     data['apt_num'] = {'type': 'input', 'value': address.apt_num}
   if city_state:
     data['city'] = {'type': 'input', 'value': city_state.city}
     data['state'] = {'type': 'select', 'value': city_state.state}
     data['zipcode'] = {'type': 'input', 'value': city_state.zipcode}
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
   return data
 
-def get_user_phone(user, data):
+def get_user_phone(user):
   phone = user.user_phone.first() if hasattr(user, 'user_phone') else None
+  data = {}
   if phone:
     # print(phone)
     data['phone_number'] = {'type': 'input', 'value': phone.phone_number}
     data['phone_type'] = {'type': 'select', 'value': phone.phone_type}
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
   return data
 
-def get_user_occupation(user, data):
+def get_user_occupation(user):
   occupation = user.user_occupation.first() if hasattr(user, 'user_occupation') else None
+  data = {}
   if occupation:
     # print("occupation: ", occupation.occupation)
     data['occupation'] = {'type': 'select', 'value': occupation.occupation}
+  for key in data:
+    if key in FORM_FIELDS:
+      data[key]['label'] = FORM_FIELDS[key]
   return data
 
-def get_user_data(user_id, admin=False):
+def get_user_model_data(user_id, admin=False):
+  pass
+
+def get_user_data(request, user_id, admin=False):
     if request.method == 'GET':
       req = request.GET
-      print(req['id'])
+      print(user_id)
       # if req["admin"] == "true":
       # Fetch the user
-      user = get_object_or_404(User, pk=req['id'])
+      user = get_object_or_404(User, pk=user_id)
       # print(user.user_address.street)
       
       # Fetch the user's info
@@ -724,24 +765,78 @@ def get_user_data(user_id, admin=False):
         'middle_name': { 'type': 'input', 'value': user.middle_name},
         'last_name': { 'type': 'input', 'value': user.last_name},
         'email': { 'type': 'input', 'value': user.email},
+        'phone_number': { 'type': 'input', 'value': user.phone_number},
+        'phone_type': { 'type': 'select', 'value': user.phone_type},
         'nickname': { 'type': 'input', 'value': user.nickname},
-        # 'address': {
-        #   'street': user.address.street,
-        #   'street2': user.address.street2,
-        #   'apt_num': user.address.apt_num,
-        # },
-        # 'city': user.city_state.city,
-        # 'state': user.city_state.state,
-        # 'zipcode': user.address.zipcode,
-        # 'phone_number': user.phone.phone_number,
-        # 'phone_type': user.phone.phone_type,
-        # 'occupation': user.occupation.occupation,
-        'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
-        }
-      data = get_user_address(user, data)
-      data = get_user_phone(user, data)
-      data = get_user_occupation(user, data)      
+        # 'options': [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options],
+      }
+      for key in data:
+        if key in FORM_FIELDS:
+          data[key]['label'] = FORM_FIELDS[key]
+      
+      # data = get_user_address(user, data)
+      # data = get_user_phone(user, data)
+      # data = get_user_occupation(user, data)      
       options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
+      context = {
+        'forms': {
+          'Basic Info': data,
+          'Address': get_user_address(user),
+          # 'Phone': get_user_phone(user),
+          'Occupation': get_user_occupation(user),
+        },
+        'options': options,
+      }
       
       # Return the data as JSON
-      return JsonResponse({'data': data, 'options': options})
+      # return JsonResponse({'data': data, 'options': options})
+      return JsonResponse(context)
+    
+@csrf_exempt
+# @api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+def get_user_profile(request, id):
+  print(id)
+  user_data = get_user_data(request, id, True)
+  # print(type(user_data), user_data)
+  return user_data
+
+@csrf_exempt
+def submit_test_form(request):
+  if request.method == 'POST':
+    # resp = request.data  # or request.data if you're using Django REST Framework
+    data = json.loads(request.body.decode("utf-8"))
+    print(data)
+    # print(resp['Basic Info'])
+
+    for item in data:
+      for key, value in item.items():
+        # print(key)
+        # # Get the user
+        # user = User.objects.get(email=data['Basic Info']['email'])
+        if key == 'Basic Info':
+          user = User.objects.get(email=value['email'])
+
+          user_info_form = UserInfoForm(value, instance=user)
+          if user_info_form.is_valid():
+            user_info_form.save()
+        elif key == 'Address':
+          address_form = AddressForm(value, instance=user.user_address)
+          if address_form.is_valid():
+            address_form.save()
+
+          city_state_form = CityStateForm(value, instance=user.user_city_state)
+          if city_state_form.is_valid():
+            city_state_form.save()
+
+        elif key == 'Occupation':
+          occupation = user.user_occupation.get()
+          occupation_form = UpdateOccupationForm(value, instance=occupation)
+          if occupation_form.is_valid():
+            occupation_form.save() 
+
+    return JsonResponse({'message': 'User updated successfully'})
+
+  else:
+    return JsonResponse({'error': 'Invalid request method'}, status=400)

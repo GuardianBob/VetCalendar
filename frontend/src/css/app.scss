@@ -90,6 +90,7 @@ ul.errorlist {
   #date_picker_button {
     display: none;
   }
+  
 }
 
 .fc .fc-toolbar {
@@ -102,4 +103,29 @@ ul.errorlist {
 
 .q-date__header {
   display: none;
+}
+
+.c-dialog {
+  background-color: white;
+  border: 4px solid #581fc2;
+  border-radius: 10px;
+  max-width: 60vw;
+  min-width: 60vw;
+  padding: 0 50px;
+}
+
+.f-field {
+  margin-right: auto;
+}
+
+@media (max-width: 600px) {
+  .c-dialog {
+    max-width: 80vw;
+    min-width: 80vw;
+    padding: 0 10px;
+  }
+
+  .f-field {
+    margin-right: 0;
+  }
 }

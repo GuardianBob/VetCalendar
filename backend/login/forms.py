@@ -105,12 +105,12 @@ FORM_FIELDS = {
 
 def option_fields(field):
   form_options = FormOptions.objects.filter(option_field__icontains=field)
-  print(form_options.values())
+  # print(form_options.values())
   return form_options
 
 def field_options(field):
   form_options = FormOptions.objects.filter(option_model=field)
-  print(form_options.values())
+  # print(form_options.values())
   return form_options
 
 
@@ -171,9 +171,11 @@ class UserInfoForm(forms.ModelForm):
     # verify_password = forms.CharField(max_length=20, min_length=8, widget=forms.PasswordInput, required=True)
     class Meta:
         model = User
-        fields = [ 'first_name', 'middle_name', 'last_name', 'email', 'nickname']
+        fields = [ 'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 'phone_type', 'nickname']
         widgets = {
             'email': forms.EmailInput(),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Phone Number'}),
+            'phone_type': forms.Select(),
             # 'password': forms.PasswordInput(),
             # 'verify_password': forms.PasswordInput(),
         }
@@ -181,6 +183,7 @@ class UserInfoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
       super(UserInfoForm, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
+      self = identify_choice_fields(self)
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -298,9 +301,9 @@ class UpdateOccupationForm(forms.ModelForm):
     }
   
   def __init__(self, *args, **kwargs):
-    if args:
-      # Extract the first value from the queryset if it's not None
-      args = (args[0].values().first(),) if args[0] else args
+    # if args:
+    #   # Extract the first value from the queryset if it's not None
+    #   args = (args[0].values().first(),) if args[0] else args
     super(UpdateOccupationForm, self).__init__(*args, **kwargs)
     self.fields = set_attributes(self.fields)
     self = identify_choice_fields(self)

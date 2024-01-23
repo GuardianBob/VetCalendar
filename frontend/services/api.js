@@ -175,7 +175,7 @@ class APIService {
     return api.get('/login/get_user_list');
   }
 
-  get_user_profile(req) {
+  get_user_profile_old(req) {
     this.setTokenHeader();
     return api.post('/login/get_user_profile', req);
   }
@@ -183,10 +183,6 @@ class APIService {
   get_user_profile_admin(id) {
     return api.post('/login/get_user_profile_admin', id);
   }
-
-  // get_user_data() {
-  //   return api.post('/get_user_profiles');
-  // }
 
   add_user(data) {
     console.log(JSON.stringify(data))
@@ -197,6 +193,20 @@ class APIService {
     // console.log(JSON.stringify(data))
     return api.post('/login/delete_user', data)
   }
+
+  get_user_profile(id) {
+    return api.get(`/login/get_user_profile/${id}`)
+  }
+
+  get_test_form(id) {
+    return api.get(`/login/get_user_profile/${id}`)
+  }
+
+  submit_test_form(data) {
+    return api.post('/login/submit_test_form', data)
+  }
+
+  
 }
 
 export default new APIService()
