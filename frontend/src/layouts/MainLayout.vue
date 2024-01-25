@@ -30,7 +30,7 @@
           header
         >
           <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="secondary" @click="drawer = !drawer" ></q-icon>
-          Essential Links
+          Menu
         </q-item-label>
 
         <EssentialLink
@@ -64,22 +64,68 @@ const linksList = [
     link: '/'
   },
   {
-    title: 'Schedule Import',
+    title: 'Login',
     caption: '',
-    icon: 'upload_file',
-    link: '/schedule_import'
+    icon: 'lock',
+    link: '/login',
+    sublinks : [
+      {
+        title: 'Login',
+        caption: '',
+        icon: 'lock',
+        link: '/login'
+      },
+      {
+        title: 'Register',
+        caption: '',
+        icon: 'lock',
+        link: '/register'
+      },
+    ]
   },
   {
-    title: 'Manage Users',
+    title: 'Admin',
     caption: '',
-    icon: 'people',
-    link: '/users'
+    icon: 'admin_panel_settings',
+    sublinks : [
+      {
+        title: 'Schedule Import',
+        caption: '',
+        icon: 'upload_file',
+        link: '/schedule_import'
+      },
+      {
+        title: 'Manage Users',
+        caption: '',
+        icon: 'people',
+        link: '/users'
+      },
+      {
+        title: 'Manage Schedule',
+        caption: '',
+        icon: 'calendar_month',
+        link: '/schedule'
+      },
+    ]
   },
   {
-    title: 'Manage Schedule',
+    title: 'Testing',
     caption: '',
-    icon: 'calendar_month',
-    link: '/schedule'
+    icon: 'construction',
+    sublinks : [
+      {
+        title: 'BlankTest',
+        caption: '',
+        icon: 'upload_file',
+        link: '/blank'
+      },
+      {
+        title: 'FormTest',
+        caption: '',
+        icon: 'feed',
+        link: '/form'
+      },
+    ]
   },
   // {
   //   title: 'Discord Chat Channel',

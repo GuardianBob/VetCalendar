@@ -14,7 +14,33 @@
           </div>
           <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
             <q-input 
-              v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-if="title === 'Address' && field.type != 'select' && key != 'apt_num' && key != 'street2'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs q-py-none" 
+              :id="key"
+              :type="field.type"
+              outlined
+              label-color="primary"
+              :rules="[isRequired ? requiredRule : '']"
+            />
+            <q-input 
+              v-else-if="title === 'Address' && field.label === 'Zip Code'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs q-py-none" 
+              :id="key"
+              :type="field.type"
+              outlined
+              label-color="primary"
+              mask="#####"
+              fill-mask
+              hint="Must be a 5-digit whole number"
+              :rules="[val => (/^\d{5}$/).test(val) || 'Invalid zipcode']"
+              maxlength="5"
+              />        
+            <q-input 
+              v-else-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
               :label="field.label" 
               class="q-my-xs" 
@@ -54,6 +80,7 @@
               :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
               class="q-my-xs"
               outlined
+              :rules="[isRequired ? requiredRule : '']"
             />
             <q-select
               v-else-if="field.type === 'select'"
@@ -121,6 +148,8 @@ export default defineComponent({
       isPwd: ref(true),
       confirm: ref(false),
       verify_delete: ref(false),
+      isRequired: ref(false),
+      requiredRule: value => !!value || 'This field is required'
     }
   },
   setup() {
@@ -129,12 +158,49 @@ export default defineComponent({
     };
   },
   watch: {
-    
+    'formData.Address': {
+      handler(newValue, oldValue) {
+        // This function will be called when `formData.Address.address` changes.
+        // console.log('Address changed from', oldValue, 'to', newValue.street);
+        // console.log(this.formData.Address.street.value.length)
+        if (this.formData.Address.street.value.length > 0 || this.formData.Address.city.value.length > 0 || this.formData.Address.state.value.length > 0 || this.formData.Address.zipcode.value.length > 0) {
+          // console.log("===========> checking filled", newValue)
+          this.isRequired = true;
+        } else {
+          this.isRequired = false;
+        }
+        // You can add your logic here.
+        // Iterate over the properties of newValue
+        // for (const [key, value] of Object.entries(newValue)) {
+        //   console.log(`Key: ${key}, Value: ${value}`);
+        // }
+      },
+      deep: true
+    }
   },
+
   computed: {
-    
   },
   methods: {
+    isFieldFilled() {
+      let filled = false;
+      // console.log("checking filled", this.formData.Address)
+      for (const entry of Object.entries(this.formData.Address)) {
+        // console.log(`Key: ${key}, Value: ${value}`);
+        for (const [key, value] of Object.entries(entry)) {
+          // console.log(`Key: ${key}, Value: ${value}`);
+          if (value.length > 0) {
+            filled = true;
+            // console.log("===========> Switched to filled", entry)
+            return filled;
+          }
+        }
+        // console.log("=======>> ", filled)
+        // return filled = true ? value.value > 0 : false;
+      }
+      return filled;
+    },
+
     async get_form() {
       try {
         APIService.get_user_profile(this.user_id).then((response) => {
@@ -147,9 +213,14 @@ export default defineComponent({
       }
     },
 
+    generateId(key) {
+      return `input-${key}`;
+    },
+
     async submit() {
       try {
         console.log(this.formData)
+        this.isFieldFilled()
         // RETURNS VALUES ONLY 
         // const values = Object.values(this.formData).map(item => item.value);
 
@@ -198,7 +269,7 @@ export default defineComponent({
         console.log(entries);
         APIService.update_user_profile(entries).then((res) => {
           console.log(res.data);
-          this.$emit("user-updated");
+          this.$emit("done");
           Notify.create({
             message: res.data.message,
             color: "green",
@@ -210,7 +281,7 @@ export default defineComponent({
         .catch((error) => {
           console.log(error.response.data);
           Notify.create({
-            message: error.response.data.message,
+            message: error.response.data.error,
             color: "red",
             textColor: "white",
             position: "center",

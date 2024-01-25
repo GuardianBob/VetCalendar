@@ -10,6 +10,7 @@ urlpatterns = [
     path('validate', views.validate, name='validate'),
     path('get_csrf', views.get_csrf, name='get_csrf'),
     path('register', views.register, name="register"),
+    path('account_request', views.account_request, name="account_request"),
     path('user_profile', views.user_profile, name='user_profile'),
     path('user_profile/<int:id>', views.user_profile, name='user_profile'),
     path('get_user_data/<int:user_id>', views.get_user_data, name='get_user_data'),

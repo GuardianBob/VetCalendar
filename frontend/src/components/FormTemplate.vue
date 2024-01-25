@@ -11,7 +11,7 @@
           </div>
           <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
             <q-input 
-              v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'tel' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
               :label="field.label" 
               class="q-my-xs" 
@@ -20,6 +20,16 @@
               outlined
               label-color="primary"
             />
+            <q-input 
+              v-else-if="field.type === 'tel'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs" 
+              :id="key"
+              mask="(###) ###-####"
+              fill-mask
+              outlined
+            /> 
             <q-input 
               v-else-if="field.type === 'password'"
               v-model="field.value" 

@@ -7,10 +7,10 @@
     </div>
     <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" @user-updated="user_updated" @close-dialog="view_user = false"/>
+      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" @done="user_updated" @close-dialog="view_user = false"/>
     </q-dialog>
     <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">      
-      <LoginRegister api_string="login/create_user" editButton="Add User" :closeButton="true" page_title="Add User" @user-created="user_created"/>
+      <BaseForm getForm="/login/create_user" submitForm="/login/create_user" :closeButton="true" page_title="Add New User" @done="user_created"/>
     </q-dialog>
   </q-page>
 </template>
@@ -24,18 +24,18 @@ import dummyData from "components/dummyData.json"
 import { useMainStore } from "stores/main-store.js"
 import { useFormFields } from "stores/form-fields.js"
 import ProfileEdit from "components/ProfileEdit.vue"
-import LoginRegister from 'src/components/LoginRegister.vue'
+import BaseForm from 'src/components/BaseForm.vue'
 // import { validators } from "app/services/ValidateService";
 const mainStore = useMainStore();
-const api = APIService 
 const formStore = useFormFields();
+
 
 export default defineComponent({
   name: "UserInfo",
   components: {
     DataTable,
     ProfileEdit,
-    LoginRegister,
+    BaseForm,
   },
   setup() {
     return {
@@ -50,6 +50,9 @@ export default defineComponent({
       python_form: ref(),
       api_string: ref(""),
       api_data: ref({}),
+      createForm: ref({}),
+      formOptions: ref({}),
+      getForm: ref({}),
       // columns: ref([
       //   // Replace with database columns
       //   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
@@ -78,8 +81,9 @@ export default defineComponent({
   methods: {
     async edit_user(userInfo) {
       console.log(userInfo.id)
+      this.getForm = "/login/user_profile/" + userInfo.id
       await this.get_user_profile(userInfo.id)
-      // this.userInfo = userInfo
+      this.userInfo = userInfo
       console.log(this.api_data)
       this.view_user = true
       // Notify.create({
@@ -132,6 +136,11 @@ export default defineComponent({
     // mainStore.get_csrf()
     // console.log("refresh token: ", localStorage.getItem("refresh_token"))
     this.get_user_list()
+    APIService.create_user().then((res) => {
+      console.log(res.data)
+      this.createForm = res.data.forms
+      this.formOptions = res.data.options
+    });
     console.log(formStore.formFields.columns);
     // console.log(mainStore.getCookie('csrftoken'))
   },

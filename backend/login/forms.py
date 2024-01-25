@@ -1,4 +1,4 @@
-from .models import User, Address, CityState, Phone, Email, AccessLevel, UserPrivileges, Occupation, FormOptions
+from .models import User, Address, CityState, Phone, Email, AccessLevel, UserPrivileges, Occupation, FormOptions, AccountRequest
 from django import forms
 import datetime
 import bcrypt, re
@@ -153,19 +153,32 @@ class Login_Form(forms.Form):
       super(Login_Form, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
 
-class UserCreationForm(forms.Form):
-  first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
-  middle_name = forms.CharField(max_length=200, widget=forms.TextInput, required=False)
-  last_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)  
-  email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=True)
-  phone_number = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
-  phone_type = forms.ChoiceField(widget=forms.Select, required=False)
+class AccountRequestForm(forms.ModelForm):
+  class Meta:
+    model = AccountRequest
+    fields = [ 'first_name', 'last_name', 'email', 'phone_number', 'phone_type']
+    widgets = {
+        'email': forms.EmailInput(),
+        'phone_number': forms.TextInput(attrs={'placeholder': 'Phone Number'}),
+        'phone_type': forms.Select(),
+        # 'password': forms.PasswordInput(),
+        # 'verify_password': forms.PasswordInput(),
+    }
 
-  def __init__(self, *args, **kwargs):
-    super(UserCreationForm, self).__init__(*args, **kwargs)
-    self.fields = set_attributes(self.fields)
-    self = identify_choice_fields(self)
-    # self.initial['phone_type'] = 'mobile'
+    def __init__(self, *args, **kwargs):
+      super(AccountRequestForm, self).__init__(*args, **kwargs)
+      self.fields = set_attributes(self.fields)
+      self = identify_choice_fields(self)
+
+    def clean_email(self):
+      email = self.cleaned_data.get('email')
+      return email.lower()
+
+    def clean_phone_number(self):
+      phone_number = self.cleaned_data.get('phone_number')
+      if isinstance(phone_number, str):
+        phone_number = re.sub('\D', '', phone_number)
+      return int(phone_number)
 
 class UserInfoForm(forms.ModelForm):
     # verify_password = forms.CharField(max_length=20, min_length=8, widget=forms.PasswordInput, required=True)
@@ -193,7 +206,7 @@ class UserInfoForm(forms.ModelForm):
       phone_number = self.cleaned_data.get('phone_number')
       if isinstance(phone_number, str):
         phone_number = re.sub('\D', '', phone_number)
-      return phone_number
+      return int(phone_number)
     
 class AddressForm(forms.ModelForm):
     street = forms.CharField(max_length=100, widget=forms.TextInput, required=False)
@@ -346,11 +359,11 @@ def set_attributes(fields):
 def identify_choice_fields(form):
   for field_name, field in form.fields.items():
     if isinstance(field, forms.ChoiceField):
-      print(f"{field_name} is a ChoiceField")
+      # print(f"{field_name} is a ChoiceField")
       f_options = option_fields(field_name) 
       if f_options:
         if field_name == 'phone_type':
-          print("phone_type")
+          # print("phone_type")
           form.fields['phone_type'].choices = [('', 'Phone Type')] + [(option.option, option.option_label) for option in f_options]
         else:
           form.fields[field_name].choices = [('', '')] + [(option.option, option.option_label) for option in f_options]
