@@ -1,9 +1,9 @@
 // app global css in SCSS form
 
 // show border on all divs for design help
-div {
-  border: 1px solid red;
-}
+// div {
+//   border: 1px solid red;
+// }
 
 .bg-dark-navy {
   background-color: #081329 !important;
@@ -110,7 +110,7 @@ ul.errorlist {
   border: 4px solid #581fc2;
   border-radius: 10px;
   max-width: 60vw;
-  // min-width: 60vw;
+  min-width: 60vw;
   padding: 0 50px;
 }
 
