@@ -3,7 +3,7 @@
     <div class="row justify-center">
       <!-- <q-dialog v-model="show"> -->
         <!-- <Forms /> -->
-        <BaseForm getForm="/quick_add" submitForm="/quick_add" :closeButton="true" page_title="Quick-Schedule" @done="user_created"/>
+        <BaseForm getForm="/quick_add" submitForm="/quick_add" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="user_created"/>
       <!-- </q-dialog> -->
     </div>
   </q-page>

@@ -1,7 +1,10 @@
 <template>
   <div class="c-dialog q-ma-sm">
+    <div class="text-right" v-if="closeButton">
+      <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
+    </div>
     <div class="row justify-center">
-      <h1 class="text-h3 text-primary" >Update User</h1>
+      <h1 class="text-h3 text-primary">{{ page_title }}</h1>
     </div>
     <q-form>
       <div v-for="(data, title) in formData" :key="title" class="">
@@ -11,33 +14,47 @@
           </div>
           <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
             <q-input 
-              v-if="field.type === 'input' || field.type === 'email' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-if="field.type === 'input' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
               :label="field.label" 
-              class="q-my-xs" 
+              class="q-my-xs q-py-none" 
               :id="key"
               :type="field.type"
               outlined
               label-color="primary"
+              :rules="[field.required ? requiredRule : '']"
             />
+            <q-input 
+              v-else-if="field.type === 'email'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs q-py-none" 
+              :id="key"
+              outlined
+              label-color="primary"
+              :rules="[rules.required, rules.email]"
+            /> 
             <q-input 
               v-else-if="field.type === 'tel'"
               v-model="field.value" 
               :label="field.label" 
-              class="q-my-xs" 
+              class="q-my-xs q-py-none" 
               :id="key"
               mask="(###) ###-####"
               fill-mask
               outlined
+              label-color="primary"
             /> 
             <q-input 
               v-else-if="field.type === 'password'"
               v-model="field.value" 
               :label="field.label" 
-              class="q-my-xs" 
+              class="q-my-xs q-py-none" 
               :id="key"
               :type="isPwd ? 'password' : 'text'"
               outlined
+              label-color="primary"
+              :rules="[field.required ? requiredRule : '']"
             > 
               <template v-slot:append>
                 <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
@@ -49,8 +66,10 @@
               :label="field.label"
               :id="key"
               :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
-              class="q-my-xs"
+              class="q-my-xs q-py-none"
               outlined
+              label-color="primary"
+              :rules="[field.required ? requiredRule : '']"
             />
             <q-select
               v-else-if="field.type === 'select'"
@@ -58,8 +77,10 @@
               v-model="field.value"
               :label="field.label"
               :id="key"
-              class="q-my-xs"
+              class="q-my-xs q-py-none"
               outlined
+              label-color="primary"
+              :rules="[field.required ? requiredRule : '']"
             />
           </div>
         </div>
@@ -71,42 +92,56 @@
   </div>
 </template>
 
-
 <script>
-import { defineComponent, ref, onMounted } from 'vue'
-import { useQuasar, Notify } from "quasar"
-import APIService from "../../services/api"
+import { defineComponent, ref } from "vue";
+import { useQuasar, Notify } from "quasar";
+import APIService from "../../services/api";
+import ValidateService from "../../services/ValidateService";
+import { api } from "boot/axios";
 import statesJson from "components/states.json";
 
 export default defineComponent({
-  name: "FormsPage",
   props: [
+    "page_title",
+    "getForm",
+    "submitForm",
     "form_data",
     "form_options",
+    "closeButton",
+    "editButton",
+    "parentFunc01",
+    "parentFunc02",
+    "parentFunc03",
+    "parentFunc04",
+    "parentFunc05",
   ],
-  components: {
+
+  setup() {
+    return {};
   },
   data() {
     return {
-      formData: ref({}),
-      options: ref({}),
+      loading: false,
+      formData: ref(this.form_data),
+      options: ref(this.form_options),
       states: ref(statesJson.states),
       isPwd: ref(true),
-    }
-  },
-  setup() {
-    
-    return {
+      isRequired: ref(false),
+      rules: ref(ValidateService.validators),
+      requiredRule: val => (val && val.length > 0) || 'This field is required',
     };
   },
-  watch: {
-    
-  },
-  computed: {
-    
-  },
+
+  watch: {},
+
   methods: {
-    async submit() {
+    isValidEmail(event) {
+      console.log(event);
+      const regex = /^[A-Za-z0-9+_.-]+@(.+)$/;
+      return regex.test(event);
+    },
+
+    submit(event) {
       try {
         console.log(this.formData)
         // RETURNS VALUES ONLY 
@@ -155,38 +190,94 @@ export default defineComponent({
           return { [key]: value };
         });
         console.log(entries);
-        APIService.submit_test_form(entries)
+        api.post(this.submitForm, entries).then((res) => {
+          console.log(res.data);
+          this.$emit("done");
+          Notify.create({
+            message: res.data.message,
+            color: "green",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          Notify.create({
+            message: error.response.data.message,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        });
       } catch (error) {
         console.error(error);
       }
     },
-  },
 
+    async get_form() {
+      console.log(this.getForm); // login/create_user
+      await api.get(this.getForm).then(async (results) => {
+        console.log(results.data.forms);
+        this.formData = results.data.forms;
+        this.options = results.data.options;
+        // if ("login" in this.api_call || "register" in this.api_call) {
+        //   add_verify_watcher("#verify_password");
+        // }
+      });
+    },
+
+    async add_password_watcher(id) {
+      if ($(id)) {
+        $(id).on("input", function () {
+          // console.log('Input value changed to:', this.value.length);
+          if (this.value.length >= 8) {
+            $("#submit_btn").prop("disabled", false);
+          } else {
+            $("#submit_btn").prop("disabled", true);
+          }
+        });
+        if ("verify_password" in id) {
+          $(id).on("input", function () {
+            if (this.value === $("#password").value) {
+            }
+          });
+        }
+      }
+    },
+
+    async get_csrf() {
+      await APIService.get_csrf().then((results) => {
+        console.log(results);
+        this.csrf_token = results.data;
+        // document.head.querySelector('meta[name="csrf-token"]');
+        // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
+      });
+    },
+  },
   created() {
-    
+    this.get_form()
   },
-  
   mounted() {
-    APIService.get_test_form(3).then((response) => {
-      console.log(response.data)
-      this.formData = response.data.forms
-      this.options = response.data.options
-    }); 
-    // this.formData = {
-    //   "Login": {
-    //     "email": {
-    //       "label": "E-Mail",
-    //       "type": "input",
-    //       "value": "test"
-    //     },
-    //     "password": {
-    //       "label": "Password",
-    //       "type": "password",
-    //       "value": ""
-    //     }
-    //   },
-    // }   
   },
-
-})
+});
 </script>
+
+<!-- Sample of incoming data that populates this.formData -->
+<!-- Object { forms: {…}, options: (7) […] }
+  forms: Object { "Basic Info": {…} }
+    "Basic Info": Object { first_name: {…}, middle_name: {…}, last_name: {…}, … }
+        email: Object { label: "E-Mail", type: "email", required: true, … }
+        label: "E-Mail"
+        required: true
+        type: "email"
+        value: ""
+        <prototype>: Object { … }
+      first_name: Object { label: "First Name", type: "input", required: true, … }
+      last_name: Object { label: "Last Name", type: "input", required: true, … }
+      middle_name: Object { label: "Middle Name", type: "input", required: false, … }
+      nickname: Object { label: "Nickname", type: "input", required: false, … }
+      phone_number: Object { label: "Phone Number", type: "tel", required: true, … }
+      phone_type: Object { label: "Phone Type", type: "select", required: false, … }
+      <prototype>: Object { … } -->

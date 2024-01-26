@@ -1,5 +1,8 @@
 <template>
-  <div class="c-dialog q-ma-sm">
+  <div :class="{'c-dialog q-ma-sm col-8': isSingle, 'c-dialog q-ma-sm col-12': !isSingle}">
+    <div class="text-right" v-if="closeButton">
+      <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
+    </div>
     <div class="row justify-center">
       <h1 class="text-h3 text-primary">{{ page_title }}</h1>
     </div>
@@ -9,7 +12,7 @@
           <div class="col-10 col-md-12 col-lg-12">
             <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ title }}</h4>
           </div>
-          <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
+          <div v-for="(field, key) in data" :key="key" :class="{'col-12 col-sm-12 col-md-12 col-lg-12 q-px-sm f-field': isSingle, 'col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field': !isSingle}">
             <q-input 
               v-if="field.type === 'input' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
@@ -106,6 +109,7 @@ export default defineComponent({
     "form_options",
     "closeButton",
     "editButton",
+    "isSingle",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",

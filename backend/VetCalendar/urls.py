@@ -8,4 +8,5 @@ urlpatterns = [
     path('calendar/test_event', views.event_test, name='event_test'),
     path('return_user_list', views.return_user_list, name='return_user_list'),
     path('return_shifts', views.return_shifts, name='return_shifts'),    
+    path('quick_add', views.quick_add, name='quick_add'),
 ]

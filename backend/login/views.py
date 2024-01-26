@@ -46,7 +46,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 #     return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
 
-FORM_FEILD_LABELS = {
+FORM_FIELD_LABELS = {
     "first_name": "First Name",
     "middle_name": "Middle Name",
     "last_name": "Last Name",
@@ -128,6 +128,15 @@ class SingleUser():
 
 class UserProfile():
   pass
+
+def trace_error(e, isForm=False):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+    print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
+    print("Error: ", e)
+    if isForm:
+        return JsonResponse({'message':'Form is invalid'}, status=500)
+    return JsonResponse({'message':'Something went wrong'}, status=500)
 
 class ProfileFields():
     user_fields = [f.name for f in User._meta.get_fields()]
@@ -355,11 +364,7 @@ def create_user(request):
       print("Email already exists")
       return JsonResponse({'message':'Email already exists'}, status=500)
     except Exception as e:
-      exc_type, exc_value, exc_traceback = sys.exc_info()
-      filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
-      print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
-      print("Error: ", e)
-      return JsonResponse({'message':'Form is invalid'}, status=500)
+      return trace_error(e, True)
   else:
     user_form = UserInfoForm()
     form = set_form_fields(user_form)
@@ -539,11 +544,7 @@ def account_request(request):
       # return render(request, 'multiForm.html', context)
       return JsonResponse(context)
   except Exception as e:
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
-    print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
-    print("Error: ", e)
-    return JsonResponse({'message':'Form is invalid'}, status=500)
+    return trace_error(e, True)
 
 # ================== NOTE: MOVED TO SCRIPTS.PY =======================
 # def generate_password(user, password_length=20):
@@ -736,11 +737,7 @@ def update_user(request):
 
     return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
-    print(f"An error occurred in file {filename} on line {line_number}")
-    print(e)
-  return JsonResponse({'message': 'an error occurred'}, status=500)
+    return trace_error(e, True)
 
 # @csrf_exempt 
 # def get_user_profile2(request):
@@ -826,8 +823,8 @@ def get_user_address(user):
     data['state'] = {'type': 'select', 'value': ''}
     data['zipcode'] = {'type': 'input', 'value': ''}
   for key in data:
-    if key in FORM_FEILD_LABELS:
-      data[key]['label'] = FORM_FEILD_LABELS[key]
+    if key in FORM_FIELD_LABELS:
+      data[key]['label'] = FORM_FIELD_LABELS[key]
   return data
 
 def get_user_phone(user):
@@ -841,8 +838,8 @@ def get_user_phone(user):
     data['phone_number'] = {'type': 'input', 'value': ''}
     data['phone_type'] = {'type': 'select', 'value': ''}
   for key in data:
-    if key in FORM_FEILD_LABELS:
-      data[key]['label'] = FORM_FEILD_LABELS[key]
+    if key in FORM_FIELD_LABELS:
+      data[key]['label'] = FORM_FIELD_LABELS[key]
   return data
 
 def get_user_occupation(user):
@@ -854,8 +851,8 @@ def get_user_occupation(user):
   else:
     data['occupation'] = {'type': 'select', 'value': ''}
   for key in data:
-    if key in FORM_FEILD_LABELS:
-      data[key]['label'] = FORM_FEILD_LABELS[key]
+    if key in FORM_FIELD_LABELS:
+      data[key]['label'] = FORM_FIELD_LABELS[key]
   return data
 
 def get_user_model_data(user_id, admin=False):
@@ -876,8 +873,8 @@ def get_user_data(request, user_id, admin=False):
     'nickname': { 'type': 'input', 'value': user.nickname},
   }
   for key in data:
-    if key in FORM_FEILD_LABELS:
-      data[key]['label'] = FORM_FEILD_LABELS[key]
+    if key in FORM_FIELD_LABELS:
+      data[key]['label'] = FORM_FIELD_LABELS[key]
   
   options = get_form_options()
   context = {
@@ -973,9 +970,7 @@ def update_address_city_model(user, data):
     print("address and city_state updated")
     return
   except Exception as e:
-    print("something went wrong", str(e))
-    # print(address_form.errors, city_state_form.errors)
-    return str(e)
+    return trace_error(e, True)
 
 def update_occupation_model(user, data):
   try:

@@ -5,10 +5,11 @@ from .serializers import TodoSerializer, CalendarSerializer
 from django.core import serializers
 from .models import Todo, Calendar, Shift, ShiftType, Shift, ScheduleShift
 from django.forms.models import model_to_dict
+from .forms import QuickAddForm
 from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from .scripts import convert_schedule, test_calendar, test_event, get_users, load_schedule
-import datetime, json
+from .scripts import convert_schedule, test_calendar, test_event, get_users, load_schedule, set_form_fields
+import datetime, json, traceback, sys, re, pytz
 from datetime import datetime, date, timedelta
 import dateutil.parser as parser
 import numpy as np
@@ -90,6 +91,37 @@ user_info_fields2 = [
     # "type"
     # "user_address__values"
 ]
+
+# ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
+TIMEZONE = pytz.timezone('America/Los_Angeles')
+
+def fix_timezone(dt):
+    return timezone.make_aware(dt, timezone=TIMEZONE)
+
+def trace_error(e, isForm=False):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+    print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
+    print("Error: ", e)
+    if isForm:
+        return JsonResponse({'message':'Form is invalid'}, status=500)
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+
+
+def get_shift_options():
+    options = Shift.objects.all()
+    options = [{'field': 'shift', 'option': option.id, 'label': option.shift_label} for option in options]
+    return options
+
+def get_shift_type_options():
+    options = ShiftType.objects.all()
+    options = [{'field': 'shift_type', 'option': option.id, 'label': option.type_label} for option in options]
+    return options
+
+def get_user_options():
+    users = User.objects.all()
+    users = [{'field': 'user', 'option': user.id, 'label': f'{user.last_name} ({user.initials})'} for user in users]
+    return users
 
 month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -197,4 +229,66 @@ def get_shifts(request):
     db_json = json.dumps(db_dict)
     return HttpResponse(db_json)
 
+@csrf_exempt
+def quick_add(request):
+    try:
+        if request.method == 'POST':
+            content = json.loads(request.body)
+            content = list(content[0].values())[0]
+            print(content)
+            user = User.objects.get(id=content['user'])
+            shift = Shift.objects.get(id=content['shift'])
+            shift_type = ShiftType.objects.get(id=content['shift_type'])
+            shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
+            # Combine date and time strings into a single string
+            datetime_start = f"{content['shift_date']} {shift.start_time}"
+            datetime_end = f"{content['shift_date']} {shift.end_time}"
+            print('start and end: ', datetime_start, datetime_end)
+            # Convert the combined string into a datetime object
+            shift_start = datetime.strptime(datetime_start, "%Y-%m-%d %H:%M:%S")
+            shift_start = fix_timezone(shift_start)
+            shift_end = datetime.strptime(datetime_end, "%Y-%m-%d %H:%M:%S")
+            shift_end = fix_timezone(shift_end)
+            # start = content['start']
+            # end = content['end']
+            existing_shift = ScheduleShift.objects.filter(user=user, shift_start__date=shift_date).first()
+            if existing_shift:
+                # print(existing_shift.shift_start)
+                existing_shift.shift = shift
+                existing_shift.shift_type = shift_type
+                existing_shift.shift_start = shift_start
+                existing_shift.shift_end = shift_end
+                existing_shift.save()
+                return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
+            else:
+                # If there's no existing shift, create a new one
+                new_shift = ScheduleShift.objects.create(
+                    user=user, 
+                    shift_start=shift_start, 
+                    shift=shift, 
+                    shift_type=shift_type, 
+                    shift_end=shift_end
+                )
+            return JsonResponse({'message':f'Shift(s) Added'}, status=200)
+        else:
+            form = QuickAddForm()
+            form = set_form_fields(form)
+            print(form)
+            options = get_shift_options()
+            options = options + get_shift_type_options() + get_user_options()
+            print(options)
+            context = {
+                'forms': {
+                    '': form,
+                },
+                'options': options
+            }
+            return JsonResponse(context)
+    except Exception as e:
+        # exc_type, exc_value, exc_traceback = sys.exc_info()
+        # filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+        # print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
+        # print("Error: ", e)
+        # return JsonResponse({'message':'Form is invalid'}, status=500)
+        return trace_error(e, True)
 

@@ -2,7 +2,7 @@ from .models import PasswordReset
 from django.contrib.auth.hashers import make_password
 import random, secrets, re, traceback, sys
 
-FORM_FEILD_LABELS = {
+FORM_FIELD_LABELS = {
     "first_name": "First Name",
     "middle_name": "Middle Name",
     "last_name": "Last Name",
@@ -65,7 +65,7 @@ def set_form_fields(form):
   field_names = list(form.fields.keys())
   for field in field_names:
     new_form[field] = {
-      'label': FORM_FEILD_LABELS[field],
+      'label': FORM_FIELD_LABELS[field],
       'type': FORM_FIELD_TYPES[field],
       'value': '',
       'required': field in REQUIRED_FIELDS,
