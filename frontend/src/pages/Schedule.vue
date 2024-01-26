@@ -16,7 +16,7 @@
       </div>
     </div>
     <q-dialog v-model="add_shifts" transition-show="slide-down" transition-hide="slide-up">
-      <QuickAdd />
+      <BaseForm getForm="/quick_add" submitForm="/quick_add" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete"/>
     </q-dialog>
   </q-page>
 </template>
@@ -27,10 +27,12 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
 import Calendar from 'components/Calendar.vue'
+import BaseForm from 'components/BaseForm.vue'
 import MainFunctions from '../../services/MainFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
-import QuickAdd from "components/QuickAdd.vue"
+
+// import QuickAdd from "components/QuickAdd.vue"
 
 const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -39,7 +41,7 @@ export default defineComponent({
   components: {
     Calendar,
     DataTable,
-    QuickAdd
+    BaseForm,
   },
   setup() {
     const $q = useQuasar()
@@ -105,6 +107,13 @@ export default defineComponent({
       } else {
         this.filtered_shifts = this.user_shifts
       }
+    },
+
+    form_complete() {
+      this.add_shifts = false;
+      this.getShiftsYear().then(() => {
+        this.shift_count()
+      });
     },
 
     async shift_count() {

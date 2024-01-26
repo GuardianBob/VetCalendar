@@ -80,7 +80,7 @@
               class="q-my-xs q-py-none"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="[field.required ? rules.required : '']"
             />
           </div>
         </div>
@@ -219,7 +219,7 @@ export default defineComponent({
     async get_form() {
       console.log(this.getForm); // login/create_user
       await api.get(this.getForm).then(async (results) => {
-        console.log(results.data.forms);
+        console.log(results.data.options);
         this.formData = results.data.forms;
         this.options = results.data.options;
         // if ("login" in this.api_call || "register" in this.api_call) {
