@@ -1,5 +1,5 @@
 <template>
-  <div class="c-dialog q-ma-sm">
+  <div :class="'c-dialog q-ma-sm'">
     <div class="text-right" v-if="closeButton">
       <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
     </div>

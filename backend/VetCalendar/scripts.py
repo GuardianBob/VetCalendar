@@ -102,6 +102,8 @@ from docx import Document
 # from tkinter import filedialog, simpledialog
 import csv, json
 
+# ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
+TIMEZONE = pytz.timezone('America/Los_Angeles')
 
 month_variables = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 
@@ -133,6 +135,27 @@ day_list = [
     "saturday", "sat",
     "sunday", "sun"
   ]
+
+FORM_FIELD_TYPES = {
+  'shift': 'select',
+  'shift_type': 'select',
+  'user': 'select',
+  'shift_date': 'date',
+}
+
+FORM_FIELD_LABELS = {
+  'shift': 'Shift',
+  'shift_type': 'Shift Type',
+  'user': 'User',
+  'shift_date': 'Shift Date',
+}
+
+REQUIRED_FIELDS = [
+  'shift',
+  'shift_type',
+  'user',
+  'shift_date',
+]
 
 def convert_schedule(schedule, user, month, year):
   user_month = month
@@ -232,7 +255,7 @@ def load_schedule(schedule, month, year):
   user_month = month
   user_year = year
   wordDoc = Document(schedule)
-  user_tz = pytz.timezone('America/Los_Angeles')
+  # user_tz = pytz.timezone('America/Los_Angeles')
   while not user_month in month_variables:
     # user_month = simpledialog.askstring(title="Month", prompt="Please enter the 2-digit month")
     user_month = "08"
@@ -287,7 +310,7 @@ def load_schedule(schedule, month, year):
                   00,
                   00
                 )
-                shift_start = timezone.make_aware(shift_start, timezone=user_tz)
+                shift_start = timezone.make_aware(shift_start, timezone=TIMEZONE)
                 # print(shift_start)
                 # print(f'user: {cell_user}')
                 shifts.append({
@@ -510,3 +533,15 @@ def add_shifts(shifts):
       return events
   except HttpError as error:
     print('An error occurred: %s' % error)
+
+def set_form_fields(form):
+  new_form = {}
+  field_names = list(form.fields.keys())
+  for field in field_names:
+    new_form[field] = {
+      'label': FORM_FIELD_LABELS[field],
+      'type': FORM_FIELD_TYPES[field],
+      'value': '',
+      'required': field in REQUIRED_FIELDS,
+    }    
+  return new_form

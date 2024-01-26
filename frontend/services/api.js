@@ -91,35 +91,21 @@ class APIService {
   }
 
   login(data) {
-    console.log(data)    
-    // document.cookie = 'csrftoken=' + data.csrfmiddlewaretoken + ';path=/;samesite=strict;secure=false';
-    // this.$q.cookies.set('csrftoken', data.csrfmiddlewaretoken, {
-    //   path: '/',
-    //   sameSite: 'strict',
-    //   secure: false
-    // });
-    // const headers = { 'X-CSRF-TOKEN': data.csrfmiddlewaretoken }
-    // return api.post("/login/validate", { data: data.data }, {headers: headers} );
-    if (!data) {
-      return api.get("/login/")
-    } else {
-      api.post("/login/", data).then((response) => {
-        console.log(response)
-        localStorage.setItem('access_token', response.data.access);
-        localStorage.setItem('refresh_token', response.data.refresh);
-        return response
-      })
-      .catch(error => {
-        console.log(error);
-        return error
-      });
-    }
-    // return api({
-    //   method: "get",
-    //   url: "/login/validate",
-    //   data: data.data,
-    //   headers: { "Content-Type": "multipart/form-data", 'X-CSRF-TOKEN': data.token },
-    // })
+    // console.log(data)    
+    // if (!data) {
+    //   return api.get("/login/")
+    // } else {
+    return api.post("/login/", data).then((response) => {
+      // console.log(response)
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
+      return response
+    })
+    .catch(error => {
+      console.log(error);
+      return error
+    });
+    // }
   }
 
   upload_file(formData) {
@@ -132,7 +118,7 @@ class APIService {
       upload_url = `https://${process.env.REST_API_LIVE}/upload_file`
     }
     // upload_url = `https://${process.env.REST_API_LIVE}/upload_file`
-    console.log("url", upload_url);
+    // console.log("url", upload_url);
     return axios({
       method: "post",
       url: upload_url,
@@ -195,18 +181,18 @@ class APIService {
   }
 
   get_user_profile(id) {
-    return api.get(`/login/get_user_profile/${id}`)
+    return api.get(`/login/user_profile/${id}`)
   }
 
   get_test_form(id) {
-    return api.get(`/login/get_user_profile/${id}`)
+    return api.get(`/login/user_profile/${id}`)
   }
 
-  submit_test_form(data) {
-    return api.post('/login/submit_test_form', data)
+  update_user_profile(data) {
+    return api.post('/login/user_profile', data)
   }
 
   
 }
 
-export default new APIService()
+export default new APIService();

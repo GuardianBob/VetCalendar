@@ -2,37 +2,12 @@
   <q-page class="items-center flex flex-center">
     <div class="row q-mx-md full-width justify-around" id="Login Form">
       <div
-        class="col-4 col-xs-10 col-sm-6 col-md-4 col-lg-3 col-xl-2 text-center"
+        class="col-4 text-center"
         style="border: 4px solid #1976d2; border-radius: 10px"
       >
         <div class="text-center q-ma-md">
-          <div class="row justify-center">
-            <h1 class="text-h3 text-primary" >Login</h1>
-          </div>
-          <q-form @submit.prevent="submit" method="POST" id="login_form">
-            <q-input
-              v-model="email"
-              label="E-mail address"
-              dense
-              outlined
-              class="q-my-sm"
-              id="id_login_email"
-              name="email"
-            />
-            <q-input
-              label="Password"
-              :type="isPwd ? 'password' : 'text'"
-              v-model="password"
-              dense
-              outlined
-              class="q-my-sm"
-              id="login_password"
-              name="password"
-            >
-            <template v-slot:append>
-              <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
-            </template>
-            </q-input>
+          <q-form @submit="submit" method="POST" id="login_form">
+            <div v-html="python_form"></div>
             <q-checkbox 
               label="Remember Me" 
               v-model="remember" 
@@ -48,7 +23,6 @@
               color="primary"
             />
           </q-form>
-          <div class="q-my-md">Don't have an account? <a href="/register">Request Access Here</a></div>
         </div>
       </div>
     </div>
@@ -58,8 +32,9 @@
 <script>
 import { defineComponent, ref } from "vue";
 import { useQuasar, Notify, Cookies } from "quasar";
-import APIService from "app/services/api";
+import APIService from "../../services/api";
 import { useMainStore } from "stores/main-store.js";
+import { api } from "boot/axios";
 
 // const form_email = document.getElementById("id_login_email")
 // const form_pass = document.getElementById("login_password")
@@ -75,7 +50,6 @@ export default defineComponent({
       email: ref(""),
       remember: ref(false),
       api_call: ref(""),
-      isPwd: ref(true),
     };
   },
   data() {
@@ -106,17 +80,25 @@ export default defineComponent({
 
     submit(event) {
       console.log(event);
-      // event.preventDefault();
-      let formData = new FormData(event.target);
+      event.preventDefault();
+      const formData = new FormData(event.target);
       if (this.remember == false) {
         formData.append("remember_me", false)
       }
       console.log(formData)
-      APIService.login(formData)
+      // this.$q.cookies.set('csrftoken', dataObj.csrfmiddlewaretoken) //, {
+      //   path: '/',
+      //   sameSite: 'strict',
+      //   secure: false
+      // });
+      // console.log(this.getCookie('csrftoken'))
+      console.log(this.api_call);
+      api
+        .post(this.api_call, formData)
         .then((res) => {
           console.log(res);
-          // localStorage.setItem('access_token', res.data.access);
-          // localStorage.setItem('refresh_token', res.data.refresh);
+          localStorage.setItem('access_token', res.data.access);
+          localStorage.setItem('refresh_token', res.data.refresh);
           Notify.create({
             message: "Logged in successfully",
             color: "green",
@@ -137,12 +119,12 @@ export default defineComponent({
           });
         });
     },
-    // async get_form() {
-    //   await APIService.login(false).then(async (results) => {
-    //     console.log(results);
-    //     this.python_form = results.data;
-    //   });
-    // },
+    async get_form() {
+      await api.get(this.api_call).then(async (results) => {
+        console.log(results);
+        this.python_form = results.data;
+      });
+    },
 
     async get_csrf() {
       await APIService.get_csrf().then((results) => {
@@ -170,7 +152,24 @@ export default defineComponent({
   },
 
   mounted() {
-    // this.get_form();
+    this.api_call = this.$route.path;
+    if (!this.api_call.includes("login")) {
+      this.api_call = "/login" + this.api_call;
+    }
+    console.log(this.api_call);
+    this.get_form();
+    // APIService.login().then(async (results) => {
+    //   let form = results.data
+    //   this.python_form = form;
+
+    // }).then(() => {
+
+    //   this.add_watcher()
+    // })
+    // this.get_form().then(() => {
+    //   this.add_watcher();
+    // })
+    // this.get_csrf()
   },
 });
 </script>

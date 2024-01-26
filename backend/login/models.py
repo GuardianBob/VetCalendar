@@ -4,20 +4,22 @@ import json
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
+def password_expires_at():
+  return timezone.now() + timezone.timedelta(hours=24)
 class User(AbstractUser):
-    middle_name = models.CharField(max_length=50, blank=True)
-    initials = models.CharField(max_length=10, blank=True)
-    nickname = models.CharField(max_length=50, blank=True)
-    phone_number = models.IntegerField()
-    phone_type = models.CharField(max_length=50, default="mobile")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+  middle_name = models.CharField(max_length=50, blank=True)
+  initials = models.CharField(max_length=10, blank=True)
+  nickname = models.CharField(max_length=50, blank=True)
+  phone_number = models.CharField(max_length=50, blank=False)
+  phone_type = models.CharField(max_length=50, default="mobile")
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
 
-    def delete(self, *args, **kwargs):
-      self.user_phone.all().delete()  # Delete all related phone numbers
-      self.user_level.all().delete()  # Delete all related access levels
-      self.user_privileges.all().delete()  # Delete all related privileges
-      super().delete(*args, **kwargs)  # Call the original delete method
+  def delete(self, *args, **kwargs):
+    self.user_phone.all().delete()  # Delete all related phone numbers
+    self.user_level.all().delete()  # Delete all related access levels
+    self.user_privileges.all().delete()  # Delete all related privileges
+    super().delete(*args, **kwargs)  # Call the original delete method
 
 class Email(models.Model):
   email = models.EmailField(max_length=100)
@@ -26,15 +28,15 @@ class Email(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
 
 class PasswordReset(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    temp_password = models.CharField(max_length=128)
-    reset_code = models.CharField(max_length=128)
-    reset_link = models.CharField(max_length=128)
-    reset_requested = models.BooleanField(default=False)
-    reset_used = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    expires_at = models.DateTimeField(default=timezone.now() + timezone.timedelta(hours=24))
+  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  temp_password = models.CharField(max_length=128)
+  reset_code = models.CharField(max_length=128)
+  reset_link = models.CharField(max_length=128)
+  reset_requested = models.BooleanField(default=False)
+  reset_used = models.BooleanField(default=False)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  expires_at = models.DateTimeField(default=password_expires_at())
 
 class Address(models.Model):
   number = models.IntegerField(blank=True)
@@ -103,5 +105,15 @@ class FormOptions(models.Model):
   option_field = models.CharField(max_length=50)
   option = models.CharField(max_length=50)
   option_label= models.CharField(max_length=50, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+class AccountRequest(models.Model):
+  first_name = models.CharField(max_length=50, blank=False)
+  last_name = models.CharField(max_length=10, blank=False)
+  email = models.CharField(max_length=50, blank=False)
+  phone_number = models.CharField(max_length=50, blank=False)
+  phone_type = models.CharField(max_length=50, default="Mobile")
+  request_type = models.CharField(max_length=150, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)

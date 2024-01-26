@@ -11,15 +11,17 @@ class Todo(models.Model):
       return self.title
   
 class Shift(models.Model):
-  shift = models.CharField(max_length = 20)
+  shift_name = models.CharField(max_length = 50)
+  shift_label = models.CharField(max_length = 50)
   start_time = models.TimeField()
   end_time = models.TimeField()
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
 class ShiftType(models.Model):
-  name = models.CharField(max_length=20)
-  color=models.CharField(max_length=20)
+  shift_type = models.CharField(max_length=50)
+  shift_color = models.CharField(max_length=50)
+  type_label = models.CharField(max_length=50)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
@@ -29,9 +31,10 @@ class UserInitials(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
 
 class ScheduleShift(models.Model):
-  date = models.DateField()
   shift = models.ForeignKey(Shift, related_name= 'assignments', on_delete=models.CASCADE)
   shift_type = models.ForeignKey(ShiftType, related_name='assigned_types', on_delete=models.CASCADE)
+  shift_start = models.DateTimeField(blank=True, null=True)
+  shift_end = models.DateTimeField(blank=True, null=True)
   user = models.ForeignKey(User, related_name='user_shifts', on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
@@ -46,19 +49,9 @@ class Calendar(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
-# class AccessLevel(models.Model):
-#   level = models.CharField(max_length=50)
-#   created_at = models.DateTimeField(auto_now_add=True)
-#   updated_at = models.DateTimeField(auto_now=True)
-
-# class Occupation(models.Model):
-#   occupation = models.CharField(max_length=50)
-#   created_at = models.DateTimeField(auto_now_add=True)
-#   updated_at = models.DateTimeField(auto_now=True)
-
-# class UserRelations(models.Model):
-#   user = models.ForeignKey(User, related_name='user_relations', on_delete=models.CASCADE)
-#   level = models.ForeignKey(AccessLevel, related_name='user_level', on_delete=models.CASCADE)
-#   occupation = models.ForeignKey(Occupation, related_name='user_occupation', on_delete=models.CASCADE)
-#   created_at = models.DateTimeField(auto_now_add=True)
-#   updated_at = models.DateTimeField(auto_now=True)
+class Vacation(models.Model):
+  user = models.ForeignKey(User, related_name='user_vacations', on_delete=models.CASCADE)
+  start = models.DateTimeField()
+  end = models.DateTimeField()
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
