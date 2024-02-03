@@ -19,3 +19,12 @@ The following must be at the end of the .htaccess file for the frontend or there
   RewriteRule . /index.html [L]
 </IfModule>
 '''
+
+# Running on Nginx server:
+The year/month/user variables in the URL will cause a 404 error on Nginx. 
+To correct this add a location block to the "appname.domain.com.conf" file located in /etc/nginx/sites-available
+Add the following somewhere in the server block:
+location / {
+  root /path/to/your/app;  # replace with the actual path to your Quasar app
+  try_files $uri $uri/ /index.html;
+}
