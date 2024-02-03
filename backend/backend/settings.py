@@ -39,13 +39,12 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'jbearlocal.com',
-    "jmeyer-dev.com", 
     "jbear-creations.com", 
     "jbearcreations.com",
-    "vet-cal.jmeyer-dev.com",  # MUST INCLUDE DOMAIN to avoid CORS issues
-    "vet-backend.jmeyer-dev.com",  # MUST INCLUDE DOMAIN to avoid CORS issues
-    "vet-cal-dev.jmeyer-dev.com",  # MUST INCLUDE DOMAIN to avoid CORS issues
-    "vet-backend-dev.jmeyer-dev.com",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    "vcb.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    "vetcal.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    "vss-dev.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    "vssb-dev.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
 ]
 
 CORS_ORIGIN_WHITELIST = [
@@ -55,13 +54,13 @@ CORS_ORIGIN_WHITELIST = [
     'http://*.127.0.0.1:8000',
     'http://192.168.2.16:9000',
     'http://localhost',
-    "https://jmeyer-dev.com", 
+    "https://jgmeyer.dev", 
     "https://jbear-creations.com", 
     "https://jbearcreations.com",
-    "https://vet-cal.jmeyer-dev.com",
-    "https://vet-backend.jmeyer-dev.com",
-    "https://vet-cal-dev.jmeyer-dev.com",
-    "https://vet-backend-dev.jmeyer-dev.com",
+    "https://vetcal.jgmeyer.dev",
+    "https://vcb.jgmeyer.dev",
+    "https://vss-dev.jgmeyer.dev",
+    "https://vssb-dev.jgmeyer.dev",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -76,13 +75,13 @@ CSRF_TRUSTED_ORIGINS = [
     'http://*.127.0.0.1:8000/*',
     'http://*.127.0.0.1:9000/*',
     'http://192.168.2.16:9000/*',
-    "https://jmeyer-dev.com/*", 
+    "https://jgmeyer.dev/*", 
     "https://jbear-creations.com/*", 
     "https://jbearcreations.com/*",
-    "https://vet-cal.jmeyer-dev.com/*",
-    "https://vet-backend.jmeyer-dev.com/*",
-    "https://vet-cal-dev.jmeyer-dev.com/*",
-    "https://vet-backend-dev.jmeyer-dev.com/*",
+    "https://vetcal.jgmeyer.dev/*",
+    "https://vcb.jgmeyer.dev/*",
+    "https://vss-dev.jgmeyer.dev/*",
+    "https://vssb-dev.jgmeyer.dev/*",
 ]
     
 
