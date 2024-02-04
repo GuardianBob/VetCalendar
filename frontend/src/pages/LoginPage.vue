@@ -115,8 +115,8 @@ export default defineComponent({
       APIService.login(formData)
         .then((res) => {
           console.log(res);
-          // localStorage.setItem('access_token', res.data.access);
-          // localStorage.setItem('refresh_token', res.data.refresh);
+          localStorage.setItem('access_token', res.data.access);
+          localStorage.setItem('refresh_token', res.data.refresh);
           Notify.create({
             message: "Logged in successfully",
             color: "green",

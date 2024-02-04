@@ -10,6 +10,8 @@ import axios from 'axios'
 let HTTP = ''
 if (process.env.DEV_ENV == "true") {
   HTTP = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}`
+} else if (process.env.DEV_ENV == "false" && process.env.TEST_ENV == "true") {
+  HTTP = `https://${process.env.REST_API_TEST}`
 } else {
   HTTP = `https://${process.env.REST_API_LIVE}`
 }
@@ -18,14 +20,14 @@ const api = axios.create({
   // withCredentials: true,
   baseURL: HTTP,
   // baseURL: 'https://vet-cal.jmeyer-dev.com/backend',
-  // headers: {
+  headers: {
     // "Content-Type": "application/json; charset=utf-8",
     // "Access-Control-Allow-Origin": "*",
     // "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-TOKEN",
     // "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE,OPTIONS",
     // 'Access-Control-Allow-Methods': '*',
     // 'Access-Control-Allow-Credentials': 'true',
-  // },
+  },
 })
 // console.log(this.$q.cookies)
 // let csrftoken = this.$q.cookies.get('csrftoken')

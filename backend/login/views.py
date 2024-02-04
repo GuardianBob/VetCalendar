@@ -27,6 +27,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
+import logging
+import logging.handlers
 
 # class TokenVerifyView(APIView):
 #   def post(self, request):
@@ -45,6 +47,22 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 #       return Response({'error': str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
 #     return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
+
+# Create a logger
+logger = logging.getLogger(__name__)
+
+# Set the log level
+logger.setLevel(logging.ERROR)
+
+# Create a rotating file handler
+handler = logging.handlers.RotatingFileHandler('error.log', maxBytes=20000, backupCount=5)
+
+# Create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# Add the handler to the logger
+logger.addHandler(handler)
 
 FORM_FIELD_LABELS = {
     "first_name": "First Name",
@@ -132,6 +150,9 @@ class UserProfile():
 def trace_error(e, isForm=False):
     exc_type, exc_value, exc_traceback = sys.exc_info()
     filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+    error_message = f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}"
+    logger.error(error_message)
+    logger.error("Error: ", e)
     print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
     print("Error: ", e)
     if isForm:
@@ -188,55 +209,57 @@ def response_msg(status=200, message=""):
 # Create your views here.
 @csrf_exempt
 def user_login(request):
-  if request.method == 'POST':
-    req = request.POST
-    print(req)
-    form = Login_Form(req)
-    remember_me = req['remember_me']
-    print(remember_me)
-    if form.is_valid():
-      # print("it worked!")
-      email = form.cleaned_data['email']
-      password = form.cleaned_data['password']
-      # user = validate_login(email, password)
-      print(email, password)
-      user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
-      # print(user)
-      if user is not None:
-        login(request, user)
-        # Generate JWT token:
-        # refresh = TokenObtainPairSerializer.get_token(user)
-        if remember_me:
-          # Set refresh token lifetime to 30 days if "Remember Me" is checked
-          RefreshToken.lifetime = timedelta(days=30)
+  try:
+    if request.method == 'POST':
+      req = request.POST
+      print(req)
+      form = Login_Form(req)
+      remember_me = req['remember_me']
+      print(remember_me)
+      if form.is_valid():
+        # print("it worked!")
+        email = form.cleaned_data['email']
+        password = form.cleaned_data['password']
+        # user = validate_login(email, password)
+        print(email)
+        user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
+        print(user)
+        if user is not None:        
+          login(request, user)
+          # Generate JWT token:
+          # refresh = TokenObtainPairSerializer.get_token(user)
+          if remember_me:
+            # Set refresh token lifetime to 30 days if "Remember Me" is checked
+            RefreshToken.lifetime = timedelta(days=30)
+          else:
+            # Otherwise, set it to 1 day
+            RefreshToken.lifetime = timedelta(days=1)
+
+          # Generate JWT token:
+          refresh = RefreshToken.for_user(user)
+          refresh['user_id'] = user.id
+          refresh['admin'] = user.is_superuser
+          return JsonResponse({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+          }, status=200)
         else:
-          # Otherwise, set it to 1 day
-          RefreshToken.lifetime = timedelta(days=1)
-
-        # Generate JWT token:
-        refresh = RefreshToken.for_user(user)
-        refresh['user_id'] = user.id
-        refresh['admin'] = user.is_superuser
-        return JsonResponse({
-          'refresh': str(refresh),
-          'access': str(refresh.access_token),
-        }, status=200)
+          # return response_msg(400, 'Incorrect Login or Password')
+          return JsonResponse({"message":'Incorrect Login or Password'}, status=400)
       else:
-        # return response_msg(400, 'Incorrect Login or Password')
-        return JsonResponse({"message":'Incorrect Login or Password'}, status=400)
+        print("failed")
+        print(form.errors)
+        return JsonResponse({'message':'Incorrect Login or Password'}, status=400)
     else:
-      print("failed")
-      print(form.errors)
-      return JsonResponse({'message':'Incorrect Login or Password'}, status=400)
-  else:
-    form = Login_Form()
-    context = {
-      'form': form,
-      'page_title': 'User Login:'   
-    }
-    return render(request, 'form.html', context)
-  # return JsonResponse({'form': login_form.as_table()})
-
+      form = Login_Form()
+      context = {
+        'form': form,
+        'page_title': 'User Login:'   
+      }
+      return render(request, 'form.html', context)
+    # return JsonResponse({'form': login_form.as_table()})
+  except Exception as e:
+    return trace_error(e, True)
 
 @csrf_exempt
 def login2(request, login_form = Login_Form()):

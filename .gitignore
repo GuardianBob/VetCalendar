@@ -159,3 +159,4 @@ backend/public_bak
 backend/backend/_backups/*
 backend/login/migrations/*
 backend/VetCalendar/migrations/*
+frontend/.env.*

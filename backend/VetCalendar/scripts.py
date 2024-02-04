@@ -1,106 +1,23 @@
-
-
-# NOTE: 2021 SChedule format
-
-# from docx import Document
-# import re
-
-# wordDoc = Document('SEP21_schedule.docx')
-# # wordDoc = Document('Aug 2022(CORRECT).docx')
-# month = ''
-# year = ''
-# shifts = []
-
-# month_list = [
-#   "january", "jan",
-#   "february", "feb",
-#   "march", "mar",
-#   "april", "apr",
-#   "may",
-#   "june", "jun",
-#   "july", "jul",
-#   "august", "aug",
-#   "september", "sept",
-#   "october", "oct",
-#   "november", "nov",
-#   "december", "dec"
-# ]
-
-# day_list = [
-#   "monday", "mon",
-#   "tuesday", "tues",
-#   "wednesday", "wed",
-#   "thursday", "thurs",
-#   "friday", "fri",
-#   "saturday", "sat",
-#   "sunday", "sun"
-# ]
-
-# for table in wordDoc.tables:
-#     date = []
-#     j = 0
-#     for row in table.rows:
-#       row_text = ''
-#       i = 0
-#       k = 0
-#       for cell in row.cells:
-#         row_text = row_text + cell.text + ","
-#         if cell.text.lower() in day_list:
-#           j = 0
-#           # print('reading cells')
-        
-#         if j % 3 == 1:
-#             date.append(cell.text)
-#         else:
-#           split_cell = cell.text.split()
-#           for x in split_cell:
-#             if x.lower() in month_list:
-#               month = split_cell[0]
-#               year = split_cell[1]
-#             if j % 3 == 2:
-#                 if x == "MA":
-#                   shifts.append(["Day Shift", month + "/" + date[i] + "/" + "20" + year, "6:00 AM"])
-#                 if x == "(MA)":
-#                   shifts.append(["Swing Shift 1", month + "/" + date[i] + "/" + "20" + year, "10:00 AM"])
-#             if j % 3 == 0:
-#                 if x == "MA":
-#                   shifts.append(["Swing Shift 2", month + "/" + date[i] + "/" + "20" + year, "2:00 PM"])
-#                 if x == "(MA)":
-#                   shifts.append(["Overnight", month + "/" + date[i] + "/" + "20" + year, "6:00 PM"])
-
-#         i += 1
-
-#       print(row_text, "row", j)
-#       # print("date row", date)
-#       j += 1
-#       i = 0
-#       k = 0
-#       if j % 3 == 1: 
-#         date = []
-
-# print(shifts)
-
-# NOTE: 2022 SChedule format
-
 # ==== Google Calendar API reqs =====
 from __future__ import print_function
 
-import datetime, pytz
+import datetime, json, traceback, sys, re, pytz
 from datetime import timedelta
 import os.path
 from .models import Calendar
 from django.utils import timezone
+from django.shortcuts import render, redirect, HttpResponse
+from django.http import JsonResponse
+from docx import Document
+import csv, json
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+# from google.auth.transport.requests import Request
+# from google.oauth2.credentials import Credentials
+# from google_auth_oauthlib.flow import InstalledAppFlow
+# from googleapiclient.discovery import build
+# from googleapiclient.errors import HttpError
 # ================================================================
 
-from docx import Document
-# from tkinter import filedialog, simpledialog
-import csv, json
 
 # ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
 TIMEZONE = pytz.timezone('America/Los_Angeles')
@@ -156,6 +73,15 @@ REQUIRED_FIELDS = [
   'user',
   'shift_date',
 ]
+
+def trace_error(e, isForm=False):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+    print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
+    print("Error: ", e)
+    if isForm:
+        return JsonResponse({'message':'Form is invalid'}, status=500)
+    return JsonResponse({'message':'Something went wrong'}, status=500)
 
 def convert_schedule(schedule, user, month, year):
   user_month = month
@@ -366,9 +292,9 @@ def load_database(shifts, month, year):
         year = year,
       )
     return
-  except HttpError as error:
-    print('An error occurred: %s' % error)  
-
+  except Exception as e:
+    print('An error occurred: %s' % e)  
+    return trace_error(e, True)
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
@@ -389,121 +315,9 @@ def get_users(schedule):
     return user_list
 
 
-def test_calendar():
-    print('running test_calendar')
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
-    """
-    creds = None
-    # The file gmail.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists(f'backend/tokens/{gmail}.json'):
-        print('Loading credentials from file')
-        creds = Credentials.from_authorized_user_file(f'backend/tokens/{gmail}.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'backend/credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open(f'backend/tokens/{gmail}.json', 'w') as token:
-            token.write(creds.to_json())
-
-    try:
-        service = build('calendar', 'v3', credentials=creds)
-
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
-        events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
-                                              orderBy='startTime').execute()
-        events = events_result.get('items', [])
-
-        if not events:
-            print('No upcoming events found.')
-            return
-
-        # Prints the start and name of the next 10 events
-        for event in events:
-            start = event['start'].get('dateTime', event['start'].get('date'))
-            print(start, event['summary'])
-        return events
-
-    except HttpError as error:
-        print('An error occurred: %s' % error)
-
-def test_event():
-    print('running test_event')
-    """Shows basic usage of the Google Calendar API.
-    Prints the start and name of the next 10 events on the user's calendar.
-    """
-    creds = None
-    # The file gmail.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists(f'backend/tokens/{gmail}.json'):
-        print('Loading credentials from file')
-        creds = Credentials.from_authorized_user_file(f'backend/tokens/{gmail}.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'backend/credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open(f'backend/tokens/{gmail}.json', 'w') as token:
-            token.write(creds.to_json())
-
-    try:
-        service = build('calendar', 'v3', credentials=creds)
-
-        # Call the Calendar API
-        now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        event = {
-          "summary": "Day Shift on June 21 7am-7pm",
-          "location": "World Wide Web",
-          "description": "Testing",
-          "start": {
-            "dateTime": "2023-06-21T07:00:00-07:00",
-            "timeZone": "America/Los_Angeles"
-          },
-          "end": {
-            "dateTime": "2023-06-21T19:00:00-07:00",
-            "timeZone": "America/Los_Angeles"
-          },
-        }
-        event = service.events().insert(calendarId='primary', body=event).execute()
-        new_event = 'Event created: %s' % (event.get('htmlLink'))
-        print(new_event)
-        return new_event
-
-    except HttpError as error:
-        print('An error occurred: %s' % error)
-
 def add_shifts(shifts):
   print('running add_events')
   creds = None
-  # if os.path.exists(f'backend/tokens/{gmail}.json'):
-  #     print('Loading credentials from file')
-  #     creds = Credentials.from_authorized_user_file(f'backend/tokens/{gmail}.json', SCOPES)
-  # # If there are no (valid) credentials available, let the user log in.
-  # if not creds or not creds.valid:
-  #     if creds and creds.expired and creds.refresh_token:
-  #         creds.refresh(Request())
-  #     else:
-  #         flow = InstalledAppFlow.from_client_secrets_file(
-  #             'backend/credentials.json', SCOPES)
-  #         creds = flow.run_local_server(port=0)
-  #     # Save the credentials for the next run
-  #     with open(f'backend/tokens/{gmail}.json', 'w') as token:
-  #         token.write(creds.to_json())
 
   try:
       # service = build('calendar', 'v3', credentials=creds)
@@ -531,8 +345,9 @@ def add_shifts(shifts):
         # events = service.events().insert(calendarId='primary', body=event).execute()
       # print("new events: ", events)
       return events
-  except HttpError as error:
-    print('An error occurred: %s' % error)
+  except Exception as e:
+    print('An error occurred: %s' % e)  
+    return trace_error(e, True)
 
 def set_form_fields(form):
   new_form = {}

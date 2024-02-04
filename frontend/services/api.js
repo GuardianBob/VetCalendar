@@ -95,16 +95,17 @@ class APIService {
     // if (!data) {
     //   return api.get("/login/")
     // } else {
-    return api.post("/login/", data).then((response) => {
-      // console.log(response)
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      return response
-    })
-    .catch(error => {
-      console.log(error);
-      return error
-    });
+    return api.post("/login/", data)
+    // .then((response) => {
+    //   // console.log(response)
+    //   localStorage.setItem('access_token', response.data.access);
+    //   localStorage.setItem('refresh_token', response.data.refresh);
+    //   return response
+    // })
+    // .catch(error => {
+    //   console.log(error.response);
+    //   return error
+    // });
     // }
   }
 
@@ -114,6 +115,8 @@ class APIService {
     let upload_url = ''
     if (process.env.DEV_ENV == "true") {
       upload_url = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}/upload_file`
+    } else if (process.env.DEV_ENV == "false" && process.env.TEST_ENV == "true") {
+      upload_url = `https://${process.env.REST_API_TEST}/upload_file`
     } else {
       upload_url = `https://${process.env.REST_API_LIVE}/upload_file`
     }

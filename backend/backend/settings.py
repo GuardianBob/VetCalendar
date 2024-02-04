@@ -34,17 +34,35 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv("DEBUG", "False") == "True"
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
-ALLOWED_HOSTS = [
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+host_list = [
+    'http://localhost:9000',
+    'http://127.0.0.1:9000',
+    'http://127.0.0.1:8000',
     'http://localhost',
-    'localhost',
-    '127.0.0.1',
-    'jbearlocal.com',
-    "jbear-creations.com", 
-    "jbearcreations.com",
-    "vcb.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
-    "vetcal.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
-    "vss-dev.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
-    "vssb-dev.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    "https://jgmeyer.dev",
+    "https://vetcal.jgmeyer.dev",
+    "https://vss.jgmeyer.dev",
+    "https://vssb.jgmeyer.dev",
+    "https://vss-dev.jgmeyer.dev",
+    "https://vssb-dev.jgmeyer.dev",
+    "https://jbear-creations.com", 
+    "https://jbearcreations.com",
+]
+
+ALLOWED_HOSTS = [
+    '*'
+    # 'http://localhost',
+    # 'localhost',
+    # '127.0.0.1',
+    # 'jbearlocal.com',
+    # "jbear-creations.com", 
+    # "jbearcreations.com",
+    # "vcb.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    # "vetcal.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    # "vss-dev.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
+    # "vssb-dev.jgmeyer.dev",  # MUST INCLUDE DOMAIN to avoid CORS issues
 ]
 
 CORS_ORIGIN_WHITELIST = [
@@ -67,23 +85,25 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_COOKIE_NAME = 'csrftoken'
 
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:9000',
-    'http://localhost:9000/*',
-    'http://*.127.0.0.1',
-    'http://*.127.0.0.1:8000/*',
-    'http://*.127.0.0.1:9000/*',
-    'http://192.168.2.16:9000/*',
-    "https://jgmeyer.dev/*", 
-    "https://jbear-creations.com/*", 
-    "https://jbearcreations.com/*",
-    "https://vetcal.jgmeyer.dev/*",
-    "https://vcb.jgmeyer.dev/*",
-    "https://vss-dev.jgmeyer.dev/*",
-    "https://vssb-dev.jgmeyer.dev/*",
-]
+CORS_ALLOWED_ORIGINS = host_list
     
+# CSRF_TRUSTED_ORIGINS = [
+#     'http://localhost:9000',
+#     'http://localhost:9000/*',
+#     'http://*.127.0.0.1',
+#     'http://*.127.0.0.1:8000/*',
+#     'http://*.127.0.0.1:9000/*',
+#     'http://192.168.2.16:9000/*',
+#     "https://jgmeyer.dev/*", 
+#     "https://jbear-creations.com/*", 
+#     "https://jbearcreations.com/*",
+#     "https://vetcal.jgmeyer.dev/*",
+#     "https://vcb.jgmeyer.dev/*",
+#     "https://vss-dev.jgmeyer.dev/*",
+#     "https://vssb-dev.jgmeyer.dev/*",
+# ]
 
 # Application definition
 
@@ -104,8 +124,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -159,16 +179,16 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-if os.getenv('DEBUG') == "True":
+if os.getenv('DEVELOPMENT_MODE') == "True":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         },
     }
-    CSRF_COOKIE_DOMAIN = None
-    CSRF_COOKIE_SECURE = False # Set this to True if you are using HTTPS
-    CSRF_COOKIE_HTTPONLY = False # Set this to True if you are using 
+    # CSRF_COOKIE_DOMAIN = None
+    # CSRF_COOKIE_SECURE = False # Set this to True if you are using HTTPS
+    # CSRF_COOKIE_HTTPONLY = False # Set this to True if you are using 
 else:
     DATABASES = {
         'default': { # MySQL Settings
@@ -183,8 +203,8 @@ else:
             }
         }
     }
-    CSRF_COOKIE_DOMAIN = CORS_ORIGIN_WHITELIST
-    CSRF_COOKIE_SECURE = True # Set this to True if you are using HTTPS
+    # CSRF_COOKIE_DOMAIN = CORS_ORIGIN_WHITELIST
+    # CSRF_COOKIE_SECURE = True # Set this to True if you are using HTTPS
 
 
 # Password validation
@@ -250,13 +270,13 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-    'VetCalendar/static/',
-    # 'ShiftScheduler/static/',
-]
-# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") #local
-STATIC_ROOT = os.path.join(BASE_DIR, 'public') # cPanel
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, "static"),
+#     'VetCalendar/static/',
+#     # 'ShiftScheduler/static/',
+# ]
+STATIC_ROOT = os.path.join(BASE_DIR, "static") #local
+# STATIC_ROOT = os.path.join(BASE_DIR, 'public') # cPanel
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "tmp") # cPanel

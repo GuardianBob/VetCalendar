@@ -8,11 +8,11 @@ from django.forms.models import model_to_dict
 from .forms import QuickAddForm
 from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from .scripts import convert_schedule, test_calendar, test_event, get_users, load_schedule, set_form_fields
+from .scripts import convert_schedule, get_users, load_schedule, set_form_fields
 import datetime, json, traceback, sys, re, pytz
 from datetime import datetime, date, timedelta
 import dateutil.parser as parser
-import numpy as np
+# import numpy as np
 from django.utils import timezone
 from django.middleware.csrf import get_token
 
@@ -199,18 +199,6 @@ def return_shifts(request):
     else:
         return HttpResponse("No Shifts")
 
-@csrf_exempt 
-def calendar_test(request):
-    events = test_calendar()
-    return HttpResponse(events) 
-
-@csrf_exempt 
-def event_test(request):
-    new_event = test_event()
-    return HttpResponse(new_event)
-
-
-
 @csrf_exempt
 def get_user_info(request):
     pass
@@ -285,10 +273,5 @@ def quick_add(request):
             }
             return JsonResponse(context)
     except Exception as e:
-        # exc_type, exc_value, exc_traceback = sys.exc_info()
-        # filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
-        # print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
-        # print("Error: ", e)
-        # return JsonResponse({'message':'Form is invalid'}, status=500)
         return trace_error(e, True)
 
