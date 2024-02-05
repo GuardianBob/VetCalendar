@@ -40,8 +40,6 @@ export default defineComponent({
   setup() {
     
     return {
-      form_data: ref({}),
-      form_options: ref({}),
     };
   },
   watch: {
@@ -55,18 +53,7 @@ export default defineComponent({
   },
   
   mounted() {
-    this.form_data = {
-      login: {
-        label: "Login",
-        type: "email",
-        value: "",
-      },
-      password: {
-        label: "Password",
-        type: "password",
-        value: "",
-      },
-    }    
+    
   },
 
 })
