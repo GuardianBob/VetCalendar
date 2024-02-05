@@ -40,7 +40,7 @@ class ScheduleShift(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
   
 class Calendar(models.Model):
-  user_initials = models.CharField(max_length=4)
+  user_initials = models.CharField(max_length=10)
   shift = models.CharField(max_length=20)
   start = models.DateTimeField()
   end = models.DateTimeField()

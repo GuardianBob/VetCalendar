@@ -1,11 +1,9 @@
 from django.db import models
 from django.core import serializers
 import json
-from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 
-def password_expires_at():
-  return timezone.now() + timezone.timedelta(hours=24)
+
 class User(AbstractUser):
   middle_name = models.CharField(max_length=50, blank=True)
   initials = models.CharField(max_length=10, blank=True)
@@ -36,7 +34,7 @@ class PasswordReset(models.Model):
   reset_used = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
-  expires_at = models.DateTimeField(default=password_expires_at())
+  expires_at = models.DateTimeField()
 
 class Address(models.Model):
   number = models.IntegerField(blank=True)

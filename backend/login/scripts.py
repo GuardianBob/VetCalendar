@@ -1,6 +1,7 @@
 from .models import PasswordReset
 from django.contrib.auth.hashers import make_password
 import random, secrets, re, traceback, sys
+from django.utils import timezone
 
 FORM_FIELD_LABELS = {
     "first_name": "First Name",
@@ -72,6 +73,9 @@ def set_form_fields(form):
     }    
   return new_form
 
+def password_expires_at():
+  return timezone.now() + timezone.timedelta(hours=24)
+
 def generate_password(user, password_length=20):
   password = secrets.token_urlsafe(password_length)
   reset_link = secrets.token_urlsafe(50)
@@ -86,6 +90,7 @@ def generate_password(user, password_length=20):
         'reset_requested': True,
         'reset_code': reset_code,
         'reset_link': reset_link,
+        'expires_at': password_expires_at(),
       }
   )  
   user.password = hashed_pass
@@ -95,5 +100,6 @@ def generate_password(user, password_length=20):
     "encrypted" : hashed_pass,
     "reset_code": reset_code,
     "reset_link": reset_link,
+    'expires_at': password_expires_at(),
   }
   return new_password

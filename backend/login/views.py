@@ -212,7 +212,7 @@ def user_login(request):
   try:
     if request.method == 'POST':
       req = request.POST
-      print(req)
+      print(req['email'])
       form = Login_Form(req)
       remember_me = req['remember_me']
       print(remember_me)
@@ -222,7 +222,7 @@ def user_login(request):
         password = form.cleaned_data['password']
         # user = validate_login(email, password)
         print(email)
-        user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
+        user = authenticate(request, username=req['email'], password=req['password'])
         print(user)
         if user is not None:        
           login(request, user)

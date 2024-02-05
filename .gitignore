@@ -160,3 +160,4 @@ backend/backend/_backups/*
 backend/login/migrations/*
 backend/VetCalendar/migrations/*
 frontend/.env.*
+exports/
