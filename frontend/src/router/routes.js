@@ -37,7 +37,8 @@ const routes = [
       },
       {
         path: "/schedule_import",
-        redirect: "/",
+        // redirect: "/",
+        component: () => import("pages/UploadSchedule.vue"),
         alias: [
           "/schedule_import/:year*",
           "/schedule_import/:year*/:month*",
@@ -90,7 +91,7 @@ const routes = [
       },
       {
         path: "/blank",
-        component: () => import("pages/IndexBlank.vue"),
+        component: () => import("pages/IndexPageOld.vue"),
         // beforeEnter: requireAuth,
       },
       {
