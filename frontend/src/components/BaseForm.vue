@@ -14,7 +14,7 @@
           </div>
           <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
             <q-input 
-              v-if="field.type === 'input' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'date' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-if="field.type === 'input' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
               :label="field.label" 
               class="q-my-xs q-py-none" 
@@ -82,6 +82,29 @@
               label-color="primary"
               :rules="[field.required ? rules.required : '']"
             />
+            <q-input
+              v-else-if="field.type === 'date'"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              label-color="primary"
+              :rules="[field.required ? requiredRule : '']"
+              >
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-date v-model="field.value" mask="MMM DD YYYY" multiple range>
+                      <div class="row items-center justify-end">
+                        <q-btn label="Clear" color="primary" flat dense class="q-mr-sm" @click="field.value = ''" /> 
+                        <q-btn v-close-popup label="Close" color="primary" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
           </div>
         </div>
       </div>
@@ -132,7 +155,17 @@ export default defineComponent({
     };
   },
 
-  watch: {},
+  watch: {
+    formData: {
+      deep: true,
+      handler(newVal) {
+        if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
+          const dateRanges = newVal[''].shift_date.value;
+          console.log(dateRanges);
+        }
+      },
+    },
+  },
 
   methods: {
     isValidEmail(event) {
@@ -219,7 +252,7 @@ export default defineComponent({
     async get_form() {
       console.log(this.getForm); // login/create_user
       await api.get(this.getForm).then(async (results) => {
-        console.log(results.data.options);
+        console.log(results.data.forms);
         this.formData = results.data.forms;
         this.options = results.data.options;
         // if ("login" in this.api_call || "register" in this.api_call) {

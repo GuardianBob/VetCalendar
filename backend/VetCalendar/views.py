@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
-from rest_framework import viewsets
 from .serializers import TodoSerializer, CalendarSerializer
 from django.core import serializers
 from .models import Todo, Calendar, Shift, ShiftType, Shift, ScheduleShift
@@ -15,6 +14,7 @@ import dateutil.parser as parser
 # import numpy as np
 from django.utils import timezone
 from django.middleware.csrf import get_token
+from dateutil.parser import parse
 
 # Create your views here.
 
@@ -29,10 +29,6 @@ def get_csrf(request):
     token = get_token(request)
     print('token: ', token)
     return JsonResponse({'token' : token})
-
-class TodoView(viewsets.ModelViewSet):
-    serializer_class = TodoSerializer
-    queryset = Todo.objects.all()
 
 month_list = {
     "Jan": "01",
@@ -227,10 +223,13 @@ def quick_add(request):
             user = User.objects.get(id=content['user'])
             shift = Shift.objects.get(id=content['shift'])
             shift_type = ShiftType.objects.get(id=content['shift_type'])
-            shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
+            # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
+            shift_date = parse(content['shift_date']).date()
             # Combine date and time strings into a single string
-            datetime_start = f"{content['shift_date']} {shift.start_time}"
-            datetime_end = f"{content['shift_date']} {shift.end_time}"
+            # datetime_start = f"{content['shift_date']} {shift.start_time}"
+            # datetime_end = f"{content['shift_date']} {shift.end_time}"
+            datetime_start = f"{shift_date} {shift.start_time}"
+            datetime_end = f"{shift_date} {shift.end_time}"
             print('start and end: ', datetime_start, datetime_end)
             # Convert the combined string into a datetime object
             shift_start = datetime.strptime(datetime_start, "%Y-%m-%d %H:%M:%S")

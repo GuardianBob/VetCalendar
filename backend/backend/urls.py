@@ -27,13 +27,13 @@ from django.views.generic.base import TemplateView
 from login.views import validate_token
 
 router = routers.DefaultRouter()
-router.register(r'todos', views.TodoView, 'todo')
+# router.register(r'todos', views.TodoView, 'todo')
 # router.register(r'upload_file', views.upload_file, 'upload')
 
 urlpatterns = [
     path('', include('VetCalendar.urls')),
     re_path(r'admin\/?', admin.site.urls),
-    re_path(r'api\/?', include(router.urls)),
+    # re_path(r'api\/?', include(router.urls)),
     re_path(r'login\/?', include('login.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
