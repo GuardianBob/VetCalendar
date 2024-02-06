@@ -97,7 +97,7 @@
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
                     <q-date v-model="field.value" mask="MMM DD YYYY" multiple>
                       <div class="row items-center justify-end">
-                        <q-btn label="Clear" color="primary" flat dense class="q-mr-sm" @click="field.value = ''" /> 
+                        <q-btn label="Clear" color="negative" flat dense class="q-mr-sm" @click="field.value = ''" /> 
                         <q-btn v-close-popup label="Close" color="primary" flat />
                       </div>
                     </q-date>
@@ -205,11 +205,17 @@ export default defineComponent({
         const entries = Object.entries(this.formData).map(([key, item]) => {
           let value;
           if (typeof item === 'object' && item !== null) {
-            console.log("===> ", value)
+            // console.log("===> ", value)
             value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
               if (typeof subItem.value === 'object' && subItem !== null) {
-                console.log(subItem.value)
-                acc[subKey] = subItem.value.value;
+                if (Array.isArray(subItem.value)) {
+                  // console.log(subItem.value)
+                  // If subItem.value is an array, assign it directly to acc[subKey]
+                  acc[subKey] = subItem.value.map(item => item);
+                } else {
+                  acc[subKey] = subItem.value.value;
+                }
+                // acc[subKey] = subItem.value.value;
                 return acc;
               } else {
                 acc[subKey] = subItem.value;
@@ -219,7 +225,7 @@ export default defineComponent({
           } else {
             value = item;
           }
-          console.log(value)
+          // console.log(value)
           return { [key]: value };
         });
         console.log(entries);
