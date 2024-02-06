@@ -1,15 +1,6 @@
 from django.db import models
 from login.models import User
 
-# Create your models here.
-class Todo(models.Model):
-  title = models.CharField(max_length=120)
-  description = models.TextField()
-  completed = models.BooleanField(default=False)
-
-  def _str_(self):
-      return self.title
-  
 class Shift(models.Model):
   shift_name = models.CharField(max_length = 50)
   shift_label = models.CharField(max_length = 50)

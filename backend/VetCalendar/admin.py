@@ -1,10 +1,7 @@
 from django.contrib import admin
-from .models import Todo
+from .models import Shift
 
-# Register your models here.
-class TodoAdmin(admin.ModelAdmin):
-  list_display = ('title', 'description', 'completed')
+class ShiftAdmin(admin.ModelAdmin):
+  list_display = ('shift_name', 'shift_label', 'start_time', 'end_time')
 
-# Register your models here.
-
-admin.site.register(Todo, TodoAdmin)
+admin.site.register(Shift, ShiftAdmin)

@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
-from .serializers import TodoSerializer, CalendarSerializer
+from .serializers import CalendarSerializer
 from django.core import serializers
-from .models import Todo, Calendar, Shift, ShiftType, Shift, ScheduleShift
+from .models import Calendar, Shift, ShiftType, Shift, ScheduleShift
 from django.forms.models import model_to_dict
 from .forms import QuickAddForm
 from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info

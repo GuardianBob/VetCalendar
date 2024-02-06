@@ -65,11 +65,6 @@ class APIService {
     return 
   }
 
-  get_todo() {
-    console.log("at api")
-    return api.get('/api/todos/');
-  }
-
   get_form() {
     return api.get('/login/');
   }
