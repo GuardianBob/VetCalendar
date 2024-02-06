@@ -224,39 +224,40 @@ def quick_add(request):
             shift = Shift.objects.get(id=content['shift'])
             shift_type = ShiftType.objects.get(id=content['shift_type'])
             # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
-            shift_date = parse(content['shift_date']).date()
-            # Combine date and time strings into a single string
-            # datetime_start = f"{content['shift_date']} {shift.start_time}"
-            # datetime_end = f"{content['shift_date']} {shift.end_time}"
-            datetime_start = f"{shift_date} {shift.start_time}"
-            datetime_end = f"{shift_date} {shift.end_time}"
-            print('start and end: ', datetime_start, datetime_end)
-            # Convert the combined string into a datetime object
-            shift_start = datetime.strptime(datetime_start, "%Y-%m-%d %H:%M:%S")
-            shift_start = fix_timezone(shift_start)
-            shift_end = datetime.strptime(datetime_end, "%Y-%m-%d %H:%M:%S")
-            shift_end = fix_timezone(shift_end)
-            # start = content['start']
-            # end = content['end']
-            existing_shift = ScheduleShift.objects.filter(user=user, shift_start__date=shift_date).first()
-            if existing_shift:
-                # print(existing_shift.shift_start)
-                existing_shift.shift = shift
-                existing_shift.shift_type = shift_type
-                existing_shift.shift_start = shift_start
-                existing_shift.shift_end = shift_end
-                existing_shift.save()
-                return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
-            else:
-                # If there's no existing shift, create a new one
-                new_shift = ScheduleShift.objects.create(
-                    user=user, 
-                    shift_start=shift_start, 
-                    shift=shift, 
-                    shift_type=shift_type, 
-                    shift_end=shift_end
-                )
-            return JsonResponse({'message':f'Shift(s) Added'}, status=200)
+            for date in content['shift_date']:
+                shift_date = parse(date).date()
+                # Combine date and time strings into a single string
+                # datetime_start = f"{content['shift_date']} {shift.start_time}"
+                # datetime_end = f"{content['shift_date']} {shift.end_time}"
+                datetime_start = f"{shift_date} {shift.start_time}"
+                datetime_end = f"{shift_date} {shift.end_time}"
+                print('start and end: ', datetime_start, datetime_end)
+            #   Convert the combined string into a datetime object
+                shift_start = datetime.strptime(datetime_start, "%Y-%m-%d %H:%M:%S")
+                shift_start = fix_timezone(shift_start)
+                shift_end = datetime.strptime(datetime_end, "%Y-%m-%d %H:%M:%S")
+                shift_end = fix_timezone(shift_end)
+                # start = content['start']
+                # end = content['end']
+                existing_shift = ScheduleShift.objects.filter(user=user, shift_start__date=shift_date).first()
+                if existing_shift:
+                    # print(existing_shift.shift_start)
+                    existing_shift.shift = shift
+                    existing_shift.shift_type = shift_type
+                    existing_shift.shift_start = shift_start
+                    existing_shift.shift_end = shift_end
+                    existing_shift.save()
+                    # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
+                else:
+                    # If there's no existing shift, create a new one
+                    new_shift = ScheduleShift.objects.create(
+                        user=user, 
+                        shift_start=shift_start, 
+                        shift=shift, 
+                        shift_type=shift_type, 
+                        shift_end=shift_end
+                    )
+            return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
         else:
             form = QuickAddForm()
             form = set_form_fields(form)
