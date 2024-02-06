@@ -92,7 +92,11 @@ user_info_fields2 = [
 TIMEZONE = pytz.timezone('America/Los_Angeles')
 
 def fix_timezone(dt):
-    return timezone.make_aware(dt, timezone=TIMEZONE)
+    # Assume dt is a naive datetime object in UTC
+    dt = timezone.make_aware(dt, timezone=pytz.UTC)
+    # Convert to the 'America/Los_Angeles' timezone
+    dt = dt.astimezone(TIMEZONE)
+    return dt
 
 def trace_error(e, isForm=False):
     exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -237,6 +241,7 @@ def quick_add(request):
                 shift_start = fix_timezone(shift_start)
                 shift_end = datetime.strptime(datetime_end, "%Y-%m-%d %H:%M:%S")
                 shift_end = fix_timezone(shift_end)
+                # print('start and end: ', shift_start, shift_end)
                 # start = content['start']
                 # end = content['end']
                 existing_shift = ScheduleShift.objects.filter(user=user, shift_start__date=shift_date).first()
