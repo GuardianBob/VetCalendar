@@ -38,6 +38,18 @@
           :key="link.title"
           v-bind="link"
         />
+        <q-item
+          clickable
+          @click="logout"
+        >
+          <q-item-section
+              avatar
+            >
+              <q-icon name="logout" color="negative "/>
+            </q-item-section>
+            <q-item-section>
+              Logout</q-item-section>
+          </q-item>
       </q-list>
     </q-drawer>
 
@@ -53,6 +65,7 @@ import EssentialLink from 'components/EssentialLink.vue'
 import { version } from '../../package.json'
 import { useMainStore } from "stores/main-store.js"
 import { useRouter } from 'vue-router';
+import APIService from '../../services/api';
 
 const mainStore = useMainStore();
 
@@ -181,9 +194,10 @@ export default defineComponent({
     }
   },
   methods: {
-    // logout() {
-    //   router.push({ name: 'login' });
-    // }
+    logout() {
+      // router.push({ name: 'login' });
+      APIService.logout();
+    }
   }
 })
 </script>
