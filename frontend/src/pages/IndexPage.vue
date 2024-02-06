@@ -7,11 +7,7 @@
       </div>
       <br> -->
       <!-- <q-spinner v-show="loading" color="primary" size="3em" :thickness="3" /> -->
-    <div class="row align-start justify-center">
-      <div class="col-10">
         <Calendar />
-      </div>
-    </div>
     <!-- <Forms :form_data="form_data" :option_data="option_data" /> -->
   </q-page>
 </template>
