@@ -356,7 +356,7 @@ def set_form_fields(form):
     new_form[field] = {
       'label': FORM_FIELD_LABELS[field],
       'type': FORM_FIELD_TYPES[field],
-      'value': '',
+      'value': None,
       'required': field in REQUIRED_FIELDS,
     }    
   return new_form
