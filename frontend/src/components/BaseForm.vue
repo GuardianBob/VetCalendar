@@ -95,7 +95,7 @@
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="field.value" mask="MMM DD YYYY" multiple range>
+                    <q-date v-model="field.value" mask="MMM DD YYYY" multiple>
                       <div class="row items-center justify-end">
                         <q-btn label="Clear" color="primary" flat dense class="q-mr-sm" @click="field.value = ''" /> 
                         <q-btn v-close-popup label="Close" color="primary" flat />
