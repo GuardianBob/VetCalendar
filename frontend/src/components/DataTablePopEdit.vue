@@ -37,7 +37,15 @@
               </q-popup-edit>
             </div>
             <div v-else-if="col.type == 'color'" class="text-center">
-              <input type="color" style="height:20px; font-size:small; border: none; padding: 2px;" v-model="props.row[col.name]"/>
+              <q-btn :style="{backgroundColor: props.row[col.name], color: getTextColor(props.row[col.name])}" @click="showColorPicker = true">
+                <span class="q-mx-md">
+                  {{ props.row[col.name] }}
+                  <q-icon size="xs" name="colorize" class="cursor-pointer q-ml-sm" />
+                </span>
+              </q-btn>
+              <q-popup-proxy ref="colorPicker" transition-show="scale" transition-hide="scale">
+                <q-color no-header-tabs default-view="palette" v-model="props.row[col.name]" @input="showColorPicker = false" />
+              </q-popup-proxy>
             </div>
             <div v-else>
               {{ props.row[col.name] }}
@@ -97,10 +105,26 @@ export default {
       this.parentFunc01(data)
     },
 
-    color(e) {
-      console.log(e)
-      return e
-    }
+    getBrightness(color) {
+      let r, g, b, hsp;
+      if (color.match(/^rgb/)) {
+        color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+        r = color[1];
+        g = color[2];
+        b = color[3];
+      } else {
+        color = +("0x" + color.slice(1).replace(color.length < 5 && /./g, '$&$&'));
+        r = color >> 16;
+        g = color >> 8 & 255;
+        b = color & 255;
+      }
+      hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b));
+      return hsp;
+    },
+
+    getTextColor(color) {
+      return this.getBrightness(color) > 127.5 ? 'black' : 'white';
+    },
   },
 
   mounted() {
