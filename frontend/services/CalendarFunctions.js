@@ -1,4 +1,6 @@
-class CalendarService {
+import APIService from "./api.js";
+
+export default class CalendarFunctions {
   update_path_date(date) {
     // console.log(window.location.pathname)
     // console.log(date)
@@ -81,15 +83,12 @@ class CalendarService {
     }
   }
 
-  async handleCalendarChange(cal_date) {
-    let new_date = cal_date.slice(11, 15) + " " + cal_date.slice(4, 7);
-    console.log(this.date);
-    this.date = new_date;
-    let newPath = this.update_path_date(cal_date);
-    // console.log(newPath)
-    // console.log(this.$route.query.user)
-    this.$router.replace({ path: newPath, query: this.$route.query });
-    // APIService.return_shifts(this.date)
+  handleCalendarChange(date_string) {
+    let date = new Date(date_string)
+    let new_date = date_string.slice(11, 15) + " " + date_string.slice(4, 7)
+    let set_date = date.toISOString().slice(0, 10); // Convert to 'YYYY-MM-DD'
+    // console.log(new_date, set_date);
+    return { new_date, set_date };
   }
 
   async getShifts() {
@@ -125,45 +124,33 @@ class CalendarService {
     calendarApi.updateSize();
   }
 
-  async getShiftsYear() {
-    let year_start = new Date("01 " + this.date).getFullYear()
-      let year_end = new Date("01 " + this.date).getFullYear()
-      // console.log(year_start, year_end)
-      if (year_end - year_start <= 1) {
-        year_end += 1
-      }
-      let new_start = new Date((year_start - 1).toString() + "/12/15")
-      let new_end = new Date((year_end).toString() + "/01/15")
-      // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
-      console.log(new_start, new_end)
-      await APIService.return_shifts({ "start": new_start, "end": new_end })
-        .then(res => {
-          // console.log(res.data)
-          if (res.data != "No Shifts") {
-            this.events = []
-            this.shifts = []
-            // console.log(events)
-            this.users = res.data.users.sort()
-            res.data.shifts.map(event => {
-              // console.log(event)
-              this.events.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
-              this.shifts.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
+  async getShiftsYear(date, calendarEvents, shifts, users) {
+    let year_start = new Date("01 " + date).getFullYear()
+    let year_end = new Date("01 " + date).getFullYear()
+    if (year_end - year_start <= 1) {
+      year_end += 1
+    }
+    let new_start = new Date((year_start - 1).toString() + "/12/15")
+    let new_end = new Date((year_end).toString() + "/01/15")
+    await APIService.return_shifts_old({ "start": new_start, "end": new_end })
+      .then(res => {
+        if (res.data != "No Shifts") {
+          calendarEvents = []
+          shifts = []
+          users = res.data.users.sort()
+          res.data.shifts.map(event => {
+            calendarEvents.push({
+              "title": event["user"],
+              "start": event["start"],
             })
-            // 
-          }
-        })
-      // console.log(this.shifts)
-      // calendarApi.updateSize()
+            shifts.push({
+              "title": event["user"],
+              "start": event["start"],
+            })
+          })
+        }
+      })
+    return { calendarEvents, shifts, users };
   }
 
   async set_view() {
@@ -205,4 +192,4 @@ class CalendarService {
   }
 }
 
-export default new CalendarService();
+// export default new CalendarFunctions();
