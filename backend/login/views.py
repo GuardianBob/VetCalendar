@@ -22,6 +22,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework import exceptions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -205,6 +206,12 @@ def response_msg(status=200, message=""):
     'message': message # Replace this with your desired response message
   }
   return JsonResponse(response_data, status=status)
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        print(response.data)  # This will print the response data to the console
+        return response
 
 # Create your views here.
 @csrf_exempt

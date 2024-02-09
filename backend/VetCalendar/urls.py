@@ -7,4 +7,5 @@ urlpatterns = [
     path('return_user_list', views.return_user_list, name='return_user_list'),
     path('return_shifts', views.return_shifts, name='return_shifts'),    
     path('quick_add', views.quick_add, name='quick_add'),
+    path('schedule_settings', views.schedule_settings, name='schedule_settings'),
 ]

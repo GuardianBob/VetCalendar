@@ -39,6 +39,7 @@ export default defineComponent({
   },
   setup() {
     return {
+      // Update column headers with code from SchedSettings.vue
       columns: ref(formStore.formFields.columns),
       users: ref(dummyData.users),
       view_user: ref(false),
@@ -141,6 +142,7 @@ export default defineComponent({
       this.createForm = res.data.forms
       this.formOptions = res.data.options
     });
+    // Update column headers with code from SchedSettings.vue
     console.log(formStore.formFields.columns);
     // console.log(mainStore.getCookie('csrftoken'))
   },

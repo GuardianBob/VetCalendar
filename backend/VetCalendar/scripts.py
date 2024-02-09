@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
 from docx import Document
 import csv, json
+from dateutil.parser import parse
 
 # from google.auth.transport.requests import Request
 # from google.oauth2.credentials import Credentials
@@ -58,6 +59,10 @@ FORM_FIELD_TYPES = {
   'shift_type': 'select',
   'user': 'select',
   'shift_date': 'date',
+  'shift_name': 'input',
+  'shift_label': 'input',
+  'start_time': 'time',
+  'end_time': 'time',
 }
 
 FORM_FIELD_LABELS = {
@@ -73,6 +78,13 @@ REQUIRED_FIELDS = [
   'user',
   'shift_date',
 ]
+
+def fix_timezone(dt):
+    # Assume dt is a naive datetime object in UTC
+    dt = timezone.make_aware(dt, timezone=pytz.UTC)
+    # Convert to the 'America/Los_Angeles' timezone
+    dt = dt.astimezone(TIMEZONE)
+    return dt
 
 def trace_error(e, isForm=False):
     exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -353,10 +365,23 @@ def set_form_fields(form):
   new_form = {}
   field_names = list(form.fields.keys())
   for field in field_names:
-    new_form[field] = {
-      'label': FORM_FIELD_LABELS[field],
+    
+    new_form[field] = {      
+      'label': FORM_FIELD_LABELS[field] if field in FORM_FIELD_LABELS else convert_label(field),
       'type': FORM_FIELD_TYPES[field],
       'value': None,
       'required': field in REQUIRED_FIELDS,
     }    
   return new_form
+
+def convert_label(name):
+    name_with_spaces = re.sub('_', ' ', name)
+    capitalized_name = name_with_spaces.title()
+    return capitalized_name
+
+def convert_to_shift_datetime(date, time):
+  print(date, time)
+  shift_date = parse(date).date()
+  shift_datetime = datetime.datetime.combine(shift_date, time)
+  # shift_datetime = fix_timezone(shift_datetime)
+  return shift_datetime

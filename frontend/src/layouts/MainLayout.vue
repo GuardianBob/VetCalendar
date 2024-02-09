@@ -119,6 +119,12 @@ const linksList = [
         icon: 'calendar_month',
         link: '/schedule'
       },
+      {
+        title: 'Schedule Settings',
+        caption: '',
+        icon: 'settings',
+        link: '/schedule_settings'
+      },
     ]
   },
   {

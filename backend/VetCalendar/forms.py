@@ -8,6 +8,10 @@ FORM_FIELDS = {
   'shift': 'Shift',
   'shift_type': 'Shift Type',
   'shift_date': 'Shift Date',
+  'shift_name': 'Shift Name',
+  'shift_label': 'Shift Label',
+  'start_time': 'Start Time',
+  'end_time': 'End Time',
 }
 
 class QuickAddForm(forms.Form):
@@ -19,6 +23,19 @@ class QuickAddForm(forms.Form):
   def __init__(self, *args, **kwargs):
       super(QuickAddForm, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
+
+class ShiftTimeForm(forms.ModelForm):
+  class Meta:
+    model = Shift
+    fields = ['shift_name', 'shift_label', 'start_time', 'end_time']
+    widgets = {
+      'start_time': forms.TimeInput(attrs={'type': 'time'}),
+      'end_time': forms.TimeInput(attrs={'type': 'time'}),
+    }
+
+  def __init__(self, *args, **kwargs):
+    super(ShiftTimeForm, self).__init__(*args, **kwargs)
+    self.fields = set_attributes(self.fields)
 
 def set_attributes(fields):
   # print(fields.keys())

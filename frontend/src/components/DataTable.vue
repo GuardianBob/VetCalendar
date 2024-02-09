@@ -7,6 +7,7 @@
       row-key="name"
       class="col-10"
       flat
+      :separator="separator"
       :rows-per-page-options="[10,20,50,0]"
     >
       <!-- Remove "Actions" column from "columns" in setup to hide "Actions" column -->
@@ -35,6 +36,7 @@ export default {
   props: [
     "columns",
     "rowData",
+    "separator",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -45,7 +47,7 @@ export default {
     return {
       info: ref(false),
       userData: ref([]),
-      pageTitle: ref(''),      
+      pageTitle: ref(''),   
     }
   },
 

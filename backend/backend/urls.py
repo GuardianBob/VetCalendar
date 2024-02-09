@@ -25,6 +25,7 @@ from django.conf.urls.static import static
 # from django.conf.urls import url
 from django.views.generic.base import TemplateView
 from login.views import validate_token
+from login.views import CustomTokenRefreshView
 
 router = routers.DefaultRouter()
 # router.register(r'todos', views.TodoView, 'todo')
@@ -39,6 +40,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', validate_token, name='token_verify'),
     # path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    # path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'), # Custom view to check if token on backend
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # cPanel
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) # cPanel
