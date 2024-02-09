@@ -304,5 +304,26 @@ def schedule_settings(request):
         'type_settings': type_dict
       }
       return JsonResponse(context)
+    else:
+      print(request.body)
+      content = json.loads(request.body)
+      shift_settings = content['shift_settings']
+      type_settings = content['type_settings']
+      # content = list(content[0].values())[0]
+      print(shift_settings)
+      for item in shift_settings:
+        shift = Shift.objects.get(id=item['id'])
+        shift.start_time = item['start_time']
+        shift.end_time = item['end_time']
+        shift.shift_label = item['shift_label']
+        shift.shift_name = item['shift_name']
+        shift.save()
+      for item in type_settings:
+        shift_type = ShiftType.objects.get(id=item['id'])
+        shift_type.shift_type = item['shift_type']
+        shift_type.shift_color = item['shift_color']
+        shift_type.type_label = item['type_label']
+        shift_type.save()
+      return JsonResponse({'message': 'Settings Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)

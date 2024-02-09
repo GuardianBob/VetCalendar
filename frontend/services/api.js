@@ -10,7 +10,7 @@ class APIService {
       // console.log(error)
       if (error.config && error.response && error.response.status === 401) {
         // If the request is for token refresh, reject the promise
-        console.log(error.config.url)
+        // console.log(error.config.url)
         if (error.config.url === '/api/token/refresh/') {
           this.logout();
           return Promise.reject(error);
@@ -18,7 +18,7 @@ class APIService {
         // Token expired, try to refresh it
         return this.refreshToken().then(response => {
           // Save new tokens in localStorage
-          // console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
+          console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
           localStorage.setItem('access_token', response.data.access);
 
           // Retry the original request
@@ -70,6 +70,7 @@ class APIService {
   }
 
   create_user(data) {
+    this.setTokenHeader();
     if (!data) {
       return api.get('/login/create_user');
     } else {
@@ -105,6 +106,7 @@ class APIService {
   }
 
   upload_file(formData) {
+    const token = localStorage.getItem('access_token');
     console.log("uploading", formData);
     // return api.post("/upload_file", { file })
     let upload_url = ''
@@ -121,15 +123,20 @@ class APIService {
       method: "post",
       url: upload_url,
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { 
+        "Content-Type": "multipart/form-data",
+        'Authorization': `Bearer ${token}` 
+      },
     })
   }
 
   return_shifts(date) {
+    this.setTokenHeader();
     return api.post('/return_shifts', {date})
   }
 
   schedule_settings(data) {
+    this.setTokenHeader();
     if (!data) {
       return api.get('/schedule_settings');
     } else {
@@ -173,28 +180,34 @@ class APIService {
   }
 
   get_user_profile_admin(id) {
+    this.setTokenHeader();
     return api.post('/login/get_user_profile_admin', id);
   }
 
   add_user(data) {
-    console.log(JSON.stringify(data))
+    this.setTokenHeader();
+    // console.log(JSON.stringify(data))
     return api.post('/login/add_user', data)
   }
 
   delete_user(data) {
+    this.setTokenHeader();
     // console.log(JSON.stringify(data))
     return api.post('/login/delete_user', data)
   }
 
   get_user_profile(id) {
+    this.setTokenHeader();
     return api.get(`/login/user_profile/${id}`)
   }
 
   get_test_form(id) {
+    this.setTokenHeader();
     return api.get(`/login/user_profile/${id}`)
   }
 
   update_user_profile(data) {
+    this.setTokenHeader();
     return api.post('/login/user_profile', data)
   }
 

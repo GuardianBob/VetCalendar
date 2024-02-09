@@ -13,7 +13,7 @@
         </div>
       </div>
       <div class="col-8 q-my-md">
-        <q-btn outline color="grey-8" class="q-px-xl q-mx-xs" size="md" label="Save" icon="save" @click="save_type()"/>
+        <q-btn outline color="grey-8" class="q-px-xl q-mx-xs" size="md" label="Save" icon="save" @click="save()"/>
       </div>
     </div>
   </q-page>
@@ -23,6 +23,7 @@
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
 // import Forms from 'components/Forms.vue'
+import { Notify } from "quasar"
 import DataTablePopEdit from 'components/DataTablePopEdit.vue'
 import APIService from "../../services/api"
 
@@ -96,8 +97,29 @@ export default defineComponent({
       this.get_settings()
     },
 
-    save_type() {
+    save() {
       console.log(this.type_settings)
+      APIService.schedule_settings({shift_settings: this.shift_settings, type_settings: this.type_settings})
+      .then((response) => {
+        console.log(response.data)
+        Notify.create({
+          message: response.data.message,
+          color: "green",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+        });
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+        Notify.create({
+          message: error.response.data.error,
+          color: "red",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+        });
+      });
     },
       
   },
