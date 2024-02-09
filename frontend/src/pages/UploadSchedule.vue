@@ -71,35 +71,6 @@
           </q-btn>
           <!-- <q-input filled v-model="date" label="Select Date" class="q-my-sm" v-show="enable_date"></q-input> -->
         </div>
-        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-0"></div>
-        <div class="col-1 q-mx-md text-right">
-          <q-btn color="primary" round :size="button_size" id="enable_date" @click="enable_date = !enable_date"
-            icon="event">
-            <!-- <q-icon name="event" /> -->
-            <q-tooltip class="bg-accent" anchor="bottom middle">Select Date</q-tooltip>
-            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date v-model="date" mask="YYYY MMM">
-                <div class="row items-center justify-end">
-                  <q-btn v-close-popup label="Close" color="accent" flat />
-                </div>
-              </q-date>
-            </q-popup-proxy>
-          </q-btn>
-        </div>
-        <div class="col-xs-8 col-lg-2 col-md-2 col-sm-2 q-mr-sm">
-          <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
-            @update:model-value="filterShifts()">
-            <template v-slot:prepend>
-              <q-icon name="filter_alt" round color="primary" />
-            </template>
-            <template v-slot:append>
-              <q-btn v-if="user !== null" class="q-ml-md q-px-sm" color="negative" size="md" flat rounded
-                id="clear_filters_button" @click.stop.prevent="clearFilters" icon="cancel" />
-              <!-- <q-icon name="close" @click.stop.prevent="clearFilters" class="cursor-pointer" v-if="user !== null" /> -->
-            </template>
-            <q-tooltip class="bg-accent" anchor="center start">Filter Schedule</q-tooltip>
-          </q-select>
-        </div>
       </div>
       <div class="row justify-center q-mx-lg items-center" v-show="enable_file">
         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-9 text-center">

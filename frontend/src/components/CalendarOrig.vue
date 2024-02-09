@@ -38,10 +38,8 @@ import IconButton from './IconButton.vue'
 export default {
   name: "VetCalendar",
   props: [
-    "calEvents", 
-    "calDate",
-    "calUsers", 
-    "calShifts",
+    // "calEvents", 
+    "calDate", 
     "parHandleCalChange",
     "parentFunction01",
     "parentFunction02",
