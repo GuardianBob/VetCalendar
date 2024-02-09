@@ -20,7 +20,7 @@
               <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
                 <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" />
                 <div class="text-center">
-                  <q-btn v-close-popup label="Save" color="grey-8" size="sm" flat @click="scope.set"/>
+                  <q-btn v-close-popup label="OK" color="grey-8" size="sm" flat @click="scope.set"/>
                   <q-btn v-close-popup label="Cancel" color="deep-orange-13" size="sm" flat/>
                 </div>
               </q-popup-edit>
@@ -30,7 +30,7 @@
               <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
                 <q-time v-model="scope.value" flat autofocus @keyup.enter="scope.set" >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Save" color="primary" flat @click="scope.set"/>
+                    <q-btn v-close-popup label="OK" color="primary" flat @click="scope.set"/>
                     <q-btn v-close-popup label="Cancel" color="deep-orange-13" flat/>
                   </div>
                 </q-time>

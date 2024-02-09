@@ -237,7 +237,7 @@ def user_login(request):
           # refresh = TokenObtainPairSerializer.get_token(user)
           if remember_me:
             # Set refresh token lifetime to 30 days if "Remember Me" is checked
-            RefreshToken.lifetime = timedelta(days=30)
+            RefreshToken.lifetime = timedelta(days=15)
           else:
             # Otherwise, set it to 1 day
             RefreshToken.lifetime = timedelta(days=1)
