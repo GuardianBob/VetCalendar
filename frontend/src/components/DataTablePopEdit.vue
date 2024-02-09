@@ -16,17 +16,22 @@
         <q-tr :props="props">
           <q-td v-for="col in columns" :key="col.name" :props="props">
             <div v-if="col.type == 'text'">
-              <q-btn dense flat no-caps color="primary" size="12px">{{ props.row[col.name] }}</q-btn>
+              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
               <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
                 <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" />
+                <div class="text-center">
+                  <q-btn v-close-popup label="Save" color="grey-8" size="sm" flat @click="scope.set"/>
+                  <q-btn v-close-popup label="Cancel" color="deep-orange-13" size="sm" flat/>
+                </div>
               </q-popup-edit>
             </div>
             <div v-else-if="col.type == 'time'">
-              <q-btn dense flat color="primary" size="12px">{{ props.row[col.name] }}</q-btn>
+              <q-btn dense flat color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
               <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
                 <q-time v-model="scope.value" flat autofocus @keyup.enter="scope.set" >
                   <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat @click="scope.set"/>
+                    <q-btn v-close-popup label="Save" color="primary" flat @click="scope.set"/>
+                    <q-btn v-close-popup label="Cancel" color="deep-orange-13" flat/>
                   </div>
                 </q-time>
               </q-popup-edit>

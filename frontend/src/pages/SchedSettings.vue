@@ -1,16 +1,20 @@
 <template>
   <q-page class="">
     <div class="row justify-center">
-      <div class="col-6 q-px-md text-left">
-        <DataTablePopEdit :rowData="shift_settings" :columns="shift_columns" :parentFunc01="save" :title="pageTitle" separator="vertical"/>
-        <!-- <q-btn color="secondary" dense class="q-px-sm q-mx-xs" size="sm" label="Reset" icon="cancel" @click="cancel_shift()"/> -->
-        <q-btn color="primary" dense class="q-px-sm q-mx-xs" size="sm" label="Save" icon="save" @click="save_shift()"/>
+      <div class="col-8">
+        <div class="col-12 q-pa-md text-left">
+          <DataTablePopEdit :rowData="shift_settings" :columns="shift_columns" :parentFunc01="save" title="Shift Time Settings" separator="vertical"/>
+          <!-- <q-btn color="secondary" dense class="q-px-sm q-mx-xs" size="sm" label="Reset" icon="cancel" @click="cancel_shift()"/> -->
+          <!-- <q-btn color="primary" dense class="q-px-sm q-mx-xs" size="sm" label="Save" icon="save" @click="save_shift()"/> -->
+        </div>
+        <div class="col-12 q-pa-md text-left">
+          <DataTablePopEdit :rowData="type_settings" :columns="type_columns" :parentFunc01="save" title="Shift Type Settings" separator="vertical"/>
+          <!-- <q-btn color="secondary" dense class="q-px-sm q-mx-xs" size="sm" label="Reset" icon="cancel" @click="cancel_shift()"/> -->
+        </div>
       </div>
-      <div class="col-6 q-px-md text-left">
-        <DataTablePopEdit :rowData="type_settings" :columns="type_columns" :parentFunc01="save" :title="pageTitle" separator="vertical"/>
-        <!-- <q-btn color="secondary" dense class="q-px-sm q-mx-xs" size="sm" label="Reset" icon="cancel" @click="cancel_shift()"/> -->
+      <div class="col-8 q-my-md">
+        <q-btn outline color="grey-8" class="q-px-xl q-mx-xs" size="md" label="Save" icon="save" @click="save_type()"/>
       </div>
-      <q-btn color="primary" dense class="q-px-sm q-mx-xs" size="sm" label="Save" icon="save" @click="save_type()"/>
     </div>
   </q-page>
 </template>
