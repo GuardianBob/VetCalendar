@@ -1,7 +1,7 @@
 <template>
   <q-page class="">
     <div class="row justify-center">
-      <div class="col-8">
+      <div class="col-8 col-xs-12 col-lg-8 col-md-8 col-sm-10">
         <div class="col-12 q-pa-md text-left">
           <DataTablePopEdit :rowData="shift_settings" :columns="shift_columns" :parentFunc01="save" title="Shift Time Settings" separator="vertical"/>
           <!-- <q-btn color="secondary" dense class="q-px-sm q-mx-xs" size="sm" label="Reset" icon="cancel" @click="cancel_shift()"/> -->
@@ -12,7 +12,7 @@
           <!-- <q-btn color="secondary" dense class="q-px-sm q-mx-xs" size="sm" label="Reset" icon="cancel" @click="cancel_shift()"/> -->
         </div>
       </div>
-      <div class="col-8 q-my-md">
+      <div class="col-8 col-xs-10 col-lg-8 col-md-8 col-sm-10 q-my-md">
         <q-btn outline color="grey-8" class="q-px-xl q-mx-xs" size="md" label="Save" icon="save" @click="save()"/>
       </div>
     </div>
