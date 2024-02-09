@@ -30,44 +30,31 @@ const routes = [
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
     children: [
+      // ============================= MAIN USER PAGES =============================
       {
         path: "",
         component: () => import("pages/IndexPage.vue"),
         alias: ["/:year*", "/:year*/:month*", "/:year*/:month*/:user*"],
       },
-      {
-        path: "/schedule_import",
-        // redirect: "/",
-        component: () => import("pages/UploadSchedule.vue"),
-        alias: [
-          "/schedule_import/:year*",
-          "/schedule_import/:year*/:month*",
-          "/schedule_import/:year*/:month*/:user*",
-        ],
-      },
+      
       {
         path: "/login",
         name: "login",
         component: () => import("pages/LoginPage.vue"),
       },
-      // {
-      //   path: '/login',
-      //   component: () => import('pages/FormsPage.vue'),
-      //   children: [
-      //     { path: '', component: () => import('components/LoginForm.vue') }
-      //   ]
-      // },
       {
         path: "/register",
         name: "register",
         component: () => import("pages/RegisterPage.vue"),
       },
+      // ============================= LOGGED IN USER PAGES =============================
       {
         path: "/profile",
         name: "profile",
         component: () => import("pages/ProfilePage.vue"),
         beforeEnter: requireAuth,
       },
+      // ============================= ADMIN USER PAGES =============================
       {
         path: "/users",
         name: "users",
@@ -80,10 +67,25 @@ const routes = [
         component: () => import("pages/Schedule.vue"),
       },
       {
-        path: "/create_user",
-        component: () => import("pages/LoginPage.vue"),
-        beforeEnter: requireAuth,
+        path: "/schedule_import",
+        // redirect: "/",
+        component: () => import("pages/UploadSchedule.vue"),
+        alias: [
+          "/schedule_import/:year*",
+          "/schedule_import/:year*/:month*",
+          "/schedule_import/:year*/:month*/:user*",
+        ],
       },
+      {
+        path: "/schedule_settings",
+        name: "schedule settings",
+        component: () => import("pages/SchedSettings.vue"),
+      },
+      // {
+      //   path: "/create_user",
+      //   component: () => import("pages/LoginPage.vue"),
+      //   beforeEnter: requireAuth,
+      // },
       {
         path: "/forms_page",
         component: () => import("pages/FormsPage.vue"),

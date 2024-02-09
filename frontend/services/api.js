@@ -129,6 +129,14 @@ class APIService {
     return api.post('/return_shifts', {date})
   }
 
+  schedule_settings(data) {
+    if (!data) {
+      return api.get('/schedule_settings');
+    } else {
+      return api.post('/schedule_settings', data);
+    }
+  }
+
   test_calendar() {
     return api.post('/calendar/test');
   }
