@@ -266,7 +266,7 @@ export default {
       let new_end = new Date((year_end).toString() + "/01/15")
       // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
       // console.log(new_start, new_end)
-      await APIService.return_shifts({ "start": new_start, "end": new_end })
+      await APIService.return_shifts_old({ "start": new_start, "end": new_end })
         .then(res => {
           // console.log(res.data)
           if (res.data != "No Shifts") {

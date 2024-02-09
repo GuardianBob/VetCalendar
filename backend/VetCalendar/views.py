@@ -212,24 +212,34 @@ def return_shifts(request):
     return JsonResponse(results)
   else:
     return HttpResponse("No Shifts")
-
-@csrf_exempt
-def get_user_info(request):
-  pass
-
-@csrf_exempt
-def get_shift_types(request):
-  db_objects = ShiftType.objects.values()
-  db_dict = [item for item in db_objects]
-  db_json = json.dumps(db_dict)
-  return HttpResponse(db_json)
-
-@csrf_exempt
-def get_shifts(request):
-  db_objects = Shift.objects.values()
-  db_dict = [item for item in db_objects]
-  db_json = json.dumps(db_dict)
-  return HttpResponse(db_json)
+  
+@csrf_exempt 
+def return_shifts_old(request):
+  # print(request.body)
+  content = json.loads(request.body)
+  # print(content["date"])
+  start = content["date"]["start"]
+  end = content["date"]["end"]
+  shifts = Calendar.objects.filter(start__gte=start, end__lte=end)
+  # print(shifts)
+  events = []
+  users = []
+  if shifts:
+    for shift in shifts:
+      # print(shift.start)
+      events.append({
+        "id": shift.id,
+        "user": shift.user_initials,
+        "start": str(shift.start),
+        "end": str(shift.end),
+      })
+      if not shift.user_initials in users: users.append(shift.user_initials)
+    results = {'shifts': events, 'users': users}
+    # print(users, events)
+    # print(timezone.now())
+    return JsonResponse(results)
+  else:
+    return HttpResponse("No Shifts")
 
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])

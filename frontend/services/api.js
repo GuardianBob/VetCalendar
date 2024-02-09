@@ -130,6 +130,10 @@ class APIService {
     })
   }
 
+  return_shifts_old(date) {
+    return api.post('/return_shifts_old', {date})
+  }
+
   return_shifts(date) {
     this.setTokenHeader();
     return api.post('/return_shifts', {date})
