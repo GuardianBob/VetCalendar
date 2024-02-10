@@ -139,23 +139,30 @@ export default {
       this.show_picker = false
       // this.parHandleCalChange(newValue, oldValue)
     },
-    // user(newValue, oldValue) {
-    //   if (newValue !== oldValue) {
-    //     // console.log(newValue, oldValue)
-    //     this.$emit("send_filter", newValue)
-    //     if (newValue !== null) {
-    //       this.calendarOptions.eventColor = '#581fc2'
-    //       this.calendarOptions.eventTextColor = 'white'
-    //     } else {
-    //       this.calendarOptions.eventColor = 'white'
-    //       this.calendarOptions.eventTextColor = 'black'
-    //     }
-    //   }
-      // if (newValue !== oldValue) {
-      //   this.$emit("send_filter", newValue)
-      //   this.$refs.fullCalendar.getApi().render();
-      // }
-    // },
+    calEvents: {
+      immediate: true,
+      handler(newValue) {
+        this.calendarOptions.events = newValue;
+      }
+    },
+    calDate: {
+      immediate: true,
+      handler(newValue) {
+        this.date = newValue;
+      }
+    },
+    calUsers: {
+      immediate: true,
+      handler(newValue) {
+        this.users = newValue;
+      }
+    },
+    calShifts: {
+      immediate: true,
+      handler(newValue) {
+        this.shifts = newValue;
+      }
+    },
   },
 
   methods: {
@@ -240,14 +247,20 @@ export default {
     },
   },
 
+  created() {
+  },
+  
   mounted() {
-    this.getShiftsYear().then(() => {
-      if (this.user) {
-        this.filterShifts()
-      }
-      console.log(this.calendarOptions.events)
-    })    
+    // this.getShiftsYear().then(() => {
+    //   if (this.user) {
+    //     this.filterShifts()
+    //   }
+    //   console.log(this.calendarOptions.events)
+    // })    
     // console.log(this.date)
+    // this.calendarOptions.events = this.calEvents
+    // this.date = this.calDate
+    // this.users = this.calUsers
     nextTick(() => {
       const buttonEl = document.querySelector('.fc-datepicker-button')
       if (buttonEl) {

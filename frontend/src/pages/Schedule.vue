@@ -10,7 +10,7 @@
               <q-btn color="accent" id="add_shifts" :size="button_size" @click="add_shifts = !add_shifts" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date" @send_filter="set_filter" />
+            <Calendar @send_date="set_date" @send_filter="set_filter" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" />
           </div>
         </div>
       </div>
@@ -58,7 +58,7 @@ export default defineComponent({
       
       store,
       events: ref([{}]),
-      date: ref(new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' })),
+      date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + "-" + new Date().toLocaleString('en-US', { month: 'short' })),
 
       calendar_button: ref(false),
       auth_token: ref(false),
