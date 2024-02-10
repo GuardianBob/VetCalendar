@@ -123,7 +123,7 @@ export default {
     },
 
     getTextColor(color) {
-      return this.getBrightness(color) > 127.5 ? 'black' : 'white';
+      return this.getBrightness(color) > 175 ? 'black' : 'white';
     },
   },
 

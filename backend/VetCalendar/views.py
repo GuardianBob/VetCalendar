@@ -192,20 +192,20 @@ def return_shifts(request):
   # print(content["date"])
   start = content["date"]["start"]
   end = content["date"]["end"]
-  shifts = Calendar.objects.filter(start__gte=start, end__lte=end)
-  # print(shifts)
   events = []
   users = []
+  shifts = ScheduleShift.objects.values('shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
-      # print(shift.start)
+      # print(shift)
       events.append({
-        "id": shift.id,
-        "user": shift.user_initials,
-        "start": str(shift.start),
-        "end": str(shift.end),
+        "user_id": shift['user__id'],
+        "user": shift['user__initials'],
+        "start": str(shift['shift_start']),
+        "end": str(shift['shift_end']),
+        "color": shift['shift_type__shift_color'],
       })
-      if not shift.user_initials in users: users.append(shift.user_initials)
+      if not shift['user__initials'] in users: users.append(shift['user__initials'])
     results = {'shifts': events, 'users': users}
     # print(users, events)
     # print(timezone.now())

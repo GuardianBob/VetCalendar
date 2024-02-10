@@ -196,7 +196,7 @@ export default {
     },
 
     async getShiftsYear() {
-      const { calendarEvents, shifts, users } = await this.calfunc.getShiftsYear(this.date, this.calendarOptions.events, this.shifts, this.users);
+      const { calendarEvents, shifts, users } = await this.calfunc.getShiftsYearOld(this.date, this.calendarOptions.events, this.shifts, this.users);
       this.calendarOptions.events = calendarEvents;
       this.shifts = shifts;
       this.users = users;

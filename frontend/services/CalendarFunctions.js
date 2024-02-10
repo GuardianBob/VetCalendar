@@ -132,6 +132,38 @@ export default class CalendarFunctions {
     }
     let new_start = new Date((year_start - 1).toString() + "/12/15")
     let new_end = new Date((year_end).toString() + "/01/15")
+    await APIService.return_shifts({ "start": new_start, "end": new_end })
+      .then(res => {
+        if (res.data != "No Shifts") {
+          // console.log(res.data)
+          calendarEvents = []
+          shifts = []
+          users = res.data.users.sort()
+          res.data.shifts.map(event => {
+            calendarEvents.push({
+              "title": event["user"],
+              "start": event["start"],
+              "textColor": event["color"],
+            })
+            shifts.push({
+              "title": event["user"],
+              "start": event["start"],
+              "textColor": event["color"],
+            })
+          })
+        }
+      })
+    return { calendarEvents, shifts, users };
+  }
+
+  async getShiftsYearOld(date, calendarEvents, shifts, users) {
+    let year_start = new Date("01 " + date).getFullYear()
+    let year_end = new Date("01 " + date).getFullYear()
+    if (year_end - year_start <= 1) {
+      year_end += 1
+    }
+    let new_start = new Date((year_start - 1).toString() + "/12/15")
+    let new_end = new Date((year_end).toString() + "/01/15")
     await APIService.return_shifts_old({ "start": new_start, "end": new_end })
       .then(res => {
         if (res.data != "No Shifts") {
