@@ -229,7 +229,7 @@ export default {
       this.calendarOptions.events = []
       this.shifts.map(shift => {
         if (shift["title"] == this.user) {
-          console.log(shift)
+          // console.log(shift)
           let new_shift = JSON.parse(JSON.stringify(shift))
           new_shift["backgroundColor"] = shift["textColor"]
           new_shift["textColor"] = this.isDarkColor(shift["textColor"]) ? "#FFFFFF" : "#000000"

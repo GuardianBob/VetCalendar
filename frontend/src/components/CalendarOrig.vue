@@ -132,7 +132,7 @@ export default {
 
   watch: {
     date(newValue, oldValue) {
-      // console.log(newValue, oldValue)
+      console.log(newValue, oldValue)
       this.handleMonthChange(newValue, oldValue)
       this.show_picker = false
       // this.parHandleCalChange(newValue, oldValue)
