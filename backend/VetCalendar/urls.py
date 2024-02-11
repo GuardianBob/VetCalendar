@@ -9,4 +9,5 @@ urlpatterns = [
     path('return_shifts_old', views.return_shifts_old, name='return_shifts_old'),
     path('quick_add', views.quick_add, name='quick_add'),
     path('schedule_settings', views.schedule_settings, name='schedule_settings'),
+    path('get_keys', views.get_keys, name='get_keys'),
 ]
