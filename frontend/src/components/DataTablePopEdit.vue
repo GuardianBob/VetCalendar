@@ -94,30 +94,25 @@ export default {
     },
 
     getBrightness(color) {
-    let r, g, b, hsp;
-    if (color.match(/^rgb/)) {
-      color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
-      r = color[1];
-      g = color[2];
-      b = color[3];
-    } else {
-      color = +("0x" + color.slice(1).replace(color.length < 5 && /./g, '$&$&'));
-      r = color >> 16;
-      g = color >> 8 & 255;
-      b = color & 255;
-    }
-    hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b));
-    return hsp;
-  },
+      let r, g, b, hsp;
+      if (color.match(/^rgb/)) {
+        color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+        r = color[1];
+        g = color[2];
+        b = color[3];
+      } else {
+        color = +("0x" + color.slice(1).replace(color.length < 5 && /./g, '$&$&'));
+        r = color >> 16;
+        g = color >> 8 & 255;
+        b = color & 255;
+      }
+      hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b));
+      return hsp;
+    },
 
-  getTextColor(color) {
-    return this.getBrightness(color) > 127.5 ? 'black' : 'white';
-  },
-
-    color(e) {
-      console.log(e)
-      return e
-    }
+    getTextColor(color) {
+      return this.getBrightness(color) > 175 ? 'black' : 'white';
+    },
   },
 
   mounted() {

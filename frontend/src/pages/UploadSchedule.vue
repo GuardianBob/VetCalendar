@@ -71,35 +71,6 @@
           </q-btn>
           <!-- <q-input filled v-model="date" label="Select Date" class="q-my-sm" v-show="enable_date"></q-input> -->
         </div>
-        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-0"></div>
-        <div class="col-1 q-mx-md text-right">
-          <q-btn color="primary" round :size="button_size" id="enable_date" @click="enable_date = !enable_date"
-            icon="event">
-            <!-- <q-icon name="event" /> -->
-            <q-tooltip class="bg-accent" anchor="bottom middle">Select Date</q-tooltip>
-            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-              <q-date v-model="date" mask="YYYY MMM">
-                <div class="row items-center justify-end">
-                  <q-btn v-close-popup label="Close" color="accent" flat />
-                </div>
-              </q-date>
-            </q-popup-proxy>
-          </q-btn>
-        </div>
-        <div class="col-xs-8 col-lg-2 col-md-2 col-sm-2 q-mr-sm">
-          <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
-            @update:model-value="filterShifts()">
-            <template v-slot:prepend>
-              <q-icon name="filter_alt" round color="primary" />
-            </template>
-            <template v-slot:append>
-              <q-btn v-if="user !== null" class="q-ml-md q-px-sm" color="negative" size="md" flat rounded
-                id="clear_filters_button" @click.stop.prevent="clearFilters" icon="cancel" />
-              <!-- <q-icon name="close" @click.stop.prevent="clearFilters" class="cursor-pointer" v-if="user !== null" /> -->
-            </template>
-            <q-tooltip class="bg-accent" anchor="center start">Filter Schedule</q-tooltip>
-          </q-select>
-        </div>
       </div>
       <div class="row justify-center q-mx-lg items-center" v-show="enable_file">
         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-9 text-center">
@@ -131,7 +102,7 @@
       <!-- <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
         class="col-10 col-md-10 col-sm-8 col-lg-6 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;"> -->
         <!-- <FullCalendar id="fullCalendar" ref="fullCalendar" :custom-buttons="customButtons" :options='calendarOptions' v-show="false" /> -->
-        <Calendar :calEvents="events" :calDate="date" :parHandleCalChange="handleCalendarChange" />
+        <Calendar :parHandleCalChange="handleCalendarChange" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" />
       <!-- </div> -->
     </div>
     <q-dialog v-model="info" transition-show="slide-down" transition-hide="slide-up">
@@ -175,49 +146,7 @@ export default defineComponent({
   data() {
     
     return {
-      // calendarOptions: ref({
-      //   customButtons: {
-      //     prev: {
-      //       text: "PREV",
-      //       click: () => {
-      //         // console.log("eventPrev");
-      //         let calendarApi = this.$refs.fullCalendar.getApi();
-      //         calendarApi.prev();
-      //         this.handleCalendarChange(calendarApi.getDate().toString())
-      //       }
-      //     },
-      //     next: { // this overrides the next button
-      //       text: "NEXT",
-      //       click: () => {
-      //         // console.log("eventNext");
-      //         let calendarApi = this.$refs.fullCalendar.getApi();
-      //         calendarApi.next();
-      //         this.handleCalendarChange(calendarApi.getDate().toString())
-      //       }
-      //     },
-      //     today: { // this overrides the next button
-      //       text: "Today",
-      //       click: () => {
-      //         // console.log("eventToday");
-      //         let calendarApi = this.$refs.fullCalendar.getApi();
-      //         calendarApi.today();
-      //         this.handleCalendarChange(calendarApi.getDate().toString())
-      //       }
-      //     },
-      //   },
-      //   plugins: [dayGridPlugin],
-      //   initialView: 'dayGridMonth',
-      //   weekends: true,
-      //   initialDate: new Date(),
-      //   height: "auto",
-      //   eventDisplay: 'block', // Highlights events with colored bar
-      //   eventColor: 'white',
-      //   eventTextColor: 'black',
-      //   // eventBorderColor: 'primary',
-      //   events: [
-      //     {}
-      //   ]
-      // }),
+      calfunc: new CalendarFunctions(),
     }
   },
   setup() {
@@ -399,82 +328,47 @@ export default defineComponent({
       }
     },
 
-    async getShifts() {
-      let calendarApi = this.$refs.fullCalendar.getApi()
-      let start = calendarApi.view.activeStart
-      let end = calendarApi.view.activeEnd
-      // console.log(start, end)
-      await APIService.return_shifts({ "start": start, "end": end })
-        .then(res => {
-          // console.log(res.data)
-          if (res.data != "No Shifts") {
-            this.events = []
-            this.shifts = []
-            // console.log(events)
-            this.users = res.data.users
-            res.data.shifts.map(event => {
-              // console.log(event)
-              this.events.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
-              this.shifts.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
-            })
-            // 
-          }
-        })
-      // console.log(this.shifts)
-      calendarApi.updateSize()
-    },
+    // async getShifts() {
+    //   let calendarApi = this.$refs.fullCalendar.getApi()
+    //   let start = calendarApi.view.activeStart
+    //   let end = calendarApi.view.activeEnd
+    //   // console.log(start, end)
+    //   await APIService.return_shifts({ "start": start, "end": end })
+    //     .then(res => {
+    //       // console.log(res.data)
+    //       if (res.data != "No Shifts") {
+    //         this.events = []
+    //         this.shifts = []
+    //         // console.log(events)
+    //         this.users = res.data.users
+    //         res.data.shifts.map(event => {
+    //           // console.log(event)
+    //           this.events.push({
+    //             // Add event to displayed calendar
+    //             "title": event["user"],
+    //             "start": event["start"],
+    //             // "end": shift["end"]["dateTime"],
+    //           })
+    //           this.shifts.push({
+    //             // Add event to displayed calendar
+    //             "title": event["user"],
+    //             "start": event["start"],
+    //             // "end": shift["end"]["dateTime"],
+    //           })
+    //         })
+    //         // 
+    //       }
+    //     })
+    //   // console.log(this.shifts)
+    //   calendarApi.updateSize()
+    // },
 
     async getShiftsYear() {
       this.$q.loading.show()
-      // let calendarApi = this.$refs.fullCalendar.getApi()
-      let year_start = new Date("01 " + this.date).getFullYear()
-      let year_end = new Date("01 " + this.date).getFullYear()
-      // console.log(year_start, year_end)
-      if (year_end - year_start <= 1) {
-        year_end += 1
-      }
-      let new_start = new Date((year_start - 1).toString() + "/12/15")
-      let new_end = new Date((year_end).toString() + "/01/15")
-      // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
-      console.log(new_start, new_end)
-      await APIService.return_shifts({ "start": new_start, "end": new_end })
-        .then(res => {
-          // console.log(res.data)
-          if (res.data != "No Shifts") {
-            this.events = []
-            this.shifts = []
-            // console.log(events)
-            this.users = res.data.users.sort()
-            res.data.shifts.map(event => {
-              // console.log(event)
-              this.events.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
-              this.shifts.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
-            })
-            // 
-          }
-        })
-      // console.log(this.shifts)
-      // calendarApi.updateSize()
+      const { calendarEvents, shifts, users } = await this.calfunc.getShiftsYear(this.date, this.events, this.shifts, this.users);
+      this.events = calendarEvents;
+      this.shifts = shifts;
+      this.users = users;
       this.$q.loading.hide()
     },
 
@@ -499,26 +393,26 @@ export default defineComponent({
       }
     },
 
-    async filterShifts() {
-      // console.log(this.user)
-      this.events = []
-      this.shifts.map(shift => {
-        if (shift["title"] == this.user) {
-          // console.log("matches")
-          this.events.push(shift)
-          localStorage.setItem("filtered_user", this.user)
-          // this.$router.replace({ query: { user: this.user } })
-        }
-      })
-    },
+    // async filterShifts() {
+    //   // console.log(this.user)
+    //   this.events = []
+    //   this.shifts.map(shift => {
+    //     if (shift["title"] == this.user) {
+    //       // console.log("matches")
+    //       this.events.push(shift)
+    //       localStorage.setItem("filtered_user", this.user)
+    //       // this.$router.replace({ query: { user: this.user } })
+    //     }
+    //   })
+    // },
 
-    async clearFilters() {
-      this.events = this.shifts
-      // console.log(this.shifts.length)
-      this.user = null
-      localStorage.removeItem("filtered_user")
-      // this.$router.replace({ query: null })
-    },
+    // async clearFilters() {
+    //   this.events = this.shifts
+    //   // console.log(this.shifts.length)
+    //   this.user = null
+    //   localStorage.removeItem("filtered_user")
+    //   // this.$router.replace({ query: null })
+    // },
 
     async clearFile() {
       this.file = null

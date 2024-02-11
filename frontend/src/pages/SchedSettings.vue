@@ -72,7 +72,7 @@ export default defineComponent({
       .filter(([key, value]) => !key.includes('id'))
       .map(([key, value]) => {
         const transformedKey = key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        console.log(transformedKey, key)
+        // console.log(transformedKey, key)
         let type = "text"
         if (key.includes('time')) {
           type = "time"

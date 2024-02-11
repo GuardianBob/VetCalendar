@@ -10,7 +10,7 @@
               <q-btn color="accent" id="add_shifts" :size="button_size" @click="add_shifts = !add_shifts" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date" @send_filter="set_filter"/>
+            <Calendar @send_date="set_date" @send_filter="set_filter" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" />
           </div>
         </div>
       </div>
@@ -29,6 +29,7 @@ import APIService from "../../services/api"
 import Calendar from 'components/Calendar.vue'
 import BaseForm from 'components/BaseForm.vue'
 import MainFunctions from '../../services/MainFunctions'
+import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
 
@@ -43,15 +44,21 @@ export default defineComponent({
     DataTable,
     BaseForm,
   },
+  data() {
+    return {
+      calfunc: new CalendarFunctions(),
+    }
+  },
   setup() {
     const $q = useQuasar()
     const progress = ref(false)
     const store = useDummyData()
     
     return {
+      
       store,
       events: ref([{}]),
-      date: ref(new Date().toLocaleString('en-US', { month: 'short', year: 'numeric' })),
+      date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + "-" + new Date().toLocaleString('en-US', { month: 'short' })),
 
       calendar_button: ref(false),
       auth_token: ref(false),
@@ -99,6 +106,13 @@ export default defineComponent({
       this.date = date
     },
 
+    async getShiftsYear() {
+      const { calendarEvents, shifts, users } = await this.calfunc.getShiftsYear(this.date, this.events, this.shifts, this.users);
+      this.events = calendarEvents;
+      this.shifts = shifts;
+      this.users = users;
+    },
+
     set_filter(filter){
       console.log(filter)
       this.user = filter
@@ -140,51 +154,51 @@ export default defineComponent({
       // console.log(this.user_shifts)
     },
 
-    async getShiftsYear() {
-      console.log(this.date)
-      this.$q.loading.show()
-      // let calendarApi = this.$refs.fullCalendar.getApi()
-      let year_start = new Date("01 " + this.date).getFullYear()
-      let year_end = new Date("01 " + this.date).getFullYear()
-      // console.log(year_start, year_end)
-      if (year_end - year_start <= 1) {
-        year_end += 1
-      }
-      let new_start = new Date((year_start - 1).toString() + "/12/15")
-      let new_end = new Date((year_end).toString() + "/01/15")
-      // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
-      console.log(new_start, new_end)
-      await APIService.return_shifts({ "start": new_start, "end": new_end })
-        .then(res => {
-          console.log(res.data)
-          if (res.data != "No Shifts") {
-            // this.calendarOptions.events = []
-            this.shifts = []
-            // console.log(events)
-            this.users = res.data.users.sort()
-            res.data.shifts.map(event => {
-              // console.log(event)
-              // this.calendarOptions.events.push({
-              //   // Add event to displayed calendar
-              //   "title": event["user"],
-              //   "start": event["start"],
-              //   // "end": shift["end"]["dateTime"],
-              // })
-              this.shifts.push({
-                // Add event to displayed calendar
-                "title": event["user"],
-                "start": event["start"],
-                // "end": shift["end"]["dateTime"],
-              })
-            })
-            // console.log(this.shifts)
-            // 
-          }
-        })
-      console.log(this.shifts)
-      // calendarApi.updateSize()
-      this.$q.loading.hide()
-    },
+    // async getShiftsYear() {
+    //   console.log(this.date)
+    //   this.$q.loading.show()
+    //   // let calendarApi = this.$refs.fullCalendar.getApi()
+    //   let year_start = new Date("01 " + this.date).getFullYear()
+    //   let year_end = new Date("01 " + this.date).getFullYear()
+    //   // console.log(year_start, year_end)
+    //   if (year_end - year_start <= 1) {
+    //     year_end += 1
+    //   }
+    //   let new_start = new Date((year_start - 1).toString() + "/12/15")
+    //   let new_end = new Date((year_end).toString() + "/01/15")
+    //   // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
+    //   console.log(new_start, new_end)
+    //   await APIService.return_shifts({ "start": new_start, "end": new_end })
+    //     .then(res => {
+    //       console.log(res.data)
+    //       if (res.data != "No Shifts") {
+    //         // this.calendarOptions.events = []
+    //         this.shifts = []
+    //         // console.log(events)
+    //         this.users = res.data.users.sort()
+    //         res.data.shifts.map(event => {
+    //           // console.log(event)
+    //           // this.calendarOptions.events.push({
+    //           //   // Add event to displayed calendar
+    //           //   "title": event["user"],
+    //           //   "start": event["start"],
+    //           //   // "end": shift["end"]["dateTime"],
+    //           // })
+    //           this.shifts.push({
+    //             // Add event to displayed calendar
+    //             "title": event["user"],
+    //             "start": event["start"],
+    //             // "end": shift["end"]["dateTime"],
+    //           })
+    //         })
+    //         // console.log(this.shifts)
+    //         // 
+    //       }
+    //     })
+    //   console.log(this.shifts)
+    //   // calendarApi.updateSize()
+    //   this.$q.loading.hide()
+    // },
   },
 
   created() {

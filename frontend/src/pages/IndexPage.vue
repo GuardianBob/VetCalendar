@@ -3,7 +3,7 @@
       <!-- <div class="row align-start justify-end q-mx-sm items-center"> -->
         <div class="row justify-center">
           <div class="col-10 col-xs-8 col-lg-10 col-md-10 col-sm-10">
-            <Calendar />
+            <CalendarOrig />
             
           </div>
 
@@ -20,7 +20,7 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
-import Calendar from 'components/Calendar.vue'
+import CalendarOrig from 'components/CalendarOrig.vue'
 import Forms from 'components/Forms.vue'
 import MainFunctions from '../../services/MainFunctions'
 
@@ -28,7 +28,7 @@ export default defineComponent({
   name: "IndexPage",
   components: {
     // eslint-disable-next-line vue/no-unused-components
-    Calendar,
+    CalendarOrig,
     // eslint-disable-next-line vue/no-unused-components
     Forms
   },

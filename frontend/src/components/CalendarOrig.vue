@@ -38,10 +38,8 @@ import IconButton from './IconButton.vue'
 export default {
   name: "VetCalendar",
   props: [
-    "calEvents", 
-    "calDate",
-    "calUsers", 
-    "calShifts",
+    // "calEvents", 
+    "calDate", 
     "parHandleCalChange",
     "parentFunction01",
     "parentFunction02",
@@ -134,33 +132,22 @@ export default {
 
   watch: {
     date(newValue, oldValue) {
-      // console.log(newValue, oldValue)
+      console.log(newValue, oldValue)
       this.handleMonthChange(newValue, oldValue)
       this.show_picker = false
       // this.parHandleCalChange(newValue, oldValue)
     },
-    calEvents: {
-      immediate: true,
-      handler(newValue) {
-        this.calendarOptions.events = newValue;
-      }
-    },
-    calDate: {
-      immediate: true,
-      handler(newValue) {
-        this.date = newValue;
-      }
-    },
-    calUsers: {
-      immediate: true,
-      handler(newValue) {
-        this.users = newValue;
-      }
-    },
-    calShifts: {
-      immediate: true,
-      handler(newValue) {
-        this.shifts = newValue;
+    user(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        // console.log(newValue, oldValue)
+        this.$emit("send_filter", newValue)
+        if (newValue !== null) {
+          this.calendarOptions.eventColor = '#581fc2'
+          this.calendarOptions.eventTextColor = 'white'
+        } else {
+          this.calendarOptions.eventColor = 'white'
+          this.calendarOptions.eventTextColor = 'black'
+        }
       }
     },
   },
@@ -209,58 +196,36 @@ export default {
     },
 
     async getShiftsYear() {
-      const { calendarEvents, shifts, users } = await this.calfunc.getShiftsYear(this.date, this.calendarOptions.events, this.shifts, this.users);
+      const { calendarEvents, shifts, users } = await this.calfunc.getShiftsYearOld(this.date, this.calendarOptions.events, this.shifts, this.users);
       this.calendarOptions.events = calendarEvents;
       this.shifts = shifts;
       this.users = users;
-    },
-
-    isDarkColor(color) {
-      let r, g, b, hsp;
-      color = +("0x" + color.slice(1).replace(color.length < 5 && /./g, '$&$&'));
-      r = color >> 16;
-      g = color >> 8 & 255;
-      b = color & 255;
-      hsp = Math.sqrt(0.299 * (r * r) + 0.587 * (g * g) + 0.114 * (b * b));
-      return hsp < 175;
     },
 
     async filterShifts() {
       this.calendarOptions.events = []
       this.shifts.map(shift => {
         if (shift["title"] == this.user) {
-          // console.log(shift)
-          let new_shift = JSON.parse(JSON.stringify(shift))
-          new_shift["backgroundColor"] = shift["textColor"]
-          new_shift["textColor"] = this.isDarkColor(shift["textColor"]) ? "#FFFFFF" : "#000000"
-          this.calendarOptions.events.push(new_shift)
+          this.calendarOptions.events.push(shift)
           localStorage.setItem("filtered_user", this.user)
         }
       })
     },
 
     async clearFilters() {
-      // this.calendarOptions.events = []
       this.calendarOptions.events = this.shifts
       this.user = null
       localStorage.removeItem("filtered_user")
     },
   },
 
-  created() {
-  },
-  
   mounted() {
-    // this.getShiftsYear().then(() => {
-    //   if (this.user) {
-    //     this.filterShifts()
-    //   }
-    //   console.log(this.calendarOptions.events)
-    // })    
+    this.getShiftsYear().then(() => {
+      if (this.user) {
+        this.filterShifts()
+      }
+    })    
     // console.log(this.date)
-    // this.calendarOptions.events = this.calEvents
-    // this.date = this.calDate
-    // this.users = this.calUsers
     nextTick(() => {
       const buttonEl = document.querySelector('.fc-datepicker-button')
       if (buttonEl) {
