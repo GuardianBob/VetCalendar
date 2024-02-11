@@ -87,22 +87,12 @@ class APIService {
   }
 
   login(data) {
-    // console.log(data)    
-    // if (!data) {
-    //   return api.get("/login/")
-    // } else {
     return api.post("/login/", data)
-    // .then((response) => {
-    //   // console.log(response)
-    //   localStorage.setItem('access_token', response.data.access);
-    //   localStorage.setItem('refresh_token', response.data.refresh);
-    //   return response
-    // })
-    // .catch(error => {
-    //   console.log(error.response);
-    //   return error
-    // });
-    // }
+  }
+
+  get_api_keys(keys) {
+    this.setTokenHeader();
+    return api.post('/get_keys', {"data": keys});
   }
 
   upload_file(formData) {

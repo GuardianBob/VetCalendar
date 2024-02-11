@@ -8,7 +8,7 @@ from .forms import QuickAddForm, ShiftTimeForm
 from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone
-import datetime, json, traceback, sys, re, pytz
+import datetime, json, traceback, sys, re, pytz, os
 from datetime import datetime, date, timedelta
 import dateutil.parser as parser
 # import numpy as np
@@ -141,7 +141,7 @@ month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 @csrf_exempt 
 def upload_file(request):
-  # print (request.POST['date'])
+  print (request.POST['date'])
   input_date = request.POST["date"]
   # print(input_date[:3].isnumeric())
   if input_date[:3].isnumeric():
@@ -334,5 +334,34 @@ def schedule_settings(request):
         shift_type.type_label = item['type_label']
         shift_type.save()
       return JsonResponse({'message': 'Settings Updated'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+
+@api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_keys(request):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      keys = {}
+      for item in content['data']:
+        keys[item] = switch_api_key(item)
+
+      # key = switch_api_key(content['data'])
+      return JsonResponse(keys, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+  
+def switch_api_key(value):
+  try:
+    return {
+        'LOCAL_KEY': os.getenv('LOCAL_KEY'),
+        'GOOGLE_CLIENT_ID': os.getenv('GOOGLE_CLIENT_ID'),
+        'GOOGLE_API_KEY': os.getenv('GOOGLE_API_KEY'),
+        'DISCOVERY_DOC': os.getenv('DISCOVERY_DOC'),
+        'SCOPES': os.getenv('SCOPES'),
+    }.get(value, 'No Key Found')
   except Exception as e:
     return trace_error(e, True)

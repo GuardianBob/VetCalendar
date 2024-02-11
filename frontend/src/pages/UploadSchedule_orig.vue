@@ -7,8 +7,7 @@
         <div v-if="$q.platform.is.mobile" class="col-1 q-mx-sm">
           <q-btn-dropdown color="accent q-pa-sm" rounded dropdown-icon="more_vert" content-style='width: 75%'>
             <q-list>
-              <UploadSched :date="date" :user_shifts="user_shifts"/>
-              <!-- <q-item class="column">
+              <q-item class="column">
                 <q-btn class="q-mx-xs" color="primary" size="md" id="enable_file" v-close-popup
                   @click="enable_file = !enable_file">
                   <q-icon name="attach_file" class="q-mr-xs" /> Upload File
@@ -21,15 +20,14 @@
                   <img width="20" src="~assets/Google_G_Logo.svg" alt="" class="q-mr-xs"> Connect to Google
                   <q-tooltip class="bg-accent" anchor="bottom middle">Connect to Google</q-tooltip>
                 </q-btn>
-              </q-item> -->
-              <!-- <q-item class="column" v-if="auth_token">
+              </q-item>
+              <q-item class="column" v-if="auth_token">
                 <q-btn class="q-mx-xs" color="accent" size="md" id="fetch_calendars" v-close-popup @click="sync_google">
                   <q-icon name="sync" class="q-mr-xs" />
                   Sync Google Calendar
                   <q-tooltip class="bg-accent" anchor="bottom middle">Sync Google Calendar</q-tooltip>
                 </q-btn>
-              </q-item> -->
-              <!-- <GoogleSync :date="date" :events="events" :user="user" /> -->
+              </q-item>
               <q-item class="column">
                 <q-btn class="q-mx-sm" color="primary" size="md" id="enable_file" v-close-popup @click="share_view">
                   <q-icon name="share" class="q-mr-xs" />
@@ -49,13 +47,12 @@
           <!-- <q-input filled v-model="date" label="Select Date" class="q-my-sm" v-show="enable_date"></q-input> -->
         </div>
         <div v-if="$q.platform.is.desktop" class="col-4 q-ml-sm">
-          <UploadSched :date="date" :user_shifts="user_shifts"/>
-          <!-- <q-btn class="q-mr-xs" color="primary" round size="sm" id="enable_file" @click="enable_file = !enable_file">
+          <q-btn class="q-mr-xs" color="primary" round size="sm" id="enable_file" @click="enable_file = !enable_file">
             <q-icon name="attach_file" />
             <q-tooltip class="bg-accent" anchor="bottom middle">Upload File</q-tooltip>
-          </q-btn> -->
-          <!-- <GoogleSync :date="date" :events="events" :user="user" /> -->
-          <!-- <q-btn class="outline q-pa-none q-mr-xs" round dense id="authorize_button" @click="handleAuthClick"
+          </q-btn>
+
+          <q-btn class="outline q-pa-none q-mr-xs" round dense id="authorize_button" @click="handleAuthClick"
             v-show="!auth_token">
             <img width="20" src="~assets/Google_G_Logo.svg" alt="">
             <q-tooltip class="bg-accent" anchor="bottom middle">Connect to Google</q-tooltip>
@@ -63,7 +60,7 @@
           <q-btn v-if="auth_token" class="q-mr-xs" color="accent" size="sm" round id="fetch_calendars"
             @click="sync_google" icon="sync">
             <q-tooltip class="bg-accent" anchor="bottom middle">Sync to Google Calendar</q-tooltip>
-          </q-btn> -->
+          </q-btn>
           <q-btn class="q-mr-xs" color="primary" round size="sm" id="enable_file" @click="share_view">
             <q-icon name="share" />
             <q-tooltip class="bg-accent" anchor="bottom middle">Share View</q-tooltip>
@@ -75,9 +72,10 @@
           <!-- <q-input filled v-model="date" label="Select Date" class="q-my-sm" v-show="enable_date"></q-input> -->
         </div>
       </div>
-      <!-- <div class="row justify-center q-mx-lg items-center" v-show="enable_file">
+      <div class="row justify-center q-mx-lg items-center" v-show="enable_file">
         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-9 text-center">
           <q-file v-model="file" label="Select File" accept=".docx, .doc" class="q-my-sm" counter>
+            <!-- <q-btn class="q-ml-md q-px-sm" color="primary" size="md" flat rounded id="clear_filters_button" @click="clearFile" icon="cancel"/> -->
             <template v-slot:prepend>
               <q-icon name="attach_file" />
             </template>
@@ -92,7 +90,7 @@
             <q-tooltip class="bg-accent">Upload File</q-tooltip>
           </q-btn>
         </div>
-      </div> -->
+      </div>
       <q-btn v-if="auth_token" :loading="disabled" v-show="submit_button" color="primary" label="Add to Google Calendar"
         type="submit" class="q-px-lg q-mt-sm" :disabled="disabled" />
       <br>
@@ -123,11 +121,9 @@ import APIService from "../../services/api"
 // import dayGridPlugin from '@fullcalendar/daygrid'
 import ButtonDefinitions from 'components/ButtonDefinitions.vue'
 import Calendar from 'components/Calendar.vue'
-// import GoogleSync from 'components/GoogleSync.vue'
 import MainFunctions from '../../services/MainFunctions'
 import CalendarFunctions from 'app/services/CalendarFunctions'
 import GoogleFunctions from 'app/services/GoogleFunctions'
-import UploadSched from 'components/UploadSched.vue'
 // import google from 'googleapis'
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
@@ -145,9 +141,7 @@ export default defineComponent({
   components: {
     // FullCalendar, // make the <FullCalendar> tag available
     ButtonDefinitions,
-    Calendar,
-    UploadSched,
-    // GoogleSync
+    Calendar
   },
   data() {
     
@@ -225,10 +219,10 @@ export default defineComponent({
         this.date = new_year.toString() + " " + new_month
       }
     },
-    // date(newValue, oldValue) {
-    //   // console.log(newValue, oldValue)
-    //   this.handleMonthChange(newValue, oldValue)
-    // },
+    date(newValue, oldValue) {
+      // console.log(newValue, oldValue)
+      this.handleMonthChange(newValue, oldValue)
+    },
   },
   computed: {
 
@@ -241,11 +235,6 @@ export default defineComponent({
       let day_date = date.slice(8, 10)
       let date_string = `${day} - ${month} ${day_date} ${date.slice(0, 4)} - ${date.slice(11, 16)}`
       return date_string
-    },
-
-    handleDateUpdate(newDate) {
-      console.log(newDate)
-      this.date = newDate      
     },
 
     // async handleRightSwipe() {
@@ -1128,9 +1117,9 @@ export default defineComponent({
     // });
     // this.gisInited = true;
     // this.maybeEnableButtons();
-    // this.get_stored_gmail();
-    // this.gapiLoaded()
-    // this.gisLoaded()
+    this.get_stored_gmail();
+    this.gapiLoaded()
+    this.gisLoaded()
     this.set_view()
     this.getShiftsYear().then(() => {
       if (this.user) {

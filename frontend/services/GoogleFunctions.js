@@ -1,6 +1,14 @@
 let calendar_id = ''
+import APIService from "./api"
 
 class GoogleFunctions {
+  initialize_sync() {
+    const keys = APIService.get_keys(
+      ["GOOGLE_API_KEY", "GOOGLE_CLIENT_ID", "DISCOVERY_DOC", "SCOPES"]
+    )
+    console.log(keys)
+  }
+
   gapiLoaded() {
     gapi.load("client", this.initializeGapiClient);
   }
@@ -10,12 +18,14 @@ class GoogleFunctions {
    * discovery doc to initialize the API.
    */
   async initializeGapiClient() {
+    await 
     await gapi.client.init({
       apiKey: API_KEY,
       discoveryDocs: [DISCOVERY_DOC],
     });
-    this.gapiInited = true;
-    this.maybeEnableButtons();
+    // this.gapiInitiated = true;
+    return true;
+    // this.maybeEnableButtons();
   }
 
   /**
@@ -27,8 +37,9 @@ class GoogleFunctions {
       scope: SCOPES,
       callback: "", // defined later
     });
-    this.gisInited = true;
-    this.maybeEnableButtons();
+    // this.gisInited = true;
+    return true;
+    // this.maybeEnableButtons();
   }
 
   handleAuthClick() {
@@ -57,6 +68,21 @@ class GoogleFunctions {
       gapi.client.setToken("");
       this.auth_token = false;
     }
+  }
+
+  async sync_google(tokenClient, date, events, user) {
+    await this.verify_calendar().then((res) => {
+      console.log("syncing...", res);
+      let calendar_id = res
+      let date_month = new Date("01 " + date).getMonth();
+      const cal_events = events.filter(
+        (event) => new Date(event.start).getMonth() == date_month
+      );
+      this.sync_shifts(calendar_id, user, date, cal_events)
+        .then((res) => {
+          console.log(res)
+        })
+    });
   }
 
   async timeMin(date) {

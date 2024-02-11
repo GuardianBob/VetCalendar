@@ -248,7 +248,7 @@ def load_schedule(schedule, month, year):
                   00,
                   00
                 )
-                shift_start = timezone.make_aware(shift_start, timezone=TIMEZONE)
+                # shift_start = timezone.make_aware(shift_start, timezone=TIMEZONE)
                 # print(shift_start)
                 # print(f'user: {cell_user}')
                 shifts.append({
