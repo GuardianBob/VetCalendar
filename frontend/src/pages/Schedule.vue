@@ -10,14 +10,23 @@
               <q-btn color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date" @send_filter="set_filter" @send_events="store_updated_events" @edit_event="edit_event" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" :editCal="true" :dialog_open="add_shifts" />
+            <Calendar 
+              @send_date="set_date" 
+              @send_filter="set_filter" 
+              @send_events="store_updated_events" 
+              @edit_event="edit_event" 
+              @date_clicked="date_clicked"
+              :calEvents="events" 
+              :calShifts="shifts" :calUsers="users" 
+              :calDate="date" :editCal="true" 
+              :dialog_open="add_shifts" />
           </div>
         </div>
       </div>
     </div>
     <q-dialog v-model="add_shifts" position="left">
       <q-card style="width: 90%" class="dialog-25">
-        <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" form_data="editEvent" columns="one" :multiDateSelect="multiDateSelect"/>
+        <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" :form_data="editEvent" columns="one" :multiDateSelect="multiDateSelect" :add_to_date="add_to_date"/>
       </q-card>
     </q-dialog>
   </q-page>
@@ -85,6 +94,7 @@ export default defineComponent({
       get_form: ref('/quick_add'),
       submit_form: ref('/quick_add'),
       multiDateSelect: ref(true),
+      add_to_date: ref(null),
     };
   },
   watch: {
@@ -105,15 +115,9 @@ export default defineComponent({
       }
     },
     add_shifts(newValue, oldValue) {
-      // if (newValue == false) {
-      //   let event = this.events.find(obj => obj.id == this.event_id);
-      //   if (event) {
-      //     console.log(event)
-      //     event.backgroundColor = "#ffffff"
-      //     event.textColor = event.borderColor
-      //   }        
-      // }
-
+      if (newValue == false) {
+        this.add_to_date = null
+      }
     },
   },
   computed: {
@@ -177,6 +181,18 @@ export default defineComponent({
       this.submit_form = '/edit_event'
       this.multiDateSelect = false
       this.add_shifts = true
+    },
+
+    date_clicked(date) {
+      console.log(date)
+      this.get_form = '/quick_add'
+      this.submit_form = '/quick_add'
+      this.add_shifts = true
+      this.add_to_date = date
+      this.form_data = {
+        "date": date,
+      }
+
     },
 
     form_complete() {

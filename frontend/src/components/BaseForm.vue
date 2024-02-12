@@ -119,7 +119,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onDeactivated } from "vue";
 import { useQuasar, Notify } from "quasar";
 import APIService from "../../services/api";
 import ValidateService from "../../services/ValidateService";
@@ -136,6 +136,7 @@ export default defineComponent({
     "closeButton",
     "editButton",
     "columns",
+    'add_to_date',
     "multiDateSelect",
     "parentFunc01",
     "parentFunc02",
@@ -149,8 +150,8 @@ export default defineComponent({
   },
   data() {
     return {
+      formData: ref(),
       loading: false,
-      formData: ref(this.form_data),
       options: ref(this.form_options),
       states: ref(statesJson.states),
       isPwd: ref(true),
@@ -159,19 +160,22 @@ export default defineComponent({
       requiredRule: val => (val && val.length > 0) || 'This field is required',
       one: ref('col-12 col-sm-12 col-md-12 col-lg-12 q-px-sm f-field'),
       two: ref('col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field'),
-      cols: ref('')
-
+      cols: ref(''),
+      add_to_form_date: ref(),
     };
+
+    
   },
 
   watch: {
     formData: {
       deep: true,
       handler(newVal) {
-        if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
-          const dateRanges = newVal[''].shift_date.value;
-          console.log(dateRanges);
-        }
+        // console.log(newVal);
+        // if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
+        //   const dateRanges = newVal[''].shift_date.value;
+        //   // console.log(dateRanges);
+        // }
       },
     },
     columns: {
@@ -185,6 +189,15 @@ export default defineComponent({
         }
       }
     },
+    add_to_date: {
+      immediate: true,
+      handler(newValue) {
+        if (newValue) {
+          console.log(newValue)
+          this.add_to_form_date = newValue;
+        }
+      }
+    },
   },
 
   methods: {
@@ -192,6 +205,11 @@ export default defineComponent({
       console.log(event);
       const regex = /^[A-Za-z0-9+_.-]+@(.+)$/;
       return regex.test(event);
+    },
+
+    add_date(date) {
+      console.log(this.formData)
+      this.formData['']['shift_date']['value'] = [date];
     },
 
     submit(event) {
@@ -288,6 +306,9 @@ export default defineComponent({
         console.log(results.data);
         this.formData = results.data.forms;
         this.options = results.data.options;
+        if (this.add_to_form_date) {
+          this.add_date(this.add_to_form_date)
+        }
         // if ("login" in this.api_call || "register" in this.api_call) {
         //   add_verify_watcher("#verify_password");
         // }
@@ -327,6 +348,7 @@ export default defineComponent({
   },
   mounted() {
   },
+  
 });
 </script>
 

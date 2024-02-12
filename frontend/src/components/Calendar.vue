@@ -114,6 +114,10 @@ export default {
         eventClick: (info) => {
           this.editCal ? this.handleEventClicked(info) : null;
         },
+        dateClick: (info) => {
+          // console.log('Date clicked:', info.dateStr);
+          this.editCal ? this.handleDateClicked(info) : null;
+        },
         headerToolbar: $q.screen.xs
           ? {
               left: '',
@@ -190,6 +194,7 @@ export default {
         this.shifts = newValue;
       }
     },
+    
     dialog_open: {
       immediate: true,
       handler(newValue) {
@@ -254,26 +259,12 @@ export default {
       console.log('Event clicked:', info.event, info.event.id, info.event.title, info.event.start);
       console.log(this.calendarOptions.events, event)
       this.set_event_color(info.event.id)
-      // console.log(info.event.id)
-      // this.event_id = info.event.id
-      // let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == info.event.id);
-      // if (eventIndex !== -1) {
-      //   let event = this.calendarOptions.events[eventIndex];
-      //   console.log(event, event.borderColor)
-      //   let color = event.borderColor
-      //   event.backgroundColor = color
-      //   event.textColor = MainFunctions.getTextColor(event.borderColor)
-      //   // this.get_form = `/edit_event/${info.event.id}`
-      //   // this.submit_form = '/edit_event'
-      //   // this.add_shifts = true
-      // }
-      // event.setProp('borderColor', 'red');
-      // this.$q.dialog({
-      //   title: 'Event Details',
-      //   message: 'Event ID: ' + info.event.id + '<br>' + 'Title: ' + info.event.title + '<br>' + 'Start: ' + info.event.start,
-      //   ok: 'Close',
-      // })
       this.$emit("edit_event", info.event)
+    },
+
+    handleDateClicked(info) {
+      console.log('Date clicked:', info.dateStr);
+      this.$emit("date_clicked", info.dateStr)
     },
 
     async handleCalendarChange(date_string) {
