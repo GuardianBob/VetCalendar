@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
-from .models import Calendar, Shift, ShiftType, Shift, ScheduleShift
+from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts
 from django.forms.models import model_to_dict
 from .forms import QuickAddForm, ShiftTimeForm
 from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
@@ -123,7 +123,7 @@ def trace_error(e, isForm=False):
 
 
 def get_shift_options():
-  options = Shift.objects.all()
+  options = ShiftName.objects.all()
   options = [{'field': 'shift', 'option': option.id, 'label': option.shift_label} for option in options]
   return options
 
@@ -194,15 +194,12 @@ def return_shifts(request):
   end = content["date"]["end"]
   events = []
   users = []
-  shifts = ScheduleShift.objects.values('id', 'shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
+  shifts = Shifts.objects.values('id', 'shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
       # print(shift)
       events.append({
-        "id": shift['id'],
         "user_id": shift['user__id'],
-        "shift_id": shift['shift_id'],
-        "shift_type_id": shift['shift_type_id'],
         "user": shift['user__initials'],
         "start": str(shift['shift_start']),
         "end": str(shift['shift_end']),
@@ -255,7 +252,7 @@ def quick_add(request):
       content = list(content[0].values())[0]
       print(content)
       user = User.objects.get(id=content['user'])
-      shift = Shift.objects.get(id=content['shift'])
+      shift = ShiftName.objects.get(id=content['shift'])
       shift_type = ShiftType.objects.get(id=content['shift_type'])
       # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
       for date in content['shift_date']:
@@ -263,7 +260,7 @@ def quick_add(request):
         shift_start = convert_to_shift_datetime(date, shift.start_time)
         shift_end = convert_to_shift_datetime(date, shift.end_time)
         print(f'start: {shift_start}, end: {shift_end}')
-        existing_shift = ScheduleShift.objects.filter(user=user, shift_start__date=shift_start.date()).first()
+        existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
         if existing_shift:
           print(existing_shift.shift_start)
           existing_shift.shift = shift
@@ -274,7 +271,7 @@ def quick_add(request):
           # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
         else:
           # If there's no existing shift, create a new one
-          new_shift = ScheduleShift.objects.create(
+          new_shift = Shifts.objects.create(
             user=user, 
             shift_start=shift_start, 
             shift=shift, 
@@ -306,7 +303,7 @@ def quick_add(request):
 def schedule_settings(request):
   try:
     if request.method == 'GET':
-      shift_settings = Shift.objects.all().values('id', 'start_time', 'end_time', 'shift_label', 'shift_name')
+      shift_settings = ShiftName.objects.all().values('id', 'start_time', 'end_time', 'shift_label', 'shift_name')
       shift_dict = [shift for shift in shift_settings] # Convert QuerySet into List of Dictionaries
       # print(shift_dict)
       # shift_data = json.dumps(shift_dict) 
@@ -324,7 +321,7 @@ def schedule_settings(request):
       type_settings = content['type_settings']
       # print(shift_settings)
       for item in shift_settings:
-        shift = Shift.objects.get(id=item['id'])
+        shift = ShiftName.objects.get(id=item['id'])
         shift.start_time = item['start_time']
         shift.end_time = item['end_time']
         shift.shift_label = item['shift_label']
@@ -341,8 +338,8 @@ def schedule_settings(request):
     return trace_error(e, True)
 
 @api_view(['GET', 'POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
 @csrf_exempt
 def get_keys(request):
   try:
@@ -379,10 +376,41 @@ def save_schedule_updates(request):
       content = json.loads(request.body)
       for item in content:
         print(item)
-        # shift = ScheduleShift.objects.get(id=item['id'])
+        # shift = Shifts.objects.get(id=item['id'])
         # shift.shift_start = item['start']
         # shift.shift_end = item['end']
         # shift.save()
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def edit_event(request, id=None):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      for item in content:
+        print(item)
+        # shift = Shifts.objects.get(id=item['id'])
+        # shift.shift_start = item['start']
+        # shift.shift_end = item['end']
+        # shift.save()
+      return JsonResponse({'message': 'Shifts Updated'}, status=200)
+    else:
+      # shift = Shifts.objects.values('id', 'shift', 'shift_type', 'shift_start', 'shift_end', 'user').filter(id=id)
+      event = get_object_or_404(Shifts, pk=id)
+      print(event.shift_start.date())
+      data = {
+        'id': { 'type': 'input', 'value': event.id},
+        'shift': { 'type': 'input', 'value': event.shift.id},
+        'shift_type': { 'type': 'input', 'value': event.shift_type.id},
+        'shift_start': { 'type': 'input', 'value': event.shift_start.date()},
+        'user': { 'type': 'select', 'value': event.user.id},
+      }
+      print(data)
+      return JsonResponse({'event': data})
   except Exception as e:
     return trace_error(e, True)

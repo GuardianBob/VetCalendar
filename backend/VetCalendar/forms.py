@@ -1,7 +1,7 @@
 from django import forms
 import datetime
 import re
-from .models import Shift, ShiftType, ScheduleShift, Calendar
+from .models import ShiftName, ShiftType, Shifts, Calendar
 
 FORM_FIELDS = {
   'user': 'User',
@@ -26,7 +26,7 @@ class QuickAddForm(forms.Form):
 
 class ShiftTimeForm(forms.ModelForm):
   class Meta:
-    model = Shift
+    model = ShiftName
     fields = ['shift_name', 'shift_label', 'start_time', 'end_time']
     widgets = {
       'start_time': forms.TimeInput(attrs={'type': 'time'}),
