@@ -97,9 +97,9 @@
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                    <q-date v-model="field.value" mask="MMM DD YYYY" multiple>
+                    <q-date v-model="field.value" mask="MMM-DD-YYYY" :multiple="multiDateSelect">
                       <div class="row items-center justify-end">
-                        <q-btn label="Clear" color="negative" flat dense class="q-mr-sm" @click="field.value = ''" /> 
+                        <q-btn label="Clear" color="negative" flat dense class="q-mr-sm" @click="field.value = null" /> 
                         <q-btn v-close-popup label="Close" color="primary" flat />
                       </div>
                     </q-date>
@@ -136,6 +136,7 @@ export default defineComponent({
     "closeButton",
     "editButton",
     "columns",
+    "multiDateSelect",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -247,8 +248,15 @@ export default defineComponent({
           // console.log(value)
           return { [key]: value };
         });
-        console.log(entries);
-        api.post(this.submitForm, entries).then((res) => {
+        console.log(Object.keys(entries[0]).length)
+        let data
+        if (entries.length == 1) {
+          data = entries[0][Object.keys(entries[0])[0]];
+        } else {
+          data = entries
+        }
+        console.log("new", data);
+        api.post(this.submitForm, data).then((res) => {
           console.log(res.data);
           this.$emit("done");
           Notify.create({

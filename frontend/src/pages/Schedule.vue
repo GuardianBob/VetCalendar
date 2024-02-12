@@ -17,7 +17,7 @@
     </div>
     <q-dialog v-model="add_shifts" position="left">
       <q-card style="width: 90%" class="dialog-25">
-        <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" form_data="editEvent" columns="one"/>
+        <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" form_data="editEvent" columns="one" :multiDateSelect="multiDateSelect"/>
       </q-card>
     </q-dialog>
   </q-page>
@@ -84,6 +84,7 @@ export default defineComponent({
       event_id: ref(),
       get_form: ref('/quick_add'),
       submit_form: ref('/quick_add'),
+      multiDateSelect: ref(true),
     };
   },
   watch: {
@@ -142,6 +143,7 @@ export default defineComponent({
     },
 
     store_updated_events(event) {
+      console.log(event)
       const foundEvent = this.updated_events.find(item => item.id == event.id);
       if (foundEvent) {
         // Deep clone the array before updating it
@@ -162,6 +164,7 @@ export default defineComponent({
     quick_add() {
       this.get_form = '/quick_add'
       this.submit_form = '/quick_add'
+      this.multiDateSelect = true
       this.add_shifts = true
     },
 
@@ -175,6 +178,7 @@ export default defineComponent({
       // event.textColor = MainFunctions.getTextColor(event.borderColor)
       this.get_form = `/edit_event/${info.id}`
       this.submit_form = '/edit_event'
+      this.multiDateSelect = false
       this.add_shifts = true
     },
 

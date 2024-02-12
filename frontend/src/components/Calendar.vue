@@ -208,14 +208,16 @@ export default {
     },
 
     handleEventChange(info) {
-      // console.log('Event changed:', info.event.id, info.event.title, info.event.start);
+      // console.log('Event changed:', info.event);
       let event = {
         id: info.event.id,
         title: info.event.title,
         start: info.event.start,
-        shift_name_id: info.event.extendedProps.shift_name_id,
-        shift_type_id: info.event.extendedProps.shift_type_id,
+        shift: info.event.extendedProps.shift_name_id,
+        shift_type: info.event.extendedProps.shift_type_id,
+        shift_date: info.event.start.toLocaleDateString(),
       }
+      // console.log(event)
       this.$emit("send_events", event)
       const calEvent = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
       console.log("Event:", calEvent, calEvent.id, calEvent.title, calEvent.start, calEvent.extendedProps)
