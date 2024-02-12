@@ -129,6 +129,11 @@ class APIService {
     return api.post('/return_shifts', {date})
   }
 
+  save_schedule_updates(data) {
+    this.setTokenHeader();
+    return api.post('/save_schedule_updates', data)
+  }
+
   schedule_settings(data) {
     this.setTokenHeader();
     if (!data) {

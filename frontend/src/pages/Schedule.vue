@@ -10,7 +10,7 @@
               <q-btn color="accent" id="add_shifts" :size="button_size" @click="add_shifts = !add_shifts" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date" @send_filter="set_filter" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" />
+            <Calendar @send_date="set_date" @send_filter="set_filter" @send_events="store_updated_events" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" :editCal="true" />
           </div>
         </div>
       </div>
@@ -77,6 +77,7 @@ export default defineComponent({
       add_shifts: ref(false),
       button_size: ref('sm'),
       columnLabels: ref([]),
+      updated_events: ref([]),
     };
   },
   watch: {
@@ -121,6 +122,19 @@ export default defineComponent({
       } else {
         this.filtered_shifts = this.user_shifts
       }
+    },
+
+    store_updated_events(event) {
+      const foundEvent = this.updated_events.find(item => item.id === event.id);
+      if (foundEvent) {
+        // Deep clone the array before updating it
+        this.updated_events = JSON.parse(JSON.stringify(this.updated_events)).map(item =>
+          item.id === event.id ? { ...item, ...event } : item
+        );
+      } else {
+        this.updated_events.push(event);
+      }
+      console.log(this.updated_events)
     },
 
     form_complete() {

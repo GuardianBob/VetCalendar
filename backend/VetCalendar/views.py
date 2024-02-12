@@ -194,12 +194,15 @@ def return_shifts(request):
   end = content["date"]["end"]
   events = []
   users = []
-  shifts = ScheduleShift.objects.values('shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials').filter(shift_start__gte=start, shift_end__lte=end)
+  shifts = ScheduleShift.objects.values('id', 'shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
       # print(shift)
       events.append({
+        "id": shift['id'],
         "user_id": shift['user__id'],
+        "shift_id": shift['shift_id'],
+        "shift_type_id": shift['shift_type_id'],
         "user": shift['user__initials'],
         "start": str(shift['shift_start']),
         "end": str(shift['shift_end']),
@@ -338,8 +341,8 @@ def schedule_settings(request):
     return trace_error(e, True)
 
 @api_view(['GET', 'POST'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @csrf_exempt
 def get_keys(request):
   try:
@@ -363,5 +366,23 @@ def switch_api_key(value):
         'DISCOVERY_DOC': os.getenv('DISCOVERY_DOC'),
         'SCOPES': os.getenv('SCOPES'),
     }.get(value, 'No Key Found')
+  except Exception as e:
+    return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def save_schedule_updates(request):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      for item in content:
+        print(item)
+        # shift = ScheduleShift.objects.get(id=item['id'])
+        # shift.shift_start = item['start']
+        # shift.shift_end = item['end']
+        # shift.save()
+      return JsonResponse({'message': 'Shifts Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)

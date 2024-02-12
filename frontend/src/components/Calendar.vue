@@ -27,9 +27,10 @@
 
 <script>
 import { ref, nextTick, createApp } from 'vue'
-import { useQuasar } from "quasar"
+import { useQuasar, Notify } from "quasar"
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
 // import MainFunctions from '../../services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import IconButton from './IconButton.vue'
@@ -42,6 +43,7 @@ export default {
     "calDate",
     "calUsers", 
     "calShifts",
+    "editCal",
     "parHandleCalChange",
     "parentFunction01",
     "parentFunction02",
@@ -54,6 +56,7 @@ export default {
   data() {
     const $q = useQuasar()
     return {
+      isDragging: ref(false),
       calfunc: new CalendarFunctions(),
       calendarOptions: ref({
         customButtons: {
@@ -92,6 +95,24 @@ export default {
             }
           },
         },
+        eventDragStart: () => {
+          this.isDragging = true;
+        },
+        eventDragStop: () => {
+          this.isDragging = false;
+        },
+        eventAdd: (info) => {
+          this.handleEventChange(info);
+        },
+        eventChange: (info) => {
+          this.handleEventChange(info);
+        },
+        eventRemove: (info) => {
+          this.handleEventChange(info);
+        },
+        eventClick: (info) => {
+          this.editCal ? this.handleEventClicked(info) : null;
+        },
         headerToolbar: $q.screen.xs
           ? {
               left: '',
@@ -103,7 +124,9 @@ export default {
               center: 'datepicker',
               right: 'today prev next'
             },
-        plugins: [dayGridPlugin],
+        plugins: [dayGridPlugin, interactionPlugin],
+        editable: this.editCal,
+        droppable: this.editCal,
         initialView: 'dayGridMonth',
         weekends: true,
         initialDate: new Date(),
@@ -112,10 +135,9 @@ export default {
         eventColor: 'white',
         eventTextColor: 'black',
         fixedWeekCount: false,
+        dayMaxEvents: 4,
         // eventBorderColor: 'primary',
-        events: [
-          {}
-        ],
+        events: [],
       }),
     }
   },
@@ -129,6 +151,8 @@ export default {
       loading: ref(false),
       shifts: ref([]),
       button_size: ref('sm'),
+      updated_events: ref([]),
+      editEvents: ref(false),
     }
   },
 
@@ -160,6 +184,7 @@ export default {
     calShifts: {
       immediate: true,
       handler(newValue) {
+        console.log("Shifts updated:", newValue)
         this.shifts = newValue;
       }
     },
@@ -169,6 +194,27 @@ export default {
     handleDateChange(date) {
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(date);
+    },
+
+    handleEventChange(info) {
+      // console.log('Event changed:', info.event.id, info.event.title, info.event.start);
+      let event = {
+        id: info.event.id,
+        title: info.event.title,
+        start: info.event.start,
+        shift_id: info.event.extendedProps.shift_id,
+        shift_type_id: info.event.extendedProps.shift_type_id,
+      }
+      this.$emit("send_events", event)
+    },
+
+    handleEventClicked(info) {
+      console.log('Event clicked:', info.event.id, info.event.title, info.event.start);
+      this.$q.dialog({
+        title: 'Event Details',
+        message: 'Event ID: ' + info.event.id + '<br>' + 'Title: ' + info.event.title + '<br>' + 'Start: ' + info.event.start,
+        ok: 'Close',
+      })
     },
 
     async handleCalendarChange(date_string) {
@@ -181,6 +227,7 @@ export default {
     },
 
     async handleRightSwipe() {
+      if (this.isDragging) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.prev();
       this.handleCalendarChange(calendarApi.getDate().toString())
@@ -188,6 +235,7 @@ export default {
     },
 
     async handleLeftSwipe() {
+      if (this.isDragging) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.next();
       this.handleCalendarChange(calendarApi.getDate().toString())

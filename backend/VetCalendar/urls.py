@@ -8,6 +8,7 @@ urlpatterns = [
     path('return_shifts', views.return_shifts, name='return_shifts'),
     path('return_shifts_old', views.return_shifts_old, name='return_shifts_old'),
     path('quick_add', views.quick_add, name='quick_add'),
+    path('save_schedule_updates', views.save_schedule_updates, name='save_schedule_updates'),
     path('schedule_settings', views.schedule_settings, name='schedule_settings'),
     path('get_keys', views.get_keys, name='get_keys'),
 ]
