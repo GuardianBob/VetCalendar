@@ -161,3 +161,4 @@ backend/login/migrations/*
 backend/VetCalendar/migrations/*
 frontend/.env.*
 exports/
+backups/

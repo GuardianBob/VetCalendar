@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Shift
+from .models import ShiftName
 
 class ShiftAdmin(admin.ModelAdmin):
   list_display = ('shift_name', 'shift_label', 'start_time', 'end_time')
 
-admin.site.register(Shift, ShiftAdmin)
+admin.site.register(ShiftName, ShiftAdmin)

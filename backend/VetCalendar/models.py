@@ -1,7 +1,7 @@
 from django.db import models
 from login.models import User
 
-class Shift(models.Model):
+class ShiftName(models.Model):
   shift_name = models.CharField(max_length = 50)
   shift_label = models.CharField(max_length = 50)
   start_time = models.TimeField()
@@ -21,8 +21,8 @@ class UserInitials(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
-class ScheduleShift(models.Model):
-  shift = models.ForeignKey(Shift, related_name= 'assignments', on_delete=models.CASCADE)
+class Shifts(models.Model):
+  shift = models.ForeignKey(ShiftName, related_name= 'assignments', on_delete=models.CASCADE)
   shift_type = models.ForeignKey(ShiftType, related_name='assigned_types', on_delete=models.CASCADE)
   shift_start = models.DateTimeField(blank=True, null=True)
   shift_end = models.DateTimeField(blank=True, null=True)
