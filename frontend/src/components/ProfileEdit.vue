@@ -1,5 +1,5 @@
 <template>
-  <div class="c-dialog q-ma-sm" ref="form">
+  <div class="dialog-60 q-ma-sm" ref="form">
     <div class="text-right">
       <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
     </div>

@@ -22,7 +22,7 @@ class UserInitials(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
 
 class Shifts(models.Model):
-  shift = models.ForeignKey(ShiftName, related_name= 'assignments', on_delete=models.CASCADE)
+  shift_name = models.ForeignKey(ShiftName, related_name= 'assignments', on_delete=models.CASCADE)
   shift_type = models.ForeignKey(ShiftType, related_name='assigned_types', on_delete=models.CASCADE)
   shift_start = models.DateTimeField(blank=True, null=True)
   shift_end = models.DateTimeField(blank=True, null=True)

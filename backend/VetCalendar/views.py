@@ -194,16 +194,19 @@ def return_shifts(request):
   end = content["date"]["end"]
   events = []
   users = []
-  shifts = Shifts.objects.values('id', 'shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
+  shifts = Shifts.objects.values('id', 'shift_name__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_name_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
       # print(shift)
       events.append({
+        "id": shift['id'],
         "user_id": shift['user__id'],
         "user": shift['user__initials'],
         "start": str(shift['shift_start']),
         "end": str(shift['shift_end']),
         "color": shift['shift_type__shift_color'],
+        "shift_name_id": shift['shift_name_id'],
+        "shift_type_id": shift['shift_type_id'],
       })
       if not shift['user__initials'] in users: users.append(shift['user__initials'])
     results = {'shifts': events, 'users': users}
@@ -404,13 +407,21 @@ def edit_event(request, id=None):
       event = get_object_or_404(Shifts, pk=id)
       print(event.shift_start.date())
       data = {
-        'id': { 'type': 'input', 'value': event.id},
-        'shift': { 'type': 'input', 'value': event.shift.id},
-        'shift_type': { 'type': 'input', 'value': event.shift_type.id},
-        'shift_start': { 'type': 'input', 'value': event.shift_start.date()},
-        'user': { 'type': 'select', 'value': event.user.id},
+        'user': { 'type': 'select', 'value': event.user.id, 'label': 'User', 'required': True},
+        'shift': { 'type': 'select', 'value': event.shift_name.id, 'label': 'Shift', 'required': True},
+        'shift_type': { 'type': 'select', 'value': event.shift_type.id, 'label': 'Shift Type', 'required': True},
+        'shift_date': { 'type': 'date', 'value': event.shift_start.date(), 'label': 'Shift Date', 'required': True},
+        'id': { 'type': 'hidden', 'value': event.id},
       }
       print(data)
-      return JsonResponse({'event': data})
+      options = get_shift_options()
+      options = options + get_shift_type_options() + get_user_options()
+      context = {
+        'forms': {
+          '': data,
+        },
+        'options': options
+      }
+      return JsonResponse(context)
   except Exception as e:
     return trace_error(e, True)

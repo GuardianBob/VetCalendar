@@ -10,13 +10,15 @@
               <q-btn color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date" @send_filter="set_filter" @send_events="store_updated_events" @edit_event="edit_event" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" :editCal="true" />
+            <Calendar @send_date="set_date" @send_filter="set_filter" @send_events="store_updated_events" @edit_event="edit_event" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" :editCal="true" :dialog_open="add_shifts" />
           </div>
         </div>
       </div>
     </div>
-    <q-dialog v-model="add_shifts" transition-show="slide-down" transition-hide="slide-up">
-      <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" form_data="editEvent"/>
+    <q-dialog v-model="add_shifts" position="left">
+      <q-card style="width: 90%" class="dialog-25">
+        <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" form_data="editEvent" columns="one"/>
+      </q-card>
     </q-dialog>
   </q-page>
 </template>
@@ -79,6 +81,7 @@ export default defineComponent({
       columnLabels: ref([]),
       updated_events: ref([]),
       editEvent: ref({}),
+      event_id: ref(),
       get_form: ref('/quick_add'),
       submit_form: ref('/quick_add'),
     };
@@ -99,6 +102,17 @@ export default defineComponent({
         console.log("Month changed")
         this.shift_count()
       }
+    },
+    add_shifts(newValue, oldValue) {
+      // if (newValue == false) {
+      //   let event = this.events.find(obj => obj.id == this.event_id);
+      //   if (event) {
+      //     console.log(event)
+      //     event.backgroundColor = "#ffffff"
+      //     event.textColor = event.borderColor
+      //   }        
+      // }
+
     },
   },
   computed: {
@@ -128,7 +142,7 @@ export default defineComponent({
     },
 
     store_updated_events(event) {
-      const foundEvent = this.updated_events.find(item => item.id === event.id);
+      const foundEvent = this.updated_events.find(item => item.id == event.id);
       if (foundEvent) {
         // Deep clone the array before updating it
         this.updated_events = JSON.parse(JSON.stringify(this.updated_events)).map(item =>
@@ -138,6 +152,11 @@ export default defineComponent({
         this.updated_events.push(event);
       }
       console.log(this.updated_events)
+      // let update_event = this.events.find(obj => obj.id == event.id);
+      // update_event = event;
+      // let update_shift = this.shifts.find(obj => obj.id == event.id);
+      // update_shift = event;
+      // console.log(this.updated_events)
     },
 
     quick_add() {
@@ -147,6 +166,13 @@ export default defineComponent({
     },
 
     edit_event(info) {
+      console.log(info.id)
+      this.event_id = info.id
+      // let event = this.events.find(obj => obj.id == info.id);
+      // console.log(event, event.borderColor)
+      // let color = event.borderColor
+      // event.backgroundColor = color
+      // event.textColor = MainFunctions.getTextColor(event.borderColor)
       this.get_form = `/edit_event/${info.id}`
       this.submit_form = '/edit_event'
       this.add_shifts = true

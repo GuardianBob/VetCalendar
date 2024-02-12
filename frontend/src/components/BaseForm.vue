@@ -1,18 +1,18 @@
 <template>
-  <div :class="'c-dialog q-ma-sm'">
-    <div class="text-right" v-if="closeButton">
+  <div class="row justify-center" >
+    <div class="col-12 justify-right text-right" v-if="closeButton">
       <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
     </div>
-    <div class="row justify-center">
+    <div class="col-12 text-center">
       <h1 class="text-h3 text-primary">{{ page_title }}</h1>
     </div>
     <q-form>
-      <div v-for="(data, title) in formData" :key="title" class="">
+      <div v-for="(data, title) in formData" :key="title" class="row justify-center">
         <div class="row justify-center">
-          <div class="col-10 col-md-12 col-lg-12">
+          <div class="col-12 col-md-12 col-lg-12">
             <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ title }}</h4>
           </div>
-          <div v-for="(field, key) in data" :key="key" class="col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field">
+          <div v-for="(field, key) in data" :key="key" :class="cols">
             <q-input 
               v-if="field.type === 'input' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
@@ -107,11 +107,12 @@
                 </q-icon>
               </template>
             </q-input>
+            <span v-else></span>
           </div>
         </div>
       </div>
       <div class="row justify-around q-my-md">
-        <q-btn @click="submit" color="primary">Submit</q-btn>
+        <q-btn @click="submit" color="primary">Save</q-btn>
       </div>
     </q-form>
   </div>
@@ -134,6 +135,7 @@ export default defineComponent({
     "form_options",
     "closeButton",
     "editButton",
+    "columns",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -154,6 +156,10 @@ export default defineComponent({
       isRequired: ref(false),
       rules: ref(ValidateService.validators),
       requiredRule: val => (val && val.length > 0) || 'This field is required',
+      one: ref('col-12 col-sm-12 col-md-12 col-lg-12 q-px-sm f-field'),
+      two: ref('col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field'),
+      cols: ref('')
+
     };
   },
 
@@ -166,6 +172,17 @@ export default defineComponent({
           console.log(dateRanges);
         }
       },
+    },
+    columns: {
+      immediate: true,
+      handler(newValue) {
+        console.log(newValue);
+        if (newValue === "one") {
+          this.cols = this.one;
+        } else {
+        this.cols = this.two;
+        }
+      }
     },
   },
 
@@ -260,7 +277,7 @@ export default defineComponent({
     async get_form() {
       // console.log(this.getForm); // login/create_user
       await api.get(this.getForm).then(async (results) => {
-        // console.log(results.data.forms);
+        console.log(results.data);
         this.formData = results.data.forms;
         this.options = results.data.options;
         // if ("login" in this.api_call || "register" in this.api_call) {

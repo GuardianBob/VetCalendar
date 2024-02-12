@@ -111,7 +111,7 @@ export default {
     },
 
     getTextColor(color) {
-      return this.getBrightness(color) > 175 ? 'black' : 'white';
+      return this.getBrightness(color) > 175 ? '#000000' : '#ffffff';
     },
   },
 

@@ -31,7 +31,7 @@ import { useQuasar, Notify } from "quasar"
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
-// import MainFunctions from '../../services/MainFunctions'
+import MainFunctions from 'app/services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import IconButton from './IconButton.vue'
 // import APIService from "../../services/api"
@@ -47,6 +47,7 @@ export default {
     "parHandleCalChange",
     "parentFunction01",
     "parentFunction02",
+    "dialog_open",
   ],
   components: {
     FullCalendar, 
@@ -132,8 +133,8 @@ export default {
         initialDate: new Date(),
         height: "auto",
         eventDisplay: 'block', // Highlights events with colored bar
-        eventColor: 'white',
-        eventTextColor: 'black',
+        eventColor: '#ffffff',
+        // eventTextColor: '#000000',
         fixedWeekCount: false,
         dayMaxEvents: 4,
         // eventBorderColor: 'primary',
@@ -153,6 +154,7 @@ export default {
       button_size: ref('sm'),
       updated_events: ref([]),
       editEvents: ref(false),
+      event_id: ref(),
     }
   },
 
@@ -188,6 +190,15 @@ export default {
         this.shifts = newValue;
       }
     },
+    dialog_open: {
+      immediate: true,
+      handler(newValue) {
+        console.log("Shifts updated:", newValue)
+        if (!newValue) {
+          this.resetEventColor(this.event_id)
+        }
+      }
+    },
   },
 
   methods: {
@@ -202,14 +213,59 @@ export default {
         id: info.event.id,
         title: info.event.title,
         start: info.event.start,
-        shift_id: info.event.extendedProps.shift_id,
+        shift_name_id: info.event.extendedProps.shift_name_id,
         shift_type_id: info.event.extendedProps.shift_type_id,
       }
       this.$emit("send_events", event)
+      const calEvent = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
+      console.log("Event:", calEvent, calEvent.id, calEvent.title, calEvent.start, calEvent.extendedProps)
+      let update = this.calendarOptions.events.find(obj => obj.id == calEvent.id)
+      update.start = calEvent.start
+      let shift = this.shifts.find(obj => obj.id == calEvent.id)
+      shift.start = calEvent.start
+    },
+
+    set_event_color(id) {
+      this.event_id = id
+      let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == id);
+      if (eventIndex !== -1) {
+        let event = this.calendarOptions.events[eventIndex];
+        console.log(event, event.borderColor)
+        let color = event.borderColor
+        event.backgroundColor = color
+        event.textColor = MainFunctions.getTextColor(event.borderColor)
+      }
+    },
+    
+    resetEventColor(id) {
+      let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == id);
+      if (eventIndex !== -1) {
+        let event = this.calendarOptions.events[eventIndex];
+        console.log(event, event.borderColor)
+        event.backgroundColor = '#ffffff'
+        event.textColor = event.borderColor
+      }
     },
 
     handleEventClicked(info) {
-      console.log('Event clicked:', info.event.id, info.event.title, info.event.start);
+      let event = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
+      console.log('Event clicked:', info.event, info.event.id, info.event.title, info.event.start);
+      console.log(this.calendarOptions.events, event)
+      this.set_event_color(info.event.id)
+      // console.log(info.event.id)
+      // this.event_id = info.event.id
+      // let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == info.event.id);
+      // if (eventIndex !== -1) {
+      //   let event = this.calendarOptions.events[eventIndex];
+      //   console.log(event, event.borderColor)
+      //   let color = event.borderColor
+      //   event.backgroundColor = color
+      //   event.textColor = MainFunctions.getTextColor(event.borderColor)
+      //   // this.get_form = `/edit_event/${info.event.id}`
+      //   // this.submit_form = '/edit_event'
+      //   // this.add_shifts = true
+      // }
+      // event.setProp('borderColor', 'red');
       // this.$q.dialog({
       //   title: 'Event Details',
       //   message: 'Event ID: ' + info.event.id + '<br>' + 'Title: ' + info.event.title + '<br>' + 'Start: ' + info.event.start,
@@ -280,17 +336,22 @@ export default {
         if (shift["title"] == this.user) {
           // console.log(shift)
           let new_shift = JSON.parse(JSON.stringify(shift))
-          new_shift["backgroundColor"] = shift["textColor"]
+          new_shift["backgroundColor"] = shift["borderColor"]
           new_shift["textColor"] = this.isDarkColor(shift["textColor"]) ? "#FFFFFF" : "#000000"
           this.calendarOptions.events.push(new_shift)
           localStorage.setItem("filtered_user", this.user)
-        }
+        }        
       })
     },
 
     async clearFilters() {
-      // this.calendarOptions.events = []
-      this.calendarOptions.events = this.shifts
+      this.calendarOptions.events = []
+      console.log(this.shifts)      
+      this.shifts.map(shift => {
+        let new_shift = JSON.parse(JSON.stringify(shift))
+        // console.log(new_shift)
+        this.calendarOptions.events.push(new_shift)
+      })
       this.user = null
       localStorage.removeItem("filtered_user")
     },

@@ -147,7 +147,7 @@ export default class CalendarFunctions {
               "textColor": event["color"],
               "borderColor": event["color"],
               "extendedProps": {
-                "shift_id": event["shift_id"],
+                "shift_name_id": event["shift_name_id"],
                 "shift_type_id": event["shift_type_id"],
               }
             })
@@ -158,7 +158,7 @@ export default class CalendarFunctions {
               "textColor": event["color"],
               "borderColor": event["color"],
               "extendedProps": {
-                "shift_id": event["shift_id"],
+                "shift_name_id": event["shift_name_id"],
                 "shift_type_id": event["shift_type_id"],
               }
             })

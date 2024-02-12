@@ -18,7 +18,7 @@ class APIService {
         // Token expired, try to refresh it
         return this.refreshToken().then(response => {
           // Save new tokens in localStorage
-          console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
+          // console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
           localStorage.setItem('access_token', response.data.access);
 
           // Retry the original request
@@ -47,7 +47,7 @@ class APIService {
   }
 
   refreshToken() {
-    console.log("refreshing token")
+    // console.log("refreshing token")
     const refreshToken = localStorage.getItem('refresh_token');
     // console.log(refreshToken)
     if (refreshToken) {
