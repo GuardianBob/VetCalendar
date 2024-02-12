@@ -431,6 +431,7 @@ def edit_event(request, id=None):
       print(content)
       print(content['id'])
       creat_update_shift(content)
+
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
     else:
       # shift = Shifts.objects.values('id', 'shift', 'shift_type', 'shift_start', 'shift_end', 'user').filter(id=id)
