@@ -69,6 +69,7 @@
               class="q-my-xs q-py-none"
               outlined
               label-color="primary"
+              map-options
               :rules="[field.required ? requiredRule : '']"
             />
             <q-select
@@ -79,6 +80,7 @@
               :id="key"
               class="q-my-xs q-py-none"
               outlined
+              map-options
               label-color="primary"
               :rules="[field.required ? rules.required : '']"
             />

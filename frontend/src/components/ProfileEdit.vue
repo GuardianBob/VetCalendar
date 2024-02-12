@@ -80,6 +80,7 @@
               :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
               class="q-my-xs"
               outlined
+              map-options
               :rules="[isRequired ? requiredRule : '']"
             />
             <q-select
@@ -90,6 +91,7 @@
               :id="key"
               class="q-my-xs"
               outlined
+              map-options
             />
           </div>
         </div>
