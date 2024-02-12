@@ -26,6 +26,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
+import datetime
 import logging.handlers
 
 # Create your views here.
@@ -194,16 +195,19 @@ def return_shifts(request):
   end = content["date"]["end"]
   events = []
   users = []
-  shifts = Shifts.objects.values('id', 'shift__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
+  shifts = Shifts.objects.values('id', 'shift_name__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_name_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
       # print(shift)
       events.append({
+        "id": shift['id'],
         "user_id": shift['user__id'],
         "user": shift['user__initials'],
         "start": str(shift['shift_start']),
         "end": str(shift['shift_end']),
         "color": shift['shift_type__shift_color'],
+        "shift_name_id": shift['shift_name_id'],
+        "shift_type_id": shift['shift_type_id'],
       })
       if not shift['user__initials'] in users: users.append(shift['user__initials'])
     results = {'shifts': events, 'users': users}
@@ -249,35 +253,43 @@ def quick_add(request):
   try:
     if request.method == 'POST':
       content = json.loads(request.body)
-      content = list(content[0].values())[0]
+      # content = list(content[0].values())[0]
       print(content)
       user = User.objects.get(id=content['user'])
       shift = ShiftName.objects.get(id=content['shift'])
       shift_type = ShiftType.objects.get(id=content['shift_type'])
       # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
       for date in content['shift_date']:
+        item = content
+        item['shift_date'] = date
+        print(item)
         shift_date = parse(date).date()
         shift_start = convert_to_shift_datetime(date, shift.start_time)
         shift_end = convert_to_shift_datetime(date, shift.end_time)
+        if shift_end < shift_start:
+          shift_end = shift_end + datetime.timedelta(hours=24)
         print(f'start: {shift_start}, end: {shift_end}')
         existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
         if existing_shift:
-          print(existing_shift.shift_start)
-          existing_shift.shift = shift
-          existing_shift.shift_type = shift_type
-          existing_shift.shift_start = shift_start
-          existing_shift.shift_end = shift_end
-          existing_shift.save()
-          # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
-        else:
-          # If there's no existing shift, create a new one
-          new_shift = Shifts.objects.create(
-            user=user, 
-            shift_start=shift_start, 
-            shift=shift, 
-            shift_type=shift_type, 
-            shift_end=shift_end
-          )
+          item['id'] = existing_shift.id
+          print(item)
+        shift = creat_update_shift(item)
+        #   print(existing_shift.shift_start)
+        #   existing_shift.shift = shift
+        #   existing_shift.shift_type = shift_type
+        #   existing_shift.shift_start = shift_start
+        #   existing_shift.shift_end = shift_end
+        #   existing_shift.save()
+        #   # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
+        # else:
+        #   # If there's no existing shift, create a new one
+        #   new_shift = Shifts.objects.create(
+        #     user=user, 
+        #     shift_start=shift_start, 
+        #     shift=shift, 
+        #     shift_type=shift_type, 
+        #     shift_end=shift_end
+        #   )
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
     else:
       form = QuickAddForm()
@@ -383,6 +395,29 @@ def save_schedule_updates(request):
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+
+def creat_update_shift(data):
+  shift_details = ShiftName.objects.get(id=data['shift'])
+  if not data.get('user'):
+    old_shift = Shifts.objects.get(id=data['id'])
+    data['user'] = old_shift.user.id
+  shift_start = convert_to_shift_datetime(data['shift_date'], shift_details.start_time)
+  shift_end = convert_to_shift_datetime(data['shift_date'], shift_details.end_time)
+  if shift_end < shift_start:
+    shift_end = shift_end + datetime.timedelta(hours=24)
+  print(f'start: {shift_start}, end: {shift_end}')
+  shift, created = Shifts.objects.update_or_create(
+    id=data.get('id'),
+    defaults={
+      'shift_name_id': data['shift'],
+      'shift_type_id': data['shift_type'],
+      'shift_start': shift_start,
+      'shift_end': shift_end,
+      'user_id': data['user'],
+    }
+  )
+  print('Created ===>: ', created)
+  return shift
   
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
@@ -392,25 +427,48 @@ def edit_event(request, id=None):
   try:
     if request.method == 'POST':
       content = json.loads(request.body)
-      for item in content:
-        print(item)
-        # shift = Shifts.objects.get(id=item['id'])
-        # shift.shift_start = item['start']
-        # shift.shift_end = item['end']
-        # shift.save()
+      # content = list(content[0].values())[0]
+      print(content)
+      print(content['id'])
+      creat_update_shift(content)
+
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
     else:
       # shift = Shifts.objects.values('id', 'shift', 'shift_type', 'shift_start', 'shift_end', 'user').filter(id=id)
       event = get_object_or_404(Shifts, pk=id)
       print(event.shift_start.date())
       data = {
-        'id': { 'type': 'input', 'value': event.id},
-        'shift': { 'type': 'input', 'value': event.shift.id},
-        'shift_type': { 'type': 'input', 'value': event.shift_type.id},
-        'shift_start': { 'type': 'input', 'value': event.shift_start.date()},
-        'user': { 'type': 'select', 'value': event.user.id},
+        'user': { 'type': 'select', 'value': event.user.id, 'label': 'User', 'required': True},
+        'shift': { 'type': 'select', 'value': event.shift_name.id, 'label': 'Shift', 'required': True},
+        'shift_type': { 'type': 'select', 'value': event.shift_type.id, 'label': 'Shift Type', 'required': True},
+        'shift_date': { 'type': 'date', 'value': event.shift_start.date(), 'label': 'Shift Date', 'required': True},
+        'id': { 'type': 'hidden', 'value': event.id},
       }
       print(data)
-      return JsonResponse({'event': data})
+      options = get_shift_options()
+      options = options + get_shift_type_options() + get_user_options()
+      context = {
+        'forms': {
+          '': data,
+        },
+        'options': options
+      }
+      return JsonResponse(context)
+  except Exception as e:
+    return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def delete_event(request):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      # print(content)
+      shift = Shifts.objects.get(id=content['id'])
+      # print(shift)
+      shift.delete()
+      return JsonResponse({'message': 'Shift Deleted'}, status=200)
   except Exception as e:
     return trace_error(e, True)

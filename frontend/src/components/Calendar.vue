@@ -27,10 +27,11 @@
 
 <script>
 import { ref, nextTick, createApp } from 'vue'
-import { useQuasar } from "quasar"
+import { useQuasar, Notify } from "quasar"
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
-// import MainFunctions from '../../services/MainFunctions'
+import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
+import MainFunctions from 'app/services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import IconButton from './IconButton.vue'
 // import APIService from "../../services/api"
@@ -42,9 +43,11 @@ export default {
     "calDate",
     "calUsers", 
     "calShifts",
+    "editCal",
     "parHandleCalChange",
     "parentFunction01",
     "parentFunction02",
+    "dialog_open",
   ],
   components: {
     FullCalendar, 
@@ -54,6 +57,7 @@ export default {
   data() {
     const $q = useQuasar()
     return {
+      isDragging: ref(false),
       calfunc: new CalendarFunctions(),
       calendarOptions: ref({
         customButtons: {
@@ -92,6 +96,28 @@ export default {
             }
           },
         },
+        eventDragStart: () => {
+          this.isDragging = true;
+        },
+        eventDragStop: () => {
+          this.isDragging = false;
+        },
+        eventAdd: (info) => {
+          this.handleEventChange(info);
+        },
+        eventChange: (info) => {
+          this.handleEventChange(info);
+        },
+        eventRemove: (info) => {
+          this.handleEventChange(info);
+        },
+        eventClick: (info) => {
+          this.editCal ? this.handleEventClicked(info) : null;
+        },
+        dateClick: (info) => {
+          // console.log('Date clicked:', info.dateStr);
+          this.editCal ? this.handleDateClicked(info) : null;
+        },
         headerToolbar: $q.screen.xs
           ? {
               left: '',
@@ -103,19 +129,20 @@ export default {
               center: 'datepicker',
               right: 'today prev next'
             },
-        plugins: [dayGridPlugin],
+        plugins: [dayGridPlugin, interactionPlugin],
+        editable: this.editCal,
+        droppable: this.editCal,
         initialView: 'dayGridMonth',
         weekends: true,
         initialDate: new Date(),
         height: "auto",
         eventDisplay: 'block', // Highlights events with colored bar
-        eventColor: 'white',
-        eventTextColor: 'black',
+        eventColor: '#ffffff',
+        // eventTextColor: '#000000',
         fixedWeekCount: false,
+        dayMaxEvents: 4,
         // eventBorderColor: 'primary',
-        events: [
-          {}
-        ],
+        events: [],
       }),
     }
   },
@@ -129,6 +156,9 @@ export default {
       loading: ref(false),
       shifts: ref([]),
       button_size: ref('sm'),
+      updated_events: ref([]),
+      editEvents: ref(false),
+      event_id: ref(),
     }
   },
 
@@ -160,7 +190,18 @@ export default {
     calShifts: {
       immediate: true,
       handler(newValue) {
+        console.log("Shifts updated:", newValue)
         this.shifts = newValue;
+      }
+    },
+    
+    dialog_open: {
+      immediate: true,
+      handler(newValue) {
+        console.log("Shifts updated:", newValue)
+        if (!newValue) {
+          this.resetEventColor(this.event_id)
+        }
       }
     },
   },
@@ -169,6 +210,61 @@ export default {
     handleDateChange(date) {
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(date);
+    },
+
+    handleEventChange(info) {
+      // console.log('Event changed:', info.event);
+      let event = {
+        id: parseInt(info.event.id),
+        title: info.event.title,
+        start: info.event.start,
+        shift: info.event.extendedProps.shift_name_id,
+        shift_type: info.event.extendedProps.shift_type_id,
+        shift_date: info.event.start.toLocaleDateString(),
+      }
+      // console.log(event)
+      this.$emit("send_events", event)
+      const calEvent = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
+      console.log("Event:", calEvent, calEvent.id, calEvent.title, calEvent.start, calEvent.extendedProps)
+      let update = this.calendarOptions.events.find(obj => obj.id == calEvent.id)
+      update.start = calEvent.start
+      let shift = this.shifts.find(obj => obj.id == calEvent.id)
+      shift.start = calEvent.start
+    },
+
+    set_event_color(id) {
+      this.event_id = id
+      let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == id);
+      if (eventIndex !== -1) {
+        let event = this.calendarOptions.events[eventIndex];
+        console.log(event, event.borderColor)
+        let color = event.borderColor
+        event.backgroundColor = color
+        event.textColor = MainFunctions.getTextColor(event.borderColor)
+      }
+    },
+    
+    resetEventColor(id) {
+      let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == id);
+      if (eventIndex !== -1) {
+        let event = this.calendarOptions.events[eventIndex];
+        console.log(event, event.borderColor)
+        event.backgroundColor = '#ffffff'
+        event.textColor = event.borderColor
+      }
+    },
+
+    handleEventClicked(info) {
+      let event = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
+      console.log('Event clicked:', info.event, info.event.id, info.event.title, info.event.start);
+      console.log(this.calendarOptions.events, event)
+      this.set_event_color(info.event.id)
+      this.$emit("edit_event", info.event)
+    },
+
+    handleDateClicked(info) {
+      console.log('Date clicked:', info.dateStr);
+      this.$emit("date_clicked", info.dateStr)
     },
 
     async handleCalendarChange(date_string) {
@@ -181,6 +277,7 @@ export default {
     },
 
     async handleRightSwipe() {
+      if (this.isDragging) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.prev();
       this.handleCalendarChange(calendarApi.getDate().toString())
@@ -188,6 +285,7 @@ export default {
     },
 
     async handleLeftSwipe() {
+      if (this.isDragging) return;
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.next();
       this.handleCalendarChange(calendarApi.getDate().toString())
@@ -231,17 +329,22 @@ export default {
         if (shift["title"] == this.user) {
           // console.log(shift)
           let new_shift = JSON.parse(JSON.stringify(shift))
-          new_shift["backgroundColor"] = shift["textColor"]
+          new_shift["backgroundColor"] = shift["borderColor"]
           new_shift["textColor"] = this.isDarkColor(shift["textColor"]) ? "#FFFFFF" : "#000000"
           this.calendarOptions.events.push(new_shift)
           localStorage.setItem("filtered_user", this.user)
-        }
+        }        
       })
     },
 
     async clearFilters() {
-      // this.calendarOptions.events = []
-      this.calendarOptions.events = this.shifts
+      this.calendarOptions.events = []
+      console.log(this.shifts)      
+      this.shifts.map(shift => {
+        let new_shift = JSON.parse(JSON.stringify(shift))
+        // console.log(new_shift)
+        this.calendarOptions.events.push(new_shift)
+      })
       this.user = null
       localStorage.removeItem("filtered_user")
     },

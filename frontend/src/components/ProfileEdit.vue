@@ -1,5 +1,5 @@
 <template>
-  <div class="c-dialog q-ma-sm" ref="form">
+  <div class="dialog-60 q-ma-sm" ref="form">
     <div class="text-right">
       <q-btn class="q-pt-md" color="primary" flat v-close-popup icon="close"/>
     </div>
@@ -80,6 +80,7 @@
               :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))"
               class="q-my-xs"
               outlined
+              map-options
               :rules="[isRequired ? requiredRule : '']"
             />
             <q-select
@@ -90,6 +91,7 @@
               :id="key"
               class="q-my-xs"
               outlined
+              map-options
             />
           </div>
         </div>

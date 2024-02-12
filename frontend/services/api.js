@@ -18,7 +18,7 @@ class APIService {
         // Token expired, try to refresh it
         return this.refreshToken().then(response => {
           // Save new tokens in localStorage
-          console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
+          // console.log(`New access token: ${JSON.stringify(response.data, null, 2)}`)
           localStorage.setItem('access_token', response.data.access);
 
           // Retry the original request
@@ -47,7 +47,7 @@ class APIService {
   }
 
   refreshToken() {
-    console.log("refreshing token")
+    // console.log("refreshing token")
     const refreshToken = localStorage.getItem('refresh_token');
     // console.log(refreshToken)
     if (refreshToken) {
@@ -127,6 +127,25 @@ class APIService {
   return_shifts(date) {
     this.setTokenHeader();
     return api.post('/return_shifts', {date})
+  }
+
+  save_schedule_updates(data) {
+    this.setTokenHeader();
+    return api.post('/save_schedule_updates', data)
+  }
+
+  edit_event(data = null, update=false) {
+    this.setTokenHeader();
+    if (update) {
+      return api.post('/edit_event', data)
+    } else {
+      return api.get(`/edit_event/${data}`)
+    }
+  }
+
+  delete_event(data) {
+    this.setTokenHeader();
+    return api.post('/delete_event', data)
   }
 
   schedule_settings(data) {

@@ -161,6 +161,7 @@ backend/login/migrations/*
 backend/VetCalendar/migrations/*
 frontend/.env.*
 exports/
-backups/
 backend/db_new.sqlite3
 backend/db - Copy.sqlite3
+backups/
+

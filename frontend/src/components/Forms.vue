@@ -1,5 +1,5 @@
 <template>
-  <div class="c-dialog q-ma-sm">
+  <div class="dialog-60 q-ma-sm">
     <div class="row justify-center">
       <h1 class="text-h3 text-primary" >Update User</h1>
     </div>

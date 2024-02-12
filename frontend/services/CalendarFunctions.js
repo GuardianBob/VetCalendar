@@ -141,14 +141,26 @@ export default class CalendarFunctions {
           users = res.data.users.sort()
           res.data.shifts.map(event => {
             calendarEvents.push({
+              "id": event["id"],
               "title": event["user"],
               "start": event["start"],
               "textColor": event["color"],
+              "borderColor": event["color"],
+              "extendedProps": {
+                "shift_name_id": event["shift_name_id"],
+                "shift_type_id": event["shift_type_id"],
+              }
             })
             shifts.push({
+              "id": event["id"],
               "title": event["user"],
               "start": event["start"],
               "textColor": event["color"],
+              "borderColor": event["color"],
+              "extendedProps": {
+                "shift_name_id": event["shift_name_id"],
+                "shift_type_id": event["shift_type_id"],
+              }
             })
           })
         }
