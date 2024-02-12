@@ -455,3 +455,19 @@ def edit_event(request, id=None):
       return JsonResponse(context)
   except Exception as e:
     return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def delete_event(request):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      # print(content)
+      shift = Shifts.objects.get(id=content['id'])
+      # print(shift)
+      shift.delete()
+      return JsonResponse({'message': 'Shift Deleted'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)

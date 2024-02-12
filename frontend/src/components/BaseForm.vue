@@ -113,8 +113,14 @@
       </div>
       <div class="row justify-around q-my-md">
         <q-btn @click="submit" color="primary">Save</q-btn>
+        <q-btn v-show="delete_button" @click="confirm_delete" color="primary">Delete</q-btn>
       </div>
     </q-form>
+    <q-dialog v-model="confirm" persistent>
+      <ConfirmDialog 
+        @confirmed="confirm_choice"
+      />
+    </q-dialog>
   </div>
 </template>
 
@@ -125,8 +131,12 @@ import APIService from "../../services/api";
 import ValidateService from "../../services/ValidateService";
 import { api } from "boot/axios";
 import statesJson from "components/states.json";
+import ConfirmDialog from "components/ConfirmDialog.vue";
 
 export default defineComponent({
+  components: {
+    ConfirmDialog,
+  },
   props: [
     "page_title",
     "getForm",
@@ -137,6 +147,8 @@ export default defineComponent({
     "editButton",
     "columns",
     'add_to_date',
+    'delete_button',
+    'delete_api',
     "multiDateSelect",
     "parentFunc01",
     "parentFunc02",
@@ -162,6 +174,8 @@ export default defineComponent({
       two: ref('col-10 col-sm-6 col-md-6 col-lg-6 q-px-sm f-field'),
       cols: ref(''),
       add_to_form_date: ref(),
+      confirm: ref(false),
+      doubleVerify: ref(true),
     };
 
     
@@ -210,6 +224,44 @@ export default defineComponent({
     add_date(date) {
       console.log(this.formData)
       this.formData['']['shift_date']['value'] = [date];
+    },
+
+    confirm_delete() {
+      this.confirm = true;
+    },
+
+    confirm_choice(choice) {
+      this.confirm = false;
+      console.log(choice);
+      if (choice) {
+        this.delete_item();
+      }
+    },
+
+    delete_item() {
+      console.log("Delete Event");
+      console.log(this.formData, this.formData['']['id']['value'])
+      api.post(this.delete_api, {id: this.formData['']['id']['value']}).then((res) => {
+        console.log(res.data);
+        this.$emit("done");
+        Notify.create({
+          message: res.data.message,
+          color: "green",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+        });
+      })
+      .catch((error) => {
+          console.log(error.response.data);
+          Notify.create({
+            message: error.response.data.message,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        });
     },
 
     submit(event) {
@@ -306,6 +358,7 @@ export default defineComponent({
         console.log(results.data);
         this.formData = results.data.forms;
         this.options = results.data.options;
+
         if (this.add_to_form_date) {
           this.add_date(this.add_to_form_date)
         }

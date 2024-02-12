@@ -26,7 +26,19 @@
     </div>
     <q-dialog v-model="add_shifts" position="left">
       <q-card style="width: 90%" class="dialog-25">
-        <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" :form_data="editEvent" columns="one" :multiDateSelect="multiDateSelect" :add_to_date="add_to_date"/>
+        <BaseForm 
+        :getForm="get_form" 
+        :submitForm="submit_form" 
+        :isSingle="true" 
+        :closeButton="true" 
+        page_title="Quick-Schedule" 
+        @done="form_complete" 
+        :form_data="editEvent" 
+        :delete_button="event_edit"
+        :delete_api="delete_event"
+        columns="one" 
+        :multiDateSelect="multiDateSelect" 
+        :add_to_date="add_to_date"/>
       </q-card>
     </q-dialog>
   </q-page>
@@ -90,11 +102,13 @@ export default defineComponent({
       columnLabels: ref([]),
       updated_events: ref([]),
       editEvent: ref({}),
+      event_edit: ref(false),
       event_id: ref(),
       get_form: ref('/quick_add'),
       submit_form: ref('/quick_add'),
       multiDateSelect: ref(true),
       add_to_date: ref(null),
+      delete_event: ref('/delete_event'),
     };
   },
   watch: {
@@ -117,6 +131,7 @@ export default defineComponent({
     add_shifts(newValue, oldValue) {
       if (newValue == false) {
         this.add_to_date = null
+        this.event_edit = false
       }
     },
   },
@@ -177,6 +192,7 @@ export default defineComponent({
       // let color = event.borderColor
       // event.backgroundColor = color
       // event.textColor = MainFunctions.getTextColor(event.borderColor)
+      this.event_edit = true
       this.get_form = `/edit_event/${info.id}`
       this.submit_form = '/edit_event'
       this.multiDateSelect = false

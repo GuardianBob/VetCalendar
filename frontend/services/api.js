@@ -143,6 +143,11 @@ class APIService {
     }
   }
 
+  delete_event(data) {
+    this.setTokenHeader();
+    return api.post('/delete_event', data)
+  }
+
   schedule_settings(data) {
     this.setTokenHeader();
     if (!data) {
