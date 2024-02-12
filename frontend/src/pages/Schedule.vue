@@ -7,16 +7,16 @@
       <div class="col-8 q-pr-sm">
         <div class="column justify-start">
             <div class="col-2">
-              <q-btn color="accent" id="add_shifts" :size="button_size" @click="add_shifts = !add_shifts" icon="more_time" label="Quick Add"></q-btn>
+              <q-btn color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
             </div>
           <div class="row align-start justify-center">
-            <Calendar @send_date="set_date" @send_filter="set_filter" @send_events="store_updated_events" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" :editCal="true" />
+            <Calendar @send_date="set_date" @send_filter="set_filter" @send_events="store_updated_events" @edit_event="edit_event" :calEvents="events" :calShifts="shifts" :calUsers="users" :calDate="date" :editCal="true" />
           </div>
         </div>
       </div>
     </div>
     <q-dialog v-model="add_shifts" transition-show="slide-down" transition-hide="slide-up">
-      <BaseForm getForm="/quick_add" submitForm="/quick_add" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete"/>
+      <BaseForm :getForm="get_form" :submitForm="submit_form" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="form_complete" form_data="editEvent"/>
     </q-dialog>
   </q-page>
 </template>
@@ -57,7 +57,7 @@ export default defineComponent({
     return {
       
       store,
-      events: ref([{}]),
+      events: ref([]),
       date: ref(new Date().toLocaleString('en-US', { year: 'numeric' }) + "-" + new Date().toLocaleString('en-US', { month: 'short' })),
 
       calendar_button: ref(false),
@@ -78,6 +78,9 @@ export default defineComponent({
       button_size: ref('sm'),
       columnLabels: ref([]),
       updated_events: ref([]),
+      editEvent: ref({}),
+      get_form: ref('/quick_add'),
+      submit_form: ref('/quick_add'),
     };
   },
   watch: {
@@ -135,6 +138,18 @@ export default defineComponent({
         this.updated_events.push(event);
       }
       console.log(this.updated_events)
+    },
+
+    quick_add() {
+      this.get_form = '/quick_add'
+      this.submit_form = '/quick_add'
+      this.add_shifts = true
+    },
+
+    edit_event(info) {
+      this.get_form = `/edit_event/${info.id}`
+      this.submit_form = '/edit_event'
+      this.add_shifts = true
     },
 
     form_complete() {

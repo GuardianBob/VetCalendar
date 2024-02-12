@@ -258,9 +258,9 @@ export default defineComponent({
     },
 
     async get_form() {
-      console.log(this.getForm); // login/create_user
+      // console.log(this.getForm); // login/create_user
       await api.get(this.getForm).then(async (results) => {
-        console.log(results.data.forms);
+        // console.log(results.data.forms);
         this.formData = results.data.forms;
         this.options = results.data.options;
         // if ("login" in this.api_call || "register" in this.api_call) {

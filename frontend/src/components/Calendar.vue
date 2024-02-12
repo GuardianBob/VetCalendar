@@ -210,11 +210,12 @@ export default {
 
     handleEventClicked(info) {
       console.log('Event clicked:', info.event.id, info.event.title, info.event.start);
-      this.$q.dialog({
-        title: 'Event Details',
-        message: 'Event ID: ' + info.event.id + '<br>' + 'Title: ' + info.event.title + '<br>' + 'Start: ' + info.event.start,
-        ok: 'Close',
-      })
+      // this.$q.dialog({
+      //   title: 'Event Details',
+      //   message: 'Event ID: ' + info.event.id + '<br>' + 'Title: ' + info.event.title + '<br>' + 'Start: ' + info.event.start,
+      //   ok: 'Close',
+      // })
+      this.$emit("edit_event", info.event)
     },
 
     async handleCalendarChange(date_string) {

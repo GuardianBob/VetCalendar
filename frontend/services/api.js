@@ -134,6 +134,15 @@ class APIService {
     return api.post('/save_schedule_updates', data)
   }
 
+  edit_event(data = null, update=false) {
+    this.setTokenHeader();
+    if (update) {
+      return api.post('/edit_event', data)
+    } else {
+      return api.get(`/edit_event/${data}`)
+    }
+  }
+
   schedule_settings(data) {
     this.setTokenHeader();
     if (!data) {
