@@ -210,7 +210,7 @@ export default {
     handleEventChange(info) {
       // console.log('Event changed:', info.event);
       let event = {
-        id: info.event.id,
+        id: parseInt(info.event.id),
         title: info.event.title,
         start: info.event.start,
         shift: info.event.extendedProps.shift_name_id,

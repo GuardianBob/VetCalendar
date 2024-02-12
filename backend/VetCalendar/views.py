@@ -266,6 +266,8 @@ def quick_add(request):
         shift_date = parse(date).date()
         shift_start = convert_to_shift_datetime(date, shift.start_time)
         shift_end = convert_to_shift_datetime(date, shift.end_time)
+        if shift_end < shift_start:
+          shift_end = shift_end + datetime.timedelta(hours=24)
         print(f'start: {shift_start}, end: {shift_end}')
         existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
         if existing_shift:
@@ -396,8 +398,13 @@ def save_schedule_updates(request):
 
 def creat_update_shift(data):
   shift_details = ShiftName.objects.get(id=data['shift'])
+  if not data.get('user'):
+    old_shift = Shifts.objects.get(id=data['id'])
+    data['user'] = old_shift.user.id
   shift_start = convert_to_shift_datetime(data['shift_date'], shift_details.start_time)
-  shift_end = shift_start + datetime.timedelta(hours=12)
+  shift_end = convert_to_shift_datetime(data['shift_date'], shift_details.end_time)
+  if shift_end < shift_start:
+    shift_end = shift_end + datetime.timedelta(hours=24)
   print(f'start: {shift_start}, end: {shift_end}')
   shift, created = Shifts.objects.update_or_create(
     id=data.get('id'),
@@ -423,7 +430,7 @@ def edit_event(request, id=None):
       # content = list(content[0].values())[0]
       print(content)
       print(content['id'])
-      shift = creat_update_shift(content)
+      creat_update_shift(content)
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
     else:
       # shift = Shifts.objects.values('id', 'shift', 'shift_type', 'shift_start', 'shift_end', 'user').filter(id=id)

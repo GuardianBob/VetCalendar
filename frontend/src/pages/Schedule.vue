@@ -143,22 +143,19 @@ export default defineComponent({
     },
 
     store_updated_events(event) {
-      console.log(event)
-      const foundEvent = this.updated_events.find(item => item.id == event.id);
-      if (foundEvent) {
-        // Deep clone the array before updating it
-        this.updated_events = JSON.parse(JSON.stringify(this.updated_events)).map(item =>
-          item.id === event.id ? { ...item, ...event } : item
-        );
-      } else {
-        this.updated_events.push(event);
-      }
-      console.log(this.updated_events)
-      // let update_event = this.events.find(obj => obj.id == event.id);
-      // update_event = event;
-      // let update_shift = this.shifts.find(obj => obj.id == event.id);
-      // update_shift = event;
+      // console.log(event)
+      APIService.edit_event(event, true)
+      // const foundEvent = this.updated_events.find(item => item.id == event.id);
+      // if (foundEvent) {
+      //   // Deep clone the array before updating it
+      //   this.updated_events = JSON.parse(JSON.stringify(this.updated_events)).map(item =>
+      //     item.id === event.id ? { ...item, ...event } : item
+      //   );
+      // } else {
+      //   this.updated_events.push(event);
+      // }
       // console.log(this.updated_events)
+      
     },
 
     quick_add() {
