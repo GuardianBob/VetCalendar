@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
+from django.core.exceptions import FieldError
 from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts
 from django.forms.models import model_to_dict
 from .forms import QuickAddForm, ShiftNameForm
@@ -114,6 +115,14 @@ user_info_fields2 = [
   # "user_address__values"
 ]
 
+FORM_OPTION_MODEL = {
+  'AccessLevel': 'Permission'
+}
+
+FORM_OPTION_LABELS = {
+  'Permission': 'permission_label',
+}
+
 # ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
 TIMEZONE = pytz.timezone('America/Los_Angeles')
 
@@ -141,6 +150,14 @@ def get_user_options():
   users = User.objects.all()
   users = [{'field': 'user', 'option': user.id, 'label': f'{user.last_name} ({user.initials})'} for user in users]
   return users
+
+def get_form_options(field, app_name, model_name):
+  pull_from = FORM_OPTION_MODEL[model_name] if model_name in FORM_OPTION_MODEL else model_name
+  label = FORM_OPTION_LABELS[pull_from]
+  model = apps.get_model(app_name, pull_from)
+  options = model.objects.all()
+  options = [{'field': field, 'option': option.id, 'label': getattr(option, label)} for option in options]
+  return options
 
 month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -373,7 +390,7 @@ def create_update_settings(settings):
     if 'data' in setting:
       if 'model' in setting:
         print(setting['model'])
-        app_name = get_model_from_apps(['VetCalendar', 'login'], setting['model'])
+        app_name = get_app_from_model(['VetCalendar', 'login'], setting['model'])
         Model = apps.get_model(app_name, setting['model'])  # Get the model dynamically          
         data = setting['data']
         print(data)
@@ -385,7 +402,7 @@ def create_update_settings(settings):
           )
   return 
 
-def get_model_from_apps(app_names, model_name):
+def get_app_from_model(app_names, model_name):
   for app_name in app_names:
     try:
       apps.get_model(app_name, model_name)
@@ -402,6 +419,16 @@ def get_form(app_name, form_name):
     return form()
   except (ImportError, AttributeError):
     return None
+  
+def find_key(nested_dict, target_values):
+  print("Searching ====> :", nested_dict, target_values)
+  for key, value in nested_dict.items():
+    if isinstance(value, dict):
+      if any(item in target_values for item in value.values()):
+        return key
+    elif value in target_values:
+      return key
+  return None
 
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
@@ -410,27 +437,38 @@ def get_form(app_name, form_name):
 def get_model_form(request, model=None):
   if request.method == 'GET':
     print(model)
-    app_name = get_model_from_apps(['VetCalendar', 'login'], model)
+    app_name = get_app_from_model(['VetCalendar', 'login'], model)
     form = get_form(app_name, f'{model}Form')
     # form = PermissionForm()
     form = set_form_fields(form, model)
     print(form)
+    field = find_key(form, ['select', 'multi-select'])
+    print(field)
+    options = get_form_options(field, app_name, model)
+    print(form, options)
     context = {
       'forms': {
         'Add New Item': form,
       },
-      'model': model
+      'model': model,
+      'options': options,
     }
     return JsonResponse(context)
   else:
     content = json.loads(request.body)
     print(content)
-    app_name = get_model_from_apps(['VetCalendar', 'login'], content['model'])
+    app_name = get_app_from_model(['VetCalendar', 'login'], content['model'])
     Model = apps.get_model(app_name, content['model'])
-    item, created = Model.objects.update_or_create(
-      id=content.get('id'),
-      defaults={key: value for key, value in content.items() if key in [f.name for f in Model._meta.get_fields()]}
-    )
+    try:
+      item, created = Model.objects.update_or_create(
+          id=content.get('id'),
+          defaults={key: value for key, value in content.items() if key in [f.name for f in Model._meta.get_fields()]}
+      )
+    except FieldError as e:
+      if 'Direct assignment to the forward side of a many-to-many set is prohibited' in str(e):
+        pass
+      else:
+        raise  # Re-raise the exception if it's not the one we're trying to handle
     return JsonResponse({'message': 'Testing Backend'}, status=500)
 
   # Model = apps.get_model('VetCalendar', model)

@@ -833,6 +833,11 @@ def get_form_options():
   options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
   return options
 
+def get_access_options():
+  options = Permission.objects.all()
+  options = [{'field': 'permissions', 'option': option.id, 'label': option.permission_label} for option in options]
+  return options
+
 def get_user_address(user):
   address = user.user_address if hasattr(user, 'user_address') else None
   city_state = user.user_city_state if hasattr(user, 'user_city_state') else None
@@ -1140,11 +1145,19 @@ def admin_settings(request):
       permissions = Permission.objects.all().values('id', 'permission_label', 'permission', 'description')
       permission_dict = [permission for permission in permissions] # Convert QuerySet into List of Dictionaries
       print(permissions)
+      accessLevels = AccessLevel.objects.all().values()
+      access_dict = [access for access in accessLevels] # Convert QuerySet into List of Dictionaries
       context = {
         'Edit Permissions': {
           'columns': get_settings_columns(permissions[0]),
           'data': permission_dict,
           'model': 'Permission'
+        },
+        'Edit Access Levels': {
+          'columns': get_settings_columns(accessLevels[0]),
+          'data': access_dict,
+          'model': 'AccessLevel',
+          'options': get_access_options(),
         },
       }
       # Return the data as JSON

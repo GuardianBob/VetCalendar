@@ -85,6 +85,20 @@
               label-color="primary"
               :rules="[field.required ? rules.required : '']"
             />
+            <q-select
+              v-else-if="field.type === 'multi-select'"
+              :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              user-chips
+              map-options
+              label-color="primary"
+              :rules="[field.required ? rules.required : '']"
+            />
             <q-input
               v-else-if="field.type === 'date'"
               v-model="field.value"

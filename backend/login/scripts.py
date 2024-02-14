@@ -105,7 +105,7 @@ def generate_password(user, password_length=20):
   return new_password
 
 def get_settings_columns(data):
-  # print(data)
+  print(data)
   headers = []
   for key, value in data.items():
     if 'id' not in key:
@@ -117,6 +117,8 @@ def get_settings_columns(data):
         type = "color"
       if 'description' in key:
         type = "textarea"
+      if 'permissions' in key:
+        type = "multi-select"
       if 'id' in key or 'name' in key:
         type = "fixed"
       headers.append({

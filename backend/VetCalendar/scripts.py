@@ -64,6 +64,7 @@ FORM_FIELD_TYPES = {
   'start_time': 'time',
   'end_time': 'time',
   'shift_color': 'color',
+  'permissions': 'multi-select',
 }
 
 FORM_FIELD_LABELS = {

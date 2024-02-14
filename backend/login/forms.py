@@ -1,5 +1,6 @@
 from .models import User, Address, CityState, Phone, Email, AccessLevel, Permission, Occupation, FormOptions, AccountRequest
 from django import forms
+from VetCalendar.scripts import convert_label
 import datetime
 import bcrypt, re
 
@@ -296,6 +297,16 @@ class PermissionForm(forms.ModelForm):
       self.fields = set_attributes(self.fields)
       self = identify_choice_fields(self)
 
+class AccessLevelForm(forms.ModelForm):
+    class Meta:
+        model = AccessLevel
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+      super(AccessLevelForm, self).__init__(*args, **kwargs)
+      self.fields = set_attributes(self.fields)
+      self = identify_choice_fields(self)
+
 # Split into individual forms that display on the same page to look like different form sections.
 class UserAdminUpdateForm(forms.Form):
   first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
@@ -375,7 +386,7 @@ def set_attributes(fields):
     fields[name].widget.attrs.update({
       'class' : 'form-control input-field',
       'id' : name,
-      'placeholder': str(FORM_FIELDS[name]),
+      'placeholder': set_label(name),
     })
     if name == 'phone_number':
       fields[name].widget.attrs.update({
@@ -400,3 +411,9 @@ def identify_choice_fields(form):
 
 def clean_number(phone_number):
   return re.sub('\D', '', phone_number)
+
+def set_label(label):
+  try :
+    return str(FORM_FIELDS[label])
+  except:
+    return convert_label(label)

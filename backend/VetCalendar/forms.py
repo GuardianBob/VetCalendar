@@ -71,7 +71,7 @@ def set_attributes(fields):
 
 def set_label(label):
   try :
-    return str(FORM_FIELDS[name])
+    return str(FORM_FIELDS[label])
   except:
     return convert_label(label)
     
