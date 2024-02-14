@@ -64,23 +64,21 @@ class Phone(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
+class Permission(models.Model):
+  permission = models.CharField(max_length=255, unique=True)
+  permission_label = models.CharField(max_length=255, blank=True)
+  description = models.TextField(blank=True, null=True)
+
+  def __str__(self):
+    return self.permission
+
 class AccessLevel(models.Model):
-  name = models.CharField(max_length=50)
-  users = models.ManyToManyField(User, related_name='user_level', default=1)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now=True)
+  access = models.CharField(max_length=255, unique=True)
+  permissions = models.ManyToManyField(Permission, related_name='access_levels')
+  users = models.ManyToManyField(User, related_name='access_levels', default=1)
 
-# class UserLevel(models.Model):
-#   level = models.OneToOneField(AccessLevel, related_name='access_level', default=1, on_delete=models.CASCADE)
-#   user = models.OneToOneField(User, related_name='user_level', on_delete=models.CASCADE)
-#   created_at = models.DateTimeField(auto_now_add=True)
-#   updated_at = models.DateTimeField(auto_now=True)
-
-class UserPrivileges(models.Model):
-  name = models.CharField(max_length=150)
-  user = models.ManyToManyField(User, related_name="user_privileges", blank=True, default=0)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now=True)
+  def __str__(self):
+    return self.access  
 
 class Occupation(models.Model):
   occupation = models.CharField(max_length=50, default=0)

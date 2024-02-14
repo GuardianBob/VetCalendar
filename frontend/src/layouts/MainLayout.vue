@@ -117,13 +117,19 @@ const linksList = [
         title: 'Manage Schedule',
         caption: '',
         icon: 'calendar_month',
-        link: '/schedule'
+        link: '/manage_schedule'
       },
       {
         title: 'Schedule Settings',
         caption: '',
         icon: 'settings',
         link: '/schedule_settings'
+      },
+      {
+        title: 'Admin Settings',
+        caption: '',
+        icon: 'construction',
+        link: '/admin_settings'
       },
     ]
   },

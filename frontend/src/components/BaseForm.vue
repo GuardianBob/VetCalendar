@@ -41,6 +41,7 @@
               class="q-my-xs q-py-none" 
               :id="key"
               mask="(###) ###-####"
+              unmasked-value
               fill-mask
               outlined
               label-color="primary"
@@ -107,6 +108,15 @@
                 </q-icon>
               </template>
             </q-input>
+            <q-input 
+              v-else-if="field.type === 'locked'"
+              v-model="field.value" 
+              :label="field.label" 
+              class="q-my-xs q-py-none" 
+              :id="key"
+              outlined
+              disable
+            /> 
             <span v-else></span>
           </div>
         </div>
@@ -165,6 +175,7 @@ export default defineComponent({
       formData: ref(),
       loading: false,
       options: ref(this.form_options),
+      model: ref(),
       states: ref(statesJson.states),
       isPwd: ref(true),
       isRequired: ref(false),
@@ -182,14 +193,33 @@ export default defineComponent({
   },
 
   watch: {
+    // formData: {
+    //   deep: true,
+    //   handler(newVal) {
+    //     console.log(newVal);
+    //     // if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
+    //     //   const dateRanges = newVal[''].shift_date.value;
+    //     //   // console.log(dateRanges);
+    //     // }
+    //   },
+    // },
     formData: {
       deep: true,
       handler(newVal) {
         // console.log(newVal);
-        // if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
-        //   const dateRanges = newVal[''].shift_date.value;
-        //   // console.log(dateRanges);
-        // }
+        if (newVal["Add New Item"] != undefined && newVal["Add New Item"].permission_label) {
+          let permission_label = newVal["Add New Item"].permission_label.value;
+          // console.log(permission_label)
+          // Replace spaces with underscores
+          if (permission_label) {
+            permission_label = permission_label
+            .toLowerCase()
+            .replace(/[^\w\s]|(?<!_)(_)|_/g, "$1")
+            .replace(/\s/g, '_')
+            this.formData["Add New Item"].permission.value = permission_label;
+          }
+        }
+        // this.formData["Add New Item"].permission_label
       },
     },
     columns: {
@@ -297,12 +327,13 @@ export default defineComponent({
           if (typeof item === 'object' && item !== null) {
             // console.log("===> ", value)
             value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
-              if (typeof subItem.value === 'object' && subItem !== null) {
+              if (typeof subItem.value === 'object' && subItem !== null && subItem.value !== null) {
                 if (Array.isArray(subItem.value)) {
-                  // console.log(subItem.value)
+                  console.log(subItem.value)
                   // If subItem.value is an array, assign it directly to acc[subKey]
                   acc[subKey] = subItem.value.map(item => item);
                 } else {
+                  console.log(subItem)
                   acc[subKey] = subItem.value.value;
                 }
                 // acc[subKey] = subItem.value.value;
@@ -325,7 +356,8 @@ export default defineComponent({
         } else {
           data = entries
         }
-        console.log("new", data);
+        data["model"] = this.model;
+        console.log("new", this.submitForm, data);
         api.post(this.submitForm, data).then((res) => {
           console.log(res.data);
           this.$emit("done");
@@ -353,11 +385,13 @@ export default defineComponent({
     },
 
     async get_form() {
-      // console.log(this.getForm); // login/create_user
+      console.log(this.getForm); // login/create_user
       await api.get(this.getForm).then(async (results) => {
         console.log(results.data);
         this.formData = results.data.forms;
-        this.options = results.data.options;
+        this.options = results.data.options ? results.data.options : null;
+        this.model = results.data.model ? results.data.model : null;
+        // console.log(this.formData["Add New Item"].permission_label)
 
         if (this.add_to_form_date) {
           this.add_date(this.add_to_form_date)

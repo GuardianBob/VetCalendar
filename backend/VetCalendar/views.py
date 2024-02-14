@@ -4,10 +4,12 @@ from .serializers import CalendarSerializer
 from django.core import serializers
 from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts
 from django.forms.models import model_to_dict
-from .forms import QuickAddForm, ShiftTimeForm
-from login.models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info
+from .forms import QuickAddForm, ShiftNameForm
+from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, User_Info
+from login.forms import AccessGroupForm, PermissionForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone
+from login.scripts import get_settings_columns
 import datetime, json, traceback, sys, re, pytz, os
 from datetime import datetime, date, timedelta
 import dateutil.parser as parser
@@ -15,6 +17,8 @@ import dateutil.parser as parser
 from django.utils import timezone
 from django.middleware.csrf import get_token
 from dateutil.parser import parse
+from django.apps import apps
+from importlib import import_module
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -321,33 +325,121 @@ def schedule_settings(request):
       # shift_data = json.dumps(shift_dict) 
       shift_type = ShiftType.objects.all().values('id', 'shift_type', 'shift_color', 'type_label')
       type_dict = [shift for shift in shift_type]
+      # context = {
+      #   'shift_settings': shift_dict,
+      #   'type_settings': type_dict
+      # }
       context = {
-        'shift_settings': shift_dict,
-        'type_settings': type_dict
-      }
+        'Edit Shift Settings': {
+          'columns': get_settings_columns(shift_dict[0]),
+          'data': shift_dict,
+          'model': 'ShiftName'
+        },
+        'Edit Shift Type settings': {
+          'columns': get_settings_columns(type_dict[0]),
+          'data': type_dict,
+          'model': 'ShiftType'
+        },
+    }
       return JsonResponse(context)
     else:
       # print(request.body)
       content = json.loads(request.body)
-      shift_settings = content['shift_settings']
-      type_settings = content['type_settings']
-      # print(shift_settings)
-      for item in shift_settings:
-        shift = ShiftName.objects.get(id=item['id'])
-        shift.start_time = item['start_time']
-        shift.end_time = item['end_time']
-        shift.shift_label = item['shift_label']
-        shift.shift_name = item['shift_name']
-        shift.save()
-      for item in type_settings:
-        shift_type = ShiftType.objects.get(id=item['id'])
-        shift_type.shift_type = item['shift_type']
-        shift_type.shift_color = item['shift_color']
-        shift_type.type_label = item['type_label']
-        shift_type.save()
+      # print(content)
+      create_update_settings(content)
+      # shift_settings = content['shift_settings']
+      # type_settings = content['type_settings']
+      # # print(shift_settings)
+      # for item in shift_settings:
+      #   shift = ShiftName.objects.get(id=item['id'])
+      #   shift.start_time = item['start_time']
+      #   shift.end_time = item['end_time']
+      #   shift.shift_label = item['shift_label']
+      #   shift.shift_name = item['shift_name']
+      #   shift.save()
+      # for item in type_settings:
+      #   shift_type = ShiftType.objects.get(id=item['id'])
+      #   shift_type.shift_type = item['shift_type']
+      #   shift_type.shift_color = item['shift_color']
+      #   shift_type.type_label = item['type_label']
+      #   shift_type.save()
       return JsonResponse({'message': 'Settings Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+def create_update_settings(settings):
+  for setting in settings.values():
+    print(setting)
+    if 'data' in setting:
+      if 'model' in setting:
+        print(setting['model'])
+        app_name = get_model_from_apps(['VetCalendar', 'login'], setting['model'])
+        Model = apps.get_model(app_name, setting['model'])  # Get the model dynamically          
+        data = setting['data']
+        print(data)
+        for item in data:
+          print(item['id'])
+          item, created = Model.objects.update_or_create(
+            id=item.get('id'),
+            defaults={key: value for key, value in item.items() if key in [f.name for f in Model._meta.get_fields()]}
+          )
+  return 
+
+def get_model_from_apps(app_names, model_name):
+  for app_name in app_names:
+    try:
+      apps.get_model(app_name, model_name)
+      return app_name
+    except LookupError:
+      continue
+  return None
+
+def get_form(app_name, form_name):
+  try:
+    print(form_name)
+    module = import_module(f'{app_name}.forms')
+    form = getattr(module, form_name)
+    return form()
+  except (ImportError, AttributeError):
+    return None
+
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_model_form(request, model=None):
+  if request.method == 'GET':
+    print(model)
+    app_name = get_model_from_apps(['VetCalendar', 'login'], model)
+    form = get_form(app_name, f'{model}Form')
+    # form = PermissionForm()
+    form = set_form_fields(form, model)
+    print(form)
+    context = {
+      'forms': {
+        'Add New Item': form,
+      },
+      'model': model
+    }
+    return JsonResponse(context)
+  else:
+    content = json.loads(request.body)
+    print(content)
+    app_name = get_model_from_apps(['VetCalendar', 'login'], content['model'])
+    Model = apps.get_model(app_name, content['model'])
+    item, created = Model.objects.update_or_create(
+      id=content.get('id'),
+      defaults={key: value for key, value in content.items() if key in [f.name for f in Model._meta.get_fields()]}
+    )
+    return JsonResponse({'message': 'Testing Backend'}, status=500)
+
+  # Model = apps.get_model('VetCalendar', model)
+  # print(Model)
+  # form_items = Model.objects.values().first()
+  # form_dict = [item for item in form_items]
+  # print(form_dict)
+
+  return JsonResponse({'message': 'Testing Backend'}, status=500)
 
 @api_view(['GET', 'POST'])
 # @authentication_classes([JWTAuthentication])
@@ -377,7 +469,8 @@ def switch_api_key(value):
     }.get(value, 'No Key Found')
   except Exception as e:
     return trace_error(e, True)
-  
+
+# ============================ NOTE: MAy not be used ============================
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -395,6 +488,7 @@ def save_schedule_updates(request):
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+#================================================================================  
 
 def creat_update_shift(data):
   shift_details = ShiftName.objects.get(id=data['shift'])

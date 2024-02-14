@@ -1,4 +1,4 @@
-from .models import User, Address, CityState, Phone, Email, AccessLevel, UserPrivileges, Occupation, FormOptions, AccountRequest
+from .models import User, Address, CityState, Phone, Email, AccessLevel, Permission, Occupation, FormOptions, AccountRequest
 from django import forms
 import datetime
 import bcrypt, re
@@ -88,6 +88,12 @@ FORM_FIELDS = {
     "new_password": "New Password",
     "verify_password": "Verify Password",
     "remember_me": "Remember Me",
+    "access_title": "Access Group Title",
+    "permissions": "Permissions",
+    "permission": "Permission",
+    "permission_label": "Permission Label",
+    "description": "Description",
+
 }
 
 # PHONE_TYPE = (
@@ -233,6 +239,7 @@ class CityStateForm(forms.ModelForm):
       self.fields = set_attributes(self.fields)
       self = identify_choice_fields(self)
 
+
 class PhoneForm(forms.ModelForm):
     phone_number = forms.CharField(max_length=50, widget=forms.TextInput, required=True)
     phone_type = forms.ChoiceField(required=False)
@@ -266,6 +273,28 @@ class EmailForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
       super(EmailForm, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
+
+class AccessGroupForm(forms.ModelForm):
+  access_title = forms.CharField(max_length=100, required=True)
+  permissions = forms.ModelMultipleChoiceField(queryset=Permission.objects.all(), required=True, widget=forms.CheckboxSelectMultiple)
+  class Meta:
+      model = AccessLevel
+      fields = ['access_title', 'permissions']
+
+  def __init__(self, *args, **kwargs):
+    super(AccessGroupForm, self).__init__(*args, **kwargs)
+    self.fields = set_attributes(self.fields)
+    self = identify_choice_fields(self)
+
+class PermissionForm(forms.ModelForm):
+    class Meta:
+        model = Permission
+        fields = ['permission_label', 'permission', 'description']
+
+    def __init__(self, *args, **kwargs):
+      super(PermissionForm, self).__init__(*args, **kwargs)
+      self.fields = set_attributes(self.fields)
+      self = identify_choice_fields(self)
 
 # Split into individual forms that display on the same page to look like different form sections.
 class UserAdminUpdateForm(forms.Form):

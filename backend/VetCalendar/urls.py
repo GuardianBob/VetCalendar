@@ -13,4 +13,5 @@ urlpatterns = [
     re_path(r'^edit_event(?:/(?P<id>\d+))?$', views.edit_event, name='edit_event'),
     path('schedule_settings', views.schedule_settings, name='schedule_settings'),
     path('get_keys', views.get_keys, name='get_keys'),
+    re_path(r'^get_model_form(?:/(?P<model>\w+))?$', views.get_model_form, name='get_model_form'),
 ]

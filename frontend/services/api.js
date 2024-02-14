@@ -78,6 +78,15 @@ class APIService {
     }
   }
 
+  admin_settings(data) {
+    this.setTokenHeader();
+    if (!data) {
+      return api.get('/login/admin_settings');
+    } else {
+      return api.post('/login/admin_settings', data);
+    }
+  }
+
   get_login_csrf() {
     return api.get('/login/get_csrf');
   }
@@ -155,6 +164,11 @@ class APIService {
     } else {
       return api.post('/schedule_settings', data);
     }
+  }
+
+  get_model_form(model) {
+    this.setTokenHeader();
+    return api.get(`/get_model_form/${model}`);
   }
 
   test_calendar() {

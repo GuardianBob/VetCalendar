@@ -18,6 +18,7 @@ urlpatterns = [
     path('create_user', views.create_user, name='create_user'),
     path('forms_page', views.login, name='login'),
     path('delete_user', views.delete_user, name='delete_user'),
+    path('admin_settings', views.admin_settings, name='admin_settings'),
     # path('get_test_form/<int:id>', views.get_test_form, name='get_test_form'),
     # path('submit_test_form', views.submit_test_form, name='submit_test_form'),
     # path('get_user_list', UserListView.as_view(), name='user_list'),

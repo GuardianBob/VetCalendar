@@ -33,9 +33,9 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path('', include('VetCalendar.urls')),
+    re_path(r'login\/?', include('login.urls')),
     re_path(r'admin\/?', admin.site.urls),
     # re_path(r'api\/?', include(router.urls)),
-    re_path(r'login\/?', include('login.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', validate_token, name='token_verify'),

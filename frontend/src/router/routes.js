@@ -62,9 +62,9 @@ const routes = [
         beforeEnter: requireAuth,
       },
       {
-        path: "/schedule",
-        name: "schedule",
-        component: () => import("pages/Schedule.vue"),
+        path: "/manage_schedule",
+        name: "manage_schedule",
+        component: () => import("pages/ManageSchedule.vue"),
       },
       {
         path: "/schedule_import",
@@ -79,7 +79,14 @@ const routes = [
       {
         path: "/schedule_settings",
         name: "schedule settings",
-        component: () => import("pages/SchedSettings.vue"),
+        component: () => import("pages/SettingsPage.vue"),
+        props: { api_route: '/schedule_settings', page_title: 'Schedule Settings'},
+      },
+      {
+        path: "/admin_settings",
+        name: "admin settings",
+        component: () => import("pages/SettingsPage.vue"),
+        props: { api_route: '/login/admin_settings', page_title: 'User Settings'},
       },
       // {
       //   path: "/create_user",
