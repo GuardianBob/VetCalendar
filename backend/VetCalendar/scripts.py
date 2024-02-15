@@ -80,7 +80,6 @@ REQUIRED_FIELDS = [
   'shift_type',
   'user',
   'shift_date',
-  'permission_label',
 ]
 
 REMOVE_FIELDS = [
@@ -372,7 +371,6 @@ def add_shifts(shifts):
   
 SEARCH_LIST = [
   'permission',
-  'permission_label',
 ]
 
 def find_locked(array1, array2 = SEARCH_LIST):

@@ -1,4 +1,5 @@
-from .models import User, Address, CityState, Phone, Email, AccessLevel, Permission, Occupation, FormOptions, AccountRequest
+from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, AccountRequest
+from django.contrib.auth.forms import UserChangeForm
 from django import forms
 from VetCalendar.scripts import convert_label
 import datetime
@@ -92,7 +93,6 @@ FORM_FIELDS = {
     "access_title": "Access Group Title",
     "permissions": "Permissions",
     "permission": "Permission",
-    "permission_label": "Permission Label",
     "description": "Description",
 
 }
@@ -120,6 +120,12 @@ def field_options(field):
   # print(form_options.values())
   return form_options
 
+class CustomUserChangeForm(UserChangeForm):
+  password = forms.CharField(required=False)
+  initials = forms.CharField(required=False)
+
+  class Meta(UserChangeForm.Meta):
+    pass
 
 class Register_Form(forms.Form):
   first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
@@ -265,32 +271,32 @@ class PhoneForm(forms.ModelForm):
       cleaned_data['phone_number'] = re.sub(r'-', '', phone_number)  # remove all dashes
       return cleaned_data
 
-class EmailForm(forms.ModelForm):
-    email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=False)
-    class Meta:
-        model = Email
-        fields = ['email']
+# class EmailForm(forms.ModelForm):
+#     email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=False)
+#     class Meta:
+#         model = Email
+#         fields = ['email']
     
-    def __init__(self, *args, **kwargs):
-      super(EmailForm, self).__init__(*args, **kwargs)
-      self.fields = set_attributes(self.fields)
+#     def __init__(self, *args, **kwargs):
+#       super(EmailForm, self).__init__(*args, **kwargs)
+#       self.fields = set_attributes(self.fields)
 
-class AccessGroupForm(forms.ModelForm):
-  access_title = forms.CharField(max_length=100, required=True)
-  permissions = forms.ModelMultipleChoiceField(queryset=Permission.objects.all(), required=True, widget=forms.CheckboxSelectMultiple)
-  class Meta:
-      model = AccessLevel
-      fields = ['access_title', 'permissions']
+# class AccessGroupForm(forms.ModelForm):
+#   access_title = forms.CharField(max_length=100, required=True)
+#   permissions = forms.ModelMultipleChoiceField(queryset=Permission.objects.all(), required=True, widget=forms.CheckboxSelectMultiple)
+#   class Meta:
+#       model = AccessLevel
+#       fields = ['access_title', 'permissions']
 
-  def __init__(self, *args, **kwargs):
-    super(AccessGroupForm, self).__init__(*args, **kwargs)
-    self.fields = set_attributes(self.fields)
-    self = identify_choice_fields(self)
+#   def __init__(self, *args, **kwargs):
+#     super(AccessGroupForm, self).__init__(*args, **kwargs)
+#     self.fields = set_attributes(self.fields)
+#     self = identify_choice_fields(self)
 
 class PermissionForm(forms.ModelForm):
     class Meta:
         model = Permission
-        fields = ['permission_label', 'permission', 'description']
+        fields = ['permission', 'description']
 
     def __init__(self, *args, **kwargs):
       super(PermissionForm, self).__init__(*args, **kwargs)

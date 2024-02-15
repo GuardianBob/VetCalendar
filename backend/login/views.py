@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, User_Info, Email, FormOptions, PasswordReset, AccountRequest
+from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
 from django.middleware import csrf
-from .forms import AccountRequestForm, Login_Form, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, EmailForm, PermissionForm, AccessGroupForm
+from .forms import AccountRequestForm, Login_Form, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, PermissionForm, AccessLevelForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.forms.models import model_to_dict
 import random, secrets, re, traceback, sys
@@ -835,7 +835,7 @@ def get_form_options():
 
 def get_access_options():
   options = Permission.objects.all()
-  options = [{'field': 'permissions', 'option': option.id, 'label': option.permission_label} for option in options]
+  options = [{'field': 'permissions', 'option': option.id, 'label': option.permission} for option in options]
   return options
 
 def get_user_address(user):
@@ -1142,7 +1142,7 @@ def admin_settings(request):
       create_update_settings(settings)
       return JsonResponse({'message': 'Settings Updated!'}, status=200)
     else:
-      permissions = Permission.objects.all().values('id', 'permission_label', 'permission', 'description')
+      permissions = Permission.objects.all().values('id', 'permission', 'description')
       permission_dict = [permission for permission in permissions] # Convert QuerySet into List of Dictionaries
       print(permissions)
       accessLevels = AccessLevel.objects.all().values()

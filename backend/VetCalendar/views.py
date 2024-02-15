@@ -2,12 +2,11 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
-from django.core.exceptions import FieldError
 from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts
 from django.forms.models import model_to_dict
 from .forms import QuickAddForm, ShiftNameForm
-from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, User_Info
-from login.forms import AccessGroupForm, PermissionForm
+from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
+from login.forms import AccessLevelForm, PermissionForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone
 from login.scripts import get_settings_columns
@@ -120,7 +119,7 @@ FORM_OPTION_MODEL = {
 }
 
 FORM_OPTION_LABELS = {
-  'Permission': 'permission_label',
+  'Permission': 'permission',
 }
 
 # ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
@@ -277,7 +276,7 @@ def quick_add(request):
       # content = list(content[0].values())[0]
       print(content)
       user = User.objects.get(id=content['user'])
-      shift = ShiftName.objects.get(id=content['shift'])
+      shift_name = ShiftName.objects.get(id=content['shift'])
       shift_type = ShiftType.objects.get(id=content['shift_type'])
       # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
       for date in content['shift_date']:
@@ -285,8 +284,8 @@ def quick_add(request):
         item['shift_date'] = date
         print(item)
         shift_date = parse(date).date()
-        shift_start = convert_to_shift_datetime(date, shift.start_time)
-        shift_end = convert_to_shift_datetime(date, shift.end_time)
+        shift_start = convert_to_shift_datetime(date, shift_name.start_time)
+        shift_end = convert_to_shift_datetime(date, shift_name.end_time)
         if shift_end < shift_start:
           shift_end = shift_end + datetime.timedelta(hours=24)
         print(f'start: {shift_start}, end: {shift_end}')
@@ -459,16 +458,10 @@ def get_model_form(request, model=None):
     print(content)
     app_name = get_app_from_model(['VetCalendar', 'login'], content['model'])
     Model = apps.get_model(app_name, content['model'])
-    try:
-      item, created = Model.objects.update_or_create(
-          id=content.get('id'),
-          defaults={key: value for key, value in content.items() if key in [f.name for f in Model._meta.get_fields()]}
-      )
-    except FieldError as e:
-      if 'Direct assignment to the forward side of a many-to-many set is prohibited' in str(e):
-        pass
-      else:
-        raise  # Re-raise the exception if it's not the one we're trying to handle
+    item, created = Model.objects.update_or_create(
+      id=content.get('id'),
+      defaults={key: value for key, value in content.items() if key in [f.name for f in Model._meta.get_fields()]}
+    )
     return JsonResponse({'message': 'Testing Backend'}, status=500)
 
   # Model = apps.get_model('VetCalendar', model)

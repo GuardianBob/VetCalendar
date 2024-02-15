@@ -217,25 +217,25 @@ export default defineComponent({
     //     // }
     //   },
     // },
-    formData: {
-      deep: true,
-      handler(newVal) {
-        // console.log(newVal);
-        if (newVal["Add New Item"] != undefined && newVal["Add New Item"].permission_label) {
-          let permission_label = newVal["Add New Item"].permission_label.value;
-          // console.log(permission_label)
-          // Replace spaces with underscores
-          if (permission_label) {
-            permission_label = permission_label
-            .toLowerCase()
-            .replace(/[^\w\s]|(?<!_)(_)|_/g, "$1")
-            .replace(/\s/g, '_')
-            this.formData["Add New Item"].permission.value = permission_label;
-          }
-        }
-        // this.formData["Add New Item"].permission_label
-      },
-    },
+    // formData: {
+    //   deep: true,
+    //   handler(newVal) {
+    //     // console.log(newVal);
+    //     if (newVal["Add New Item"] != undefined && newVal["Add New Item"].permission) {
+    //       let permission_label = newVal["Add New Item"].permission.value;
+    //       // console.log(permission_label)
+    //       // Replace spaces with underscores
+    //       if (permission_label) {
+    //         permission_label = permission_label
+    //         .toLowerCase()
+    //         .replace(/[^\w\s]|(?<!_)(_)|_/g, "$1")
+    //         .replace(/\s/g, '_')
+    //         this.formData["Add New Item"].permission.value = permission_label;
+    //       }
+    //     }
+    //     // this.formData["Add New Item"].permission_label
+    //   },
+    // },
     columns: {
       immediate: true,
       handler(newValue) {
