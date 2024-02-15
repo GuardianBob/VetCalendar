@@ -23,7 +23,6 @@ class UserInitials(models.Model):
 
 class Shifts(models.Model):
   shift_name = models.ForeignKey(ShiftName, related_name= 'assignments', on_delete=models.CASCADE)
-
   shift_type = models.ForeignKey(ShiftType, related_name='assigned_types', on_delete=models.CASCADE)
   shift_start = models.DateTimeField(blank=True, null=True)
   shift_end = models.DateTimeField(blank=True, null=True)
@@ -45,5 +44,27 @@ class Vacation(models.Model):
   user = models.ForeignKey(User, related_name='user_vacations', on_delete=models.CASCADE)
   start = models.DateTimeField()
   end = models.DateTimeField()
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+class FormBuilder(models.Model):
+  # This model is used to store the form fields and options for building forms
+  form_name = models.CharField(max_length=50)
+  module = models.CharField(max_length=50) # The module/app the form is used for
+  table = models.CharField(max_length=50) # The table/model the form is used for
+  fields = models.JSONField() # The fields for the form ==> selected from table/model columns
+  field_options = models.JSONField() # The options for the fields ==> selected from table/model columns of models tied to the table/model by ForeignKey
+  custom_options = models.JSONField() # Custom options for the fields ex: phone types
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+class TableBuilder(models.Model):
+  # This model is used to store the table fields and options for building tables
+  table_name = models.CharField(max_length=50)
+  module = models.CharField(max_length=50) # The module/app the table is used for
+  table = models.CharField(max_length=50) # The table/model the table is used for
+  columns = models.JSONField() # The columns (plus column) for the table ==> selected from table/model columns
+  field_options = models.JSONField() # The options for the fields ==> selected from table/model columns of models tied to the table/model by ForeignKey
+  custom_options = models.JSONField() # Custom options for the fields ex: phone types
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)

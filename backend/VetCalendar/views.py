@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
-from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts
+from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts, FormBuilder
 from django.forms.models import model_to_dict
 from .forms import QuickAddForm, ShiftNameForm
 from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
@@ -597,3 +597,114 @@ def delete_event(request):
       return JsonResponse({'message': 'Shift Deleted'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+def add_edit_form(request, id=None):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      print(content)
+      # shift = Shifts.objects.get(id=content['id'])
+      # print(shift)
+      # shift.delete()
+      return JsonResponse({'message': 'Testing Backend'}, status=500)
+    else:
+
+      return JsonResponse({'message': 'Testing Backend'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+    
+  
+def get_form_new(form_name):
+  try:
+    form = FormBuilder.objects.get(form_name=form_name)
+    form_dict = {
+      "fields": {},
+      "options": [],
+      "model": {form.module: form.table}
+    }
+
+    # Add fields to form_dict
+    for field, options in form.fields.items():
+      form_dict["fields"][field] = {
+        "label": options.get('label', ''),
+        "type": options.get('type', ''),
+        "value": options.get('value', None),
+        "required": options.get('required', False)
+      }
+
+    # Add field options to form_dict
+    for option in form.field_options:
+      form_dict["options"].append({
+        "field": option.get('field', ''),
+        "label": option.get('label', ''),
+        "option": option.get('option', '')
+      })
+
+    return {"forms": {form.form_name: form_dict}}
+  except FormBuilder.DoesNotExist:
+      return {"error": f"Form with name {form_name} does not exist"}
+
+def process_form_data(json_data):
+  # Parse the JSON data
+  data = json.loads(json_data)
+  model_name = list(data['model'].values())[0]
+  app_name = list(data['model'].keys())[0]
+
+  # Get the model class
+  ModelClass = apps.get_model(app_name, model_name)
+
+  # Get the list of dates
+  dates = data.pop('shift_date')
+
+  # For each date, create or update a record
+  for date in dates:
+    data['shift_date'] = date
+    obj, created = ModelClass.objects.update_or_create(defaults=data, shift_date=date, user=data['user'], shift=data['shift'], shift_type=data['shift_type'])
+
+  return {"message": "Records created or updated successfully"}
+
+def form_builder(request):
+  try:
+    if request.method == 'GET':
+      build_form = {}
+      # get all fields from VetCalendar.FormBuilder model
+      # fields = get_field_names(FormBuilder)
+      # print(fields)
+      fields = {
+        "form_name": { "field": "form_name", "label": "Form Name", "type": "text", "required": True },
+        "module":  { "field": "module", "label": "Module", "type": "select", "required": True },
+        "table_name":  { "field": "table_name", "label": "Table", "type": "select", "required": True },
+        "fields":  { "field": "fields", "label": "Fields", "type": "multi-select", "required": True },
+        "field_options":  { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": False },
+        "custom_options":  { "field": "custom_options", "label": "Custom Options", "type": "multi-select", "required": False },
+      }
+      print("Updated fields: ====> ", fields)
+      build_form['fields'] = fields
+      models_names = get_all_model_names_with_apps()
+      print(models_names)
+      options = []      
+      for model in models_names:
+        options.append({
+          "field": "table_name",
+          "option": model['model'],
+          "label": model['model'],
+        })
+      return JsonResponse(build_form)
+    else:
+      pass
+  except:
+    return JsonResponse({'message':'Form is invalid'}, status=500)
+  
+def get_field_names(model):
+    return [field.name for field in model._meta.get_fields()]
+
+def get_all_model_names_with_apps():
+    model_names = []
+    django_apps = ['admin', 'auth', 'contenttypes', 'sessions', 'messages', 'staticfiles']
+    for model in apps.get_models():
+      if model._meta.app_label not in django_apps:
+        model_names.append({
+            "model": model.__name__,
+            "app": model._meta.app_label
+        })
+    return model_names

@@ -1,0 +1,62 @@
+[
+{
+"forms": {
+  "<FormName>":  { 
+    "fields":  { 
+      "shift":  { "label": "Shift", "type": "select", "value": null, "required": true },
+      "shift_date":  { "label": "Shift Date", "type": "date", "value": null, "required": true },
+      "shift_type":  { "label": "Shift Type", "type": "select", "value": null, "required": true },
+      "user":  { "label": "User", "type": "select", "value": null, "required": true }
+    },  
+    "options":  [ 
+      {  "field": "shift", "label": "Day", "option": 1 },
+      { "field": "shift", "option": 2, "label": "First Swing" },
+      { "field": "shift", "option": 3, "label": "Second Swing" },
+      { "field": "shift", "option": 4, "label": "Overnight" },
+      { "field": "shift_type", "option": 1, "label": "Regular" }
+    ],
+    "model": {"<AppName>" : "<ModelName>"}
+  }
+}},
+
+{
+  "tables": {
+    "<TableName>":  { 
+      "columns":  [
+        {"name": "shift_name", "label": "Shift Name", "type": "fixed", "value": null, "align": "left", "field": "shift_name", "sortable": true },
+        {"name": "shift_label", "label": "Shift Label", "type": "text", "value": null, "align": "left", "field": "shift_label", "sortable": true },
+        {"name": "start_time", "label": "Start TIme", "type": "time", "value": null, "align": "left", "field": "start_time", "sortable": true },
+        {"name": "end_time", "label": "End Time", "type": "time", "value": null, "align": "left", "field": "end_time", "sortable": true }
+      ],  
+      "data": [  
+        {"id": 1, "start_time": "07:00:00", "end_time": "18:00:00", "shift_label": "Day", "shift_name": "day"},
+        {"id": 1, "start_time": "07:00:00", "end_time": "18:00:00", "shift_label": "Day", "shift_name": "day"},
+        ...
+      ], 
+      "options":  [ 
+              ],
+      "model": {"<AppName>" : "<ModelName>"}
+    }
+  }},
+
+  {
+    "Form": {
+      "app": "<AppName>",
+      "model": "<ModelName>",
+      "fields": [ "list of fields in Model > User selectes multiple to use as inputs. Fields needs to have user set which fields to use, field labels, input type, and if required" ],
+      "options": [ {"field" : "name of field in current model", "option": "ID of ForeiegnKey item used in 'fields'", "label" : "field used for label of item in Model of Foreign Key" }} ],
+      "custom_options": [ "Additional comma separated list of options to be used in the form" ]      
+    }
+  },
+
+  // Could use a lookup to get a label for Form items if necessary
+  {
+    "ItemLabel": {
+      "<Model Item Name>": "<Item Label Name>",
+      ...
+    }
+  }
+  
+]
+
+{"user": 4, "shift": 3, "shift_type": 2, "shift_date": ["Feb-20-2024", "Feb-21-2024", "Feb-22-2024"], "model": {"VetCalendar": "Shifts"}}

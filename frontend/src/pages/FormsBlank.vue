@@ -3,7 +3,7 @@
     <div class="row justify-center">
       <!-- <q-dialog v-model="show"> -->
         <!-- <Forms /> -->
-        <BaseForm getForm="/quick_add" submitForm="/quick_add" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="user_created"/>
+        <BaseForm :getForm="get_form_api" :submitForm="save_form_api" :closeButton="true" page_title="Add New Form" @done="submitted" columns="one"/>
       <!-- </q-dialog> -->
     </div>
   </q-page>
@@ -30,6 +30,8 @@ export default defineComponent({
   setup() {    
     return {
       show: ref(true),
+      get_form_api: ref("/add_edit_form"),
+      save_form_api: ref("/add_edit_form"),
     };
   },
   watch: {
@@ -39,7 +41,8 @@ export default defineComponent({
 
   },
   methods: {
-    
+    submitted(){
+    },
   },
 
   created() {

@@ -196,6 +196,14 @@ class APIService {
   //   })
   // }
 
+  add_edit_form(data) {
+    this.setTokenHeader();
+    if (!data) {
+      return api.get('/add_edit_form');
+    }
+    return api.post('/add_edit_form', data)
+  }
+
   get_user_list() {
     this.setTokenHeader();
     return api.get('/login/get_user_list');

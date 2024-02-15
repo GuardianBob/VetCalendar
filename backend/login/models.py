@@ -61,8 +61,10 @@ class CityState(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
+# NOTE: May be able to connect this to the FormOptions to make easier
 class Phone(models.Model):
   phone_number = models.IntegerField()
+  # NOTE: May be able to connect this (phone_type) to the FormOptions to make easier
   phone_type = models.CharField(max_length=50, default="mobile")
   users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='user_phone')
   created_at = models.DateTimeField(auto_now_add=True)
