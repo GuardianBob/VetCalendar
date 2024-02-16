@@ -204,6 +204,24 @@ class APIService {
     return api.post('/add_edit_form', data)
   }
 
+  get_table_fields(data) {
+    this.setTokenHeader();
+    return api.post('/get_table_fields', data)
+  }
+
+  get_field_options(data) {
+    this.setTokenHeader();
+    return api.post('/get_field_options', data)
+  }
+
+  get_formbuilder_form(data) {
+    this.setTokenHeader();
+    if (!data) {
+      return api.get('/get_formbuilder_form');
+    }
+    return api.post('/get_formbuilder_form', data)
+  }
+
   get_user_list() {
     this.setTokenHeader();
     return api.get('/login/get_user_list');

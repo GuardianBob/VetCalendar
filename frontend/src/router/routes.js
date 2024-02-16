@@ -103,7 +103,7 @@ const routes = [
       },
       {
         path: "/blank",
-        component: () => import("pages/IndexPageOld.vue"),
+        component: () => import("pages/BuildTest.vue"),
         // beforeEnter: requireAuth,
       },
       {

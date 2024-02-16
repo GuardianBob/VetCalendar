@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
+from django.db.models import ForeignKey, ManyToManyField
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
@@ -274,7 +275,7 @@ def quick_add(request):
     if request.method == 'POST':
       content = json.loads(request.body)
       # content = list(content[0].values())[0]
-      print(content)
+      # print(content)
       user = User.objects.get(id=content['user'])
       shift_name = ShiftName.objects.get(id=content['shift'])
       shift_type = ShiftType.objects.get(id=content['shift_type'])
@@ -282,7 +283,7 @@ def quick_add(request):
       for date in content['shift_date']:
         item = content
         item['shift_date'] = date
-        print(item)
+        # print(item)
         shift_date = parse(date).date()
         shift_start = convert_to_shift_datetime(date, shift_name.start_time)
         shift_end = convert_to_shift_datetime(date, shift_name.end_time)
@@ -314,16 +315,17 @@ def quick_add(request):
     else:
       form = QuickAddForm()
       form = set_form_fields(form)
-      print(form)
+      # print(form)
       options = get_shift_options()
       options = options + get_shift_type_options() + get_user_options()
-      print(options)
+      # print(options)
       context = {
         'forms': {
           '': form,
         },
         'options': options
       }
+      print(context)
       return JsonResponse(context)
   except Exception as e:
     return trace_error(e, True)
@@ -663,39 +665,63 @@ def process_form_data(json_data):
 
   return {"message": "Records created or updated successfully"}
 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
 def form_builder(request):
   try:
     if request.method == 'GET':
-      build_form = {}
       # get all fields from VetCalendar.FormBuilder model
       # fields = get_field_names(FormBuilder)
       # print(fields)
       fields = {
         "form_name": { "field": "form_name", "label": "Form Name", "type": "text", "required": True },
-        "module":  { "field": "module", "label": "Module", "type": "select", "required": True },
-        "table_name":  { "field": "table_name", "label": "Table", "type": "select", "required": True },
+        "module":  { "field": "module", "label": "Module", "type": "select", "required": False },
+        "table":  { "field": "table", "label": "Table", "type": "select", "required": True },
         "fields":  { "field": "fields", "label": "Fields", "type": "multi-select", "required": True },
         "field_options":  { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": False },
-        "custom_options":  { "field": "custom_options", "label": "Custom Options", "type": "multi-select", "required": False },
+        "custom_options":  { "field": "custom_options", "label": "Custom Options", "type": "multi-text", "required": False },
       }
-      print("Updated fields: ====> ", fields)
-      build_form['fields'] = fields
+      print("\n \n Updated fields: ====> ", fields)
+      # build_form['fields'] = fields
       models_names = get_all_model_names_with_apps()
-      print(models_names)
-      options = []      
+      print("Model Names: ====> ", models_names)
+      table_options = []
+      apps = []
       for model in models_names:
-        options.append({
-          "field": "table_name",
-          "option": model['model'],
-          "label": model['model'],
+        table_options.append({
+          "field": "table",
+          "app": model['app'],
+          "model": model['model'],
         })
-      return JsonResponse(build_form)
+        if not model['app'] in apps:
+          apps.append(model['app'])
+          table_options.append({
+            "field": "module",
+            "label": model['app'],
+            "option": model['app'],
+          })
+      print("Table Options: ===> ", table_options)
+      # build_form['options'] = table_options
+
+      context = {
+        "forms": {
+          "Build Form": {
+            "fields": fields,
+            "options": table_options,
+            "model": {"VetCalendar": "FormBuilder"}
+          },
+        },
+      }
+      return JsonResponse(context)
     else:
-      pass
-  except:
-    return JsonResponse({'message':'Form is invalid'}, status=500)
+      return create_update_form(request)
+  except Exception as e:
+    return trace_error(e, True)
   
-def get_field_names(model):
+def get_field_names(app_name, model_name):
+    model = apps.get_model(app_name, model_name)
     return [field.name for field in model._meta.get_fields()]
 
 def get_all_model_names_with_apps():
@@ -708,3 +734,206 @@ def get_all_model_names_with_apps():
             "app": model._meta.app_label
         })
     return model_names
+
+def get_app_name(model_name):
+  model = apps.get_model('app_name', model_name)  # Replace 'app_name' with the name of your Django app
+  return model._meta.app_label
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_table_fields(request):
+  try:
+    content = json.loads(request.body)
+    print(content)
+    field_names = get_field_names_and_related_fields(content['app'], content['model'])
+    print(field_names)
+    return JsonResponse({'fields': field_names})
+  except Exception as e:
+    return trace_error(e, True)
+  
+EXCLUDE_FIELDS = ["created_at", "updated_at"]
+  
+def get_field_names_and_related_fields(app_name, model_name):
+  model = apps.get_model(app_name, model_name)
+  fields = model._meta.get_fields()
+  data = []
+  for field in fields:
+    if not field.name in EXCLUDE_FIELDS:
+      if not field.auto_created and isinstance(field, (ForeignKey, ManyToManyField)):
+        related_model = field.related_model
+        # related_fields = ([f.name for f in related_model._meta.get_fields() if f.name == 'id' or not f.auto_created]) # Returns field names
+        related_fields = [
+          {"name": f.name, "type": f.get_internal_type()} 
+          for f in related_model._meta.get_fields() 
+          if f.name == 'id' or not f.auto_created
+        ]
+        data.append({
+            "field": "fields",
+            "label": field.name,
+            "option": related_model.__name__,
+            "app": app_name,
+            "related_model": field.related_model.__name__,
+            "related_fields": related_fields,
+          })
+      elif field.name == 'id' or not field.auto_created:
+        data.append({
+          "field": "fields",
+          "label": field.name,
+          "option": field.name,
+          "app": app_name
+          # "related_model": None,
+          # "related_fields": None,
+        })
+  return data
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_field_options(request):
+  try:
+    print(request.body)
+    content = json.loads(request.body)
+    print(content)
+    
+    return JsonResponse({'message':'Testing...'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+
+def create_update_form(request):
+  try:
+    # print(request.body)
+    content = json.loads(request.body)
+    for form_name, form_data in content.items():
+      fields = form_data.get('fields', {})
+      options = form_data.get('field_options', None)
+      custom = form_data.get('custom_options', None)
+      model_data = form_data.get('model', None)
+      module = list(model_data.keys())[0] if model_data else ''
+      table = model_data.get(module, '')
+      form_id = form_data.get('id') if form_data.get('id') else None
+      field_options = {option['field']: option for option in options} if options else {}
+      custom_options = {option['field']: option for option in custom if 'field' in option} if custom else {}
+      print("Name: ", form_name, "\n Fields: ", fields, "\n Options", field_options, "\n Module: ", module, "Table: ", table)
+      if form_id:
+        try:
+          form_builder = FormBuilder.objects.get(id=form_id)
+          form_builder.form_name = form_name
+          form_builder.module = module
+          form_builder.table = table
+          form_builder.fields = fields
+          form_builder.field_options = field_options
+          form_builder.custom_options = custom_options
+          form_builder.save()
+        except FormBuilder.DoesNotExist:
+          form_builder = FormBuilder.objects.create(
+              form_name=form_name,
+              module=module,
+              table=table,
+              fields=fields,
+              field_options=field_options,
+              custom_options=custom_options,
+            )
+      else:
+        form_builder = FormBuilder.objects.create(
+          form_name=form_name,
+          module=module,
+          table=table,
+          fields=fields,
+          field_options=field_options,
+          custom_options=custom_options,
+        )
+
+    return JsonResponse({'message':'Testing...'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_formbuilder_form(request):
+  try:
+    pass
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      # content = list(content[0].values())[0]
+      for key in content:
+        print(content[key])
+      # user = User.objects.get(id=content['user'])
+      # shift_name = ShiftName.objects.get(id=content['shift'])
+      # shift_type = ShiftType.objects.get(id=content['shift_type'])
+      # # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
+      # for date in content['shift_date']:
+      #   item = content
+      #   item['shift_date'] = date
+      #   # print(item)
+      #   shift_date = parse(date).date()
+      #   shift_start = convert_to_shift_datetime(date, shift_name.start_time)
+      #   shift_end = convert_to_shift_datetime(date, shift_name.end_time)
+      #   if shift_end < shift_start:
+      #     shift_end = shift_end + datetime.timedelta(hours=24)
+      #   print(f'start: {shift_start}, end: {shift_end}')
+      #   existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
+      #   if existing_shift:
+      #     item['id'] = existing_shift.id
+      #     print(item)
+        # shift = creat_update_shift(item)
+        #   print(existing_shift.shift_start)
+        #   existing_shift.shift = shift
+        #   existing_shift.shift_type = shift_type
+        #   existing_shift.shift_start = shift_start
+        #   existing_shift.shift_end = shift_end
+        #   existing_shift.save()
+        #   # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
+        # else:
+        #   # If there's no existing shift, create a new one
+        #   new_shift = Shifts.objects.create(
+        #     user=user, 
+        #     shift_start=shift_start, 
+        #     shift=shift, 
+        #     shift_type=shift_type, 
+        #     shift_end=shift_end
+        #   )
+      return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+    else:
+      form = FormBuilder.objects.values().get(id=1)
+      print("Saved Test: ====> \n", form)
+      
+
+      # Function to read form['field_options'] and pull model objects
+      options = pull_model_objects(form['field_options'])
+      print("Updated Options: ====> ", options)
+      context = {
+        'forms': {
+          form['form_name']: {
+            "fields": form["fields"],
+            'options': options,
+            'model': { 'app': form['module'], 'model': form['table'] }
+          }
+        },
+      }
+      # print(context)
+      return JsonResponse(context)
+  except Exception as e:
+    return trace_error(e, True)
+  
+def pull_model_objects(field_options):
+  options = []
+  for item_key, item_value in field_options.items():
+    related_model_name = item_value.get('related_model')
+    option_label = item_value.get('option_label')
+    if related_model_name and option_label:
+      app_name, model_name = related_model_name.split('.')
+      related_model = apps.get_model(app_name, model_name)
+      model_objects = related_model.objects.all()
+      for obj in model_objects:
+        option = {
+          'field': item_value['field'],
+          'option': obj.id,
+          'label': getattr(obj, option_label)
+        }
+        options.append(option)
+  return options

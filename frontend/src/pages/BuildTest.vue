@@ -3,7 +3,7 @@
     <div class="row justify-center">
       <!-- <q-dialog v-model="show"> -->
         <!-- <Forms /> -->
-        <BuildForm :getForm="get_form_api" :submitForm="save_form_api" :closeButton="true" page_title="Build Form" @done="submitted" columns="one"/>
+        <FormTest :getForm="get_form_api" :multiDateSelect="true" :submitForm="save_form_api" :closeButton="true" page_title="Build Form" @done="submitted" columns="one"/>
       <!-- </q-dialog> -->
     </div>
   </q-page>
@@ -13,7 +13,7 @@
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
 // import Forms from 'components/Forms.vue'
-import BuildForm from 'components/BuildForm.vue'
+import FormTest from 'components/FormTest.vue'
 import APIService from "../../services/api";
 
 export default defineComponent({
@@ -22,7 +22,7 @@ export default defineComponent({
     // vue linter no use error bypass
 
     // Forms,
-    BuildForm,
+    FormTest,
   },
   data() {
     return {
@@ -31,8 +31,8 @@ export default defineComponent({
   setup() {    
     return {
       show: ref(true),
-      get_form_api: ref("/add_edit_form"),
-      save_form_api: ref("/add_edit_form"),
+      get_form_api: ref("/get_formbuilder_form"),
+      save_form_api: ref("/get_formbuilder_form"),
     };
   },
   watch: {
@@ -50,9 +50,9 @@ export default defineComponent({
   },
   
   mounted() {
-    APIService.get_formbuilder_form().then((response) => {
-      console.log(response);
-    });
+    // APIService.get_formbuilder_form().then((response) => {
+    //   console.log(response);
+    // });
   },
 
 })

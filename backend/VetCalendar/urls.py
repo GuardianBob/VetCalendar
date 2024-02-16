@@ -15,4 +15,7 @@ urlpatterns = [
     path('get_keys', views.get_keys, name='get_keys'),
     re_path(r'^get_model_form(?:/(?P<model>\w+))?$', views.get_model_form, name='get_model_form'),
     re_path(r'^add_edit_form(?:/(?P<id>\d+))?$', views.form_builder, name='form_builder'),
+    path('get_table_fields', views.get_table_fields, name='get_table_fields'),
+    path('get_field_options', views.get_field_options, name='get_field_options'),
+    re_path(r'^get_formbuilder_form(?:/(?P<model>\w+))?$', views.get_formbuilder_form, name='get_formbuilder_form'),
 ]
