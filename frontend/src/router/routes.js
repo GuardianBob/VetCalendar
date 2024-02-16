@@ -111,6 +111,11 @@ const routes = [
         component: () => import("pages/FormsBlank.vue"),
         // beforeEnter: requireAuth,
       },
+      {
+        path: "/add_json_form",
+        component: () => import("pages/AddJSONForm.vue"),
+        // beforeEnter: requireAuth,
+      },
     ],
 
   },

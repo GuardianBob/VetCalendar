@@ -17,5 +17,6 @@ urlpatterns = [
     re_path(r'^add_edit_form(?:/(?P<id>\d+))?$', views.form_builder, name='form_builder'),
     path('get_table_fields', views.get_table_fields, name='get_table_fields'),
     path('get_field_options', views.get_field_options, name='get_field_options'),
-    re_path(r'^get_formbuilder_form(?:/(?P<model>\w+))?$', views.get_formbuilder_form, name='get_formbuilder_form'),
+    re_path(r'^get_formbuilder_form(?:/(?P<form>\w+))?(?:/(?P<id>\w+))?$', views.get_formbuilder_form, name='get_formbuilder_form'),
+    path('add_json_form', views.add_json_form, name='add_json_form'),
 ]

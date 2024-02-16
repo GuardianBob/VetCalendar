@@ -214,12 +214,17 @@ class APIService {
     return api.post('/get_field_options', data)
   }
 
-  get_formbuilder_form(data) {
+  get_formbuilder_form(form) {
+    return api.get(`/get_formbuilder_form/${form}`)
+  }
+
+  submit_formbuilder_form(data) {
+    return api.post(`/get_formbuilder_form/${data}`)
+  }
+
+  add_json_form(data) {
     this.setTokenHeader();
-    if (!data) {
-      return api.get('/get_formbuilder_form');
-    }
-    return api.post('/get_formbuilder_form', data)
+    return api.post('/add_json_form', data)
   }
 
   get_user_list() {

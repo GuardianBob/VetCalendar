@@ -184,16 +184,118 @@ Table Selected =>
 {
   "Add Shift": {
     "fields": {
-      "user": {"label": "User", "type": "select", "value": "None", "required": true},
-      "shift": {"label": "Shift", "type": "select", "value": "None", "required": true},
-      "shift_type": {"label": "Shift Type", "type": "select", "value": "None", "required": true},
-      "shift_date": {"label": "Shift Date", "type": "date", "value": "None", "required": true}
+      "user": {"label": "User", "type": "select", "value": null, "required": true},
+      "shift": {"label": "Shift", "type": "select", "value": null, "required": true},
+      "shift_type": {"label": "Shift Type", "type": "select", "value": null, "required": true},
+      "shift_date": {"label": "Shift Date", "type": "date", "value": null, "required": true}
     },
     "options": [
-      {"field": "shift", "related_model": "ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
-      {"field": "shift_type", "related_model": "ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
-      {"field": "user", "related_model": "User", "option_label": "last_name", "option_value": "id", "type": "select"}
+      {"field": "shift", "related_model": "VetCalendar.ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
+      {"field": "shift_type", "related_model": "VetCalendar.ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
+      {"field": "user", "related_model": "login.User", "option_label": "last_name", "option_value": "id", "type": "select"}
     ],
-    "model": {"VetCalendar" : "Shifts"}
+    "custom_options": [{}],
+    "model": {"VetCalendar" : "Shifts"},
+    "id": "1"
   }
 }
+
+Options {
+  'shift': {
+    'field': 'shift',
+    'related_model': 'ShiftName',
+    'option_label': 'shift_label',
+    'option_value': 'id',
+    'type': 'select'
+  }, 
+ 'shift_type': {
+    'field': 'shift_type',
+    'related_model': 'ShiftType',
+    'option_label': 'type_label',
+    'option_value': 'id',
+    'type': 'select'
+  }, 
+ 'user': {
+  'field': 'user',
+  'related_model': 'User',
+  'option_label': 'last_name',
+  'option_value': 'id',
+  'type': 'select'
+  }}
+
+
+
+{
+  'id': 1, 
+  'form_name': 'Add Shift', 
+  'module': 'VetCalendar', 
+  'table': 'Shifts', 
+  'fields': {
+    'user': {'label': 'User', 'type': 'select', 'value': 'None', 'required': True},
+    'shift': {'label': 'Shift', 'type': 'select', 'value': 'None', 'required': True},
+    'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': 'None', 'required': True},
+    'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': 'None', 'required': True}
+  },
+  'field_options': {
+    'shift': {'field': 'shift', 'related_model': 'ShiftName', 'option_label': 'shift_label', 'option_value': 'id', 'type': 'select'},
+    'shift_type': {'field': 'shift_type', 'related_model': 'ShiftType', 'option_label': 'type_label', 'option_value': 'id', 'type': 'select'},
+    'user': {'field': 'user', 'related_model': 'User', 'option_label': 'last_name', 'option_value': 'id', 'type': 'select'}
+  },
+  'custom_options': {},
+  'created_at': datetime.datetime(2024, 2, 16, 3, 29, 17, 525664, tzinfo=datetime.timezone.utc), 'updated_at': datetime.datetime(2024, 2, 16, 3, 29, 17, 526690, tzinfo=datetime.timezone.utc)
+}
+
+
+{
+  'forms': {
+    '': {
+      'user': {'label': 'User', 'type': 'select', 'value': None, 'required': True},
+      'shift': {'label': 'Shift', 'type': 'select', 'value': None, 'required': True},
+      'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': None, 'required': True},
+      'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': None, 'required': True}
+      }
+    },
+  'options': [
+    {'field': 'shift', 'option': 1, 'label': 'Day'},
+    {'field': 'shift', 'option': 2, 'label': 'First Swing'},
+    {'field': 'shift', 'option': 3, 'label': 'Second Swing'},
+    {'field': 'shift', 'option': 4, 'label': 'Overnight'},
+    {'field': 'shift_type', 'option': 1, 'label': 'Regular'},
+    {'field': 'shift_type', 'option': 2, 'label': 'Extra'},
+    {'field': 'shift_type', 'option': 3, 'label': 'Relief'},
+    {'field': 'shift_type', 'option': 4, 'label': 'Holiday'},
+    {'field': 'shift_type', 'option': 5, 'label': 'Vacation'},
+    {'field': 'shift_type', 'option': 6, 'label': 'Switch'},
+    {'field': 'shift_type', 'option': 7, 'label': 'CE'},
+    {'field': 'user', 'option': 1, 'label': 'Meyer (JM)'},
+    {'field': 'user', 'option': 2, 'label': 'Bear (SB)'},
+    {'field': 'user', 'option': 3, 'label': 'Batson (BB)'},
+    {'field': 'user', 'option': 4, 'label': 'Ackley (MA)'}]}
+
+    [{'field': 'shift', 'option': 1, 'label': 'Day'},
+     {'field': 'shift', 'option': 2, 'label': 'First Swing'},
+     {'field': 'shift', 'option': 3, 'label': 'Second Swing'},
+     {'field': 'shift', 'option': 4, 'label': 'Overnight'},
+     {'field': 'shift_type', 'option': 1, 'label': 'Regular'},
+     {'field': 'shift_type', 'option': 2, 'label': 'Extra'},
+     {'field': 'shift_type', 'option': 3, 'label': 'Relief'},
+     {'field': 'shift_type', 'option': 4, 'label': 'Holiday'},
+     {'field': 'shift_type', 'option': 5, 'label': 'Vacation'},
+     {'field': 'shift_type', 'option': 6, 'label': 'Switch'},
+     {'field': 'shift_type', 'option': 7, 'label': 'CE'},
+     {'field': 'user', 'option': 1, 'label': 'Meyer'},
+     {'field': 'user', 'option': 2, 'label': 'Bear'},
+     {'field': 'user', 'option': 3, 'label': 'Batson'},
+     {'field': 'user', 'option': 4, 'label': 'Ackley'}]
+
+     {
+      'Add Shift': {
+        'fields': {
+          'user': {'label': 'User', 'type': 'select', 'value': {'label': 'Meyer', 'value': 1}, 'required': True},
+          'shift': {'label': 'Shift', 'type': 'select', 'value': {'label': 'Day', 'value': 1}, 'required': True},
+          'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': {'label': 'Switch', 'value': 6}, 'required': True},
+          'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': ['Feb-15-2024', 'Feb-16-2024'], 'required': True}},
+      'model': {
+        'app': 'VetCalendar', 'model': 'Shifts'
+        }}}
+        

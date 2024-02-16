@@ -409,7 +409,7 @@ def convert_label(name):
     return capitalized_name
 
 def convert_to_shift_datetime(date, time):
-  print(date, time)
+  # print(date, time)
   shift_date = parse(date).date()
   shift_datetime = datetime.datetime.combine(shift_date, time)
   # shift_datetime = fix_timezone(shift_datetime)

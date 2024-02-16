@@ -139,16 +139,22 @@ const linksList = [
     icon: 'construction',
     sublinks : [
       {
-        title: 'BlankTest',
+        title: 'Blank Test',
         caption: '',
         icon: 'upload_file',
         link: '/blank'
       },
       {
-        title: 'FormTest',
+        title: 'Form Test',
         caption: '',
         icon: 'feed',
         link: '/form'
+      },
+      {
+        title: 'Add JSON Form',
+        caption: '',
+        icon: 'feed',
+        link: '/add_json_form'
       },
     ]
   },

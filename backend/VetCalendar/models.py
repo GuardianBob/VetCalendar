@@ -53,8 +53,9 @@ class FormBuilder(models.Model):
   module = models.CharField(max_length=50) # The module/app the form is used for
   table = models.CharField(max_length=50) # The table/model the form is used for
   fields = models.JSONField() # The fields for the form ==> selected from table/model columns
-  field_options = models.JSONField() # The options for the fields ==> selected from table/model columns of models tied to the table/model by ForeignKey
-  custom_options = models.JSONField() # Custom options for the fields ex: phone types
+  field_options = models.JSONField(blank=True, null=True) # The options for the fields ==> selected from table/model columns of models tied to the table/model by ForeignKey
+  custom_options = models.JSONField(blank=True, null=True) # Custom options for the fields ex: phone types
+  save_function = models.CharField(max_length=100, blank=True, null=True) # The function to call to save the form data
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
@@ -66,5 +67,6 @@ class TableBuilder(models.Model):
   columns = models.JSONField() # The columns (plus column) for the table ==> selected from table/model columns
   field_options = models.JSONField() # The options for the fields ==> selected from table/model columns of models tied to the table/model by ForeignKey
   custom_options = models.JSONField() # Custom options for the fields ex: phone types
+  save_function = models.CharField(max_length=100, blank=True, null=True) # The function to call to save the form data
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)

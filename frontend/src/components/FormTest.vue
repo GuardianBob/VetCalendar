@@ -14,14 +14,14 @@
           </div>
           <!-- {{ form["options"] }} -->
           <div v-for="(data, key) in form" :key="key" :class="cols">
-            {{ key }}
+            <!-- {{ key }}  -->
             <div v-for="(field, key) in data" :key="key" :class="cols">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
               <!-- {{ key }} -->
             
             <q-input 
-              v-if="field.type === 'input' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
+              v-if="field.type === 'input' || field.type === 'text' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
               :label="field.label" 
               class="q-my-xs q-py-none" 
@@ -29,7 +29,7 @@
               :type="field.type"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="[field.required == 'True' ? requiredRule : null]"
             />
             <q-input 
               v-else-if="field.type === 'email'"
@@ -42,7 +42,7 @@
               :rules="[rules.required, rules.email]"
             /> 
             <q-input 
-              v-else-if="field.type === 'tel'"
+              v-else-if="field.type === 'tel' || field.type === 'phone'"
               v-model="field.value" 
               :label="field.label" 
               class="q-my-xs q-py-none" 
@@ -52,6 +52,7 @@
               fill-mask
               outlined
               label-color="primary"
+              :rules="[field.required == 'True' ? requiredRule : null]"
             /> 
             <q-input 
               v-else-if="field.type === 'password'"
@@ -62,7 +63,7 @@
               :type="isPwd ? 'password' : 'text'"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="[field.required == 'True' ? requiredRule : null]"
             > 
               <template v-slot:append>
                 <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
@@ -78,7 +79,7 @@
               outlined
               label-color="primary"
               map-options
-              :rules="[field.required ? requiredRule : '']"
+              :rules="[field.required == 'True' ? requiredRule : null]"
             /> -->
             
             <!-- :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))" -->
@@ -94,7 +95,7 @@
               user-chips
               map-options
               label-color="primary"
-              :rules="[field.required ? rules.required : '']"
+              :rules="[field.required == 'True' ? rules.required : null]"
             />             -->
             <q-select        
               v-else-if="field.type === 'select' && key == 'model'"        
@@ -106,7 +107,7 @@
               outlined
               map-options
               label-color="primary"
-              :rules="[field.required ? rules.required : '']"
+              :rules="[field.required == 'True' ? rules.required : null]"
               @update:modelValue="handleModelSelected"
             />
             <q-select        
@@ -119,7 +120,7 @@
               outlined
               map-options
               label-color="primary"
-              :rules="[field.required ? rules.required : '']"
+              :rules="[field.required == 'True' ? rules.required : null]"
               @update:modelValue="handleTableSelected"
             />
             <div v-else-if="field.type === 'multi-select' && key == 'fields'">
@@ -135,7 +136,7 @@
                   use-chips
                   map-options
                   label-color="primary"
-                  :rules="[field.required ? rules.required : '']"
+                  :rules="[field.required == 'True' ? rules.required : null]"
                   @update:modelValue="handleFieldSelected"
                 >
                   <template v-if="selectedFields" v-slot:append>
@@ -157,7 +158,7 @@
                   use-chips
                   map-options
                   label-color="primary"
-                  :rules="[field.required ? rules.required : '']"
+                  :rules="[field.required == 'True' ? rules.required : null]"
                   @update:modelValue="handleOptionSelected"
                 >
                   <template v-if="fieldOptions" v-slot:append>
@@ -176,7 +177,7 @@
               outlined
               map-options
               label-color="primary"
-              :rules="[field.required ? rules.required : '']"
+              :rules="[field.required == 'True' ? rules.required : null]"
               @update:modelValue="handleOptionSelected"
             />
             <!-- :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.label, value: option.option}))" -->
@@ -192,7 +193,7 @@
               use-chips
               map-options
               label-color="primary"
-              :rules="[field.required ? rules.required : '']"
+              :rules="[field.required == 'True' ? rules.required : null]"
             />
             <q-input
               v-else-if="field.type === 'date'"
@@ -202,7 +203,7 @@
               class="q-my-xs q-py-none"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="[field.required == 'True' ? requiredRule : null]"
               >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -520,12 +521,23 @@ export default defineComponent({
 
     submit(event) {
       try {
-        for (let key in this.formData) {
-          if (this.formData[key].hasOwnProperty('options')) {
-            delete this.formData[key]['options'];
+        let submitData = JSON.parse(JSON.stringify(this.formData));
+        // let func = ''
+        // let app = ''
+        for (let key in submitData) {
+          if (submitData[key].hasOwnProperty('options')) {
+            delete submitData[key]['options'];
           }
+          // if (submitData[key].hasOwnProperty('function')) {
+          //   // console.log(submitData[key]['function']);
+          //   func = submitData[key]['function'];
+          // }
+          // if (submitData[key].hasOwnProperty('app')) {
+          //   // console.log(submitData[key]['app']);
+          //   app = submitData[key]['app'];
+          // }
         }
-        console.log(this.formData)
+        console.log(submitData)
 
         // RETURNS VALUES ONLY 
         // const values = Object.values(this.formData).map(item => item.value);
@@ -606,7 +618,8 @@ export default defineComponent({
         //     "id": "1"
         //   }
         // }
-        api.post(this.submitForm, this.formData).then((res) => {
+
+        api.post(this.submitForm, submitData).then((res) => {
           console.log(res.data);
           this.$emit("done");
           Notify.create({

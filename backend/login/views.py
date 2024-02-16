@@ -410,6 +410,39 @@ def create_user(request):
   print("something went wrong")
   return JsonResponse({'message':'Something went wrong'}, status=500)
 
+def create_user_new(content):
+  try:
+    # data = request.POST.copy()
+    data = content
+    # data = data[0]['Basic Info']
+    # data = list(data[0].values())[0]
+    print(data)
+    if not User.objects.filter(email__icontains=data['email']):
+      phone_number = data['phone_number']
+      if isinstance(phone_number, str):
+        phone_number = re.sub('\D', '', phone_number)
+      user, created = User.objects.update_or_create(
+        username=data['email'],
+        initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
+        defaults={
+          'first_name': data['first_name'],
+          'middle_name': data['middle_name'],
+          'last_name': data['last_name'],
+          'email': data['email'],
+          'phone_number': phone_number,
+          'phone_type': data['phone_type'],
+          # 'nickname': data['nickname'],
+        }
+      )
+      if created:
+        generate_password(user)
+
+      return JsonResponse({'message':'New User Successfully Added'}, status=200)
+    print("Email already exists")
+    return JsonResponse({'message':'Email already exists'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+
 def verify_new_user(email):
   print(email)
   user = User.objects.filter(email__icontains=email)

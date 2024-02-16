@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
-from django.db.models import ForeignKey, ManyToManyField
+from django.db.models import ForeignKey, ManyToManyField, Q
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
@@ -9,8 +9,9 @@ from .forms import QuickAddForm, ShiftNameForm
 from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
 from login.forms import AccessLevelForm, PermissionForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone
+from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone, convert_label
 from login.scripts import get_settings_columns
+from login.views import create_user_new
 import datetime, json, traceback, sys, re, pytz, os
 from datetime import datetime, date, timedelta
 import dateutil.parser as parser
@@ -121,6 +122,31 @@ FORM_OPTION_MODEL = {
 
 FORM_OPTION_LABELS = {
   'Permission': 'permission',
+}
+
+JSON_FORM = {
+  "form_name": "Add User", 
+  "module": "login", 
+  "table": "User", 
+  "fields": {
+    "first_name": { "label": "First Name", "type": "text", "value": None, "required": True, "model_edit_field": "first_name"},
+    "last_name": {"label": "Last Name", "type": "text", "value": None, "required": True, "model_edit_field": "last_name"},
+    "email": {"label": "E-Mail", "type": "text", "value": None, "required": True, "model_edit_field": "email"},
+    "phone_number": {"label": "Phone Number", "type": "phone", "value": None, "required": False,"model_edit_field": "phone_number"},
+    "phone_type": {"label": "Phone Type", "type": "select", "value": None, "required": False,"model_edit_field": "phone_type"}
+  },
+  "field_options": {
+    "shift": {"field": "shift", "related_model": "ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
+    "shift_type": {"field": "shift_type", "related_model": "ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
+    "user": {"field": "user", "related_model": "User", "option_label": "last_name", "option_value": "id", "type": "select"}
+  },
+  "custom_options": [
+    {"field": "phone_type", "option": "Mobile", "label": "Mobile"},
+    {"field": "phone_type", "option": "Home", "label": "Home"},
+    {"field": "phone_type", "option": "Office", "label": "Office"},
+    {"field": "phone_type", "option": "Other", "label": "Other"}
+  ],
+  "save_function": "add_user"
 }
 
 # ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
@@ -532,7 +558,7 @@ def creat_update_shift(data):
   shift_end = convert_to_shift_datetime(data['shift_date'], shift_details.end_time)
   if shift_end < shift_start:
     shift_end = shift_end + datetime.timedelta(hours=24)
-  print(f'start: {shift_start}, end: {shift_end}')
+  # print(f'start: {shift_start}, end: {shift_end}')
   shift, created = Shifts.objects.update_or_create(
     id=data.get('id'),
     defaults={
@@ -719,6 +745,10 @@ def form_builder(request):
       return create_update_form(request)
   except Exception as e:
     return trace_error(e, True)
+
+@csrf_exempt
+def add_json_form(request):
+  return JsonResponse({'message':'Testing...'}, status=200)
   
 def get_field_names(app_name, model_name):
     model = apps.get_model(app_name, model_name)
@@ -806,16 +836,18 @@ def create_update_form(request):
   try:
     # print(request.body)
     content = json.loads(request.body)
+    print(content)
     for form_name, form_data in content.items():
       fields = form_data.get('fields', {})
       options = form_data.get('field_options', None)
       custom = form_data.get('custom_options', None)
-      model_data = form_data.get('model', None)
+      model_data = form_data.get('table', None)
       module = list(model_data.keys())[0] if model_data else ''
       table = model_data.get(module, '')
       form_id = form_data.get('id') if form_data.get('id') else None
       field_options = {option['field']: option for option in options} if options else {}
       custom_options = {option['field']: option for option in custom if 'field' in option} if custom else {}
+      save_function = form_data.get('save_function', None)
       print("Name: ", form_name, "\n Fields: ", fields, "\n Options", field_options, "\n Module: ", module, "Table: ", table)
       if form_id:
         try:
@@ -826,6 +858,7 @@ def create_update_form(request):
           form_builder.fields = fields
           form_builder.field_options = field_options
           form_builder.custom_options = custom_options
+          form_builder.save_function = save_function
           form_builder.save()
         except FormBuilder.DoesNotExist:
           form_builder = FormBuilder.objects.create(
@@ -835,6 +868,7 @@ def create_update_form(request):
               fields=fields,
               field_options=field_options,
               custom_options=custom_options,
+              save_function=save_function,
             )
       else:
         form_builder = FormBuilder.objects.create(
@@ -844,6 +878,7 @@ def create_update_form(request):
           fields=fields,
           field_options=field_options,
           custom_options=custom_options,
+          save_function=save_function,
         )
 
     return JsonResponse({'message':'Testing...'}, status=200)
@@ -854,73 +889,55 @@ def create_update_form(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 @csrf_exempt
-def get_formbuilder_form(request):
+def get_formbuilder_form(request, form=None, id=None):
   try:
-    pass
     if request.method == 'POST':
       content = json.loads(request.body)
       # content = list(content[0].values())[0]
       for key in content:
         print(content[key])
-      # user = User.objects.get(id=content['user'])
-      # shift_name = ShiftName.objects.get(id=content['shift'])
-      # shift_type = ShiftType.objects.get(id=content['shift_type'])
-      # # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
-      # for date in content['shift_date']:
-      #   item = content
-      #   item['shift_date'] = date
-      #   # print(item)
-      #   shift_date = parse(date).date()
-      #   shift_start = convert_to_shift_datetime(date, shift_name.start_time)
-      #   shift_end = convert_to_shift_datetime(date, shift_name.end_time)
-      #   if shift_end < shift_start:
-      #     shift_end = shift_end + datetime.timedelta(hours=24)
-      #   print(f'start: {shift_start}, end: {shift_end}')
-      #   existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
-      #   if existing_shift:
-      #     item['id'] = existing_shift.id
-      #     print(item)
-        # shift = creat_update_shift(item)
-        #   print(existing_shift.shift_start)
-        #   existing_shift.shift = shift
-        #   existing_shift.shift_type = shift_type
-        #   existing_shift.shift_start = shift_start
-        #   existing_shift.shift_end = shift_end
-        #   existing_shift.save()
-        #   # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
-        # else:
-        #   # If there's no existing shift, create a new one
-        #   new_shift = Shifts.objects.create(
-        #     user=user, 
-        #     shift_start=shift_start, 
-        #     shift=shift, 
-        #     shift_type=shift_type, 
-        #     shift_end=shift_end
-        #   )
+        print(content[key]['function'])
+        function = globals()[content[key]['function']]
+        form_values = strip_form_content(content[key])
+        function(form_values)
+        # add_event(content[key])
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
     else:
-      form = FormBuilder.objects.values().get(id=1)
-      print("Saved Test: ====> \n", form)
-      
+      # content = json.loads(request.body)
+      print(form)
+      if form != None:
+        form = FormBuilder.objects.values().get(form_name=form)
+        # print(form['module'], form['table'], form['save_function'])
+        if id:
+          values = get_model_instance(form['module'], form['table'], id)
+          # print(values)
+          function = globals()[form['save_function']]
+          form = function({'form': form, "values": values}, True)
+        
+          print("\n Saved Test: ====> \n", form)
+        # Function to read form['field_options'] and pull model objects
+        options = pull_model_options(form['field_options'])
+        options.extend(form['custom_options'])
+        print("Updated Options: ====> ", options)
 
-      # Function to read form['field_options'] and pull model objects
-      options = pull_model_objects(form['field_options'])
-      print("Updated Options: ====> ", options)
-      context = {
-        'forms': {
-          form['form_name']: {
-            "fields": form["fields"],
-            'options': options,
-            'model': { 'app': form['module'], 'model': form['table'] }
-          }
-        },
-      }
-      # print(context)
-      return JsonResponse(context)
+        context = {
+          'forms': {
+            convert_label(form['form_name']): {
+              "fields": form["fields"],
+              'options': options,
+              'model': { 'app': form['module'], 'model': form['table'] },
+              'function': form['save_function']
+            }
+          },
+        }
+        # print(context)
+        return JsonResponse(context)
+      else:
+        return JsonResponse({'message':'Request is invalid'}, status=500)
   except Exception as e:
     return trace_error(e, True)
   
-def pull_model_objects(field_options):
+def pull_model_options(field_options):
   options = []
   for item_key, item_value in field_options.items():
     related_model_name = item_value.get('related_model')
@@ -937,3 +954,81 @@ def pull_model_objects(field_options):
         }
         options.append(option)
   return options
+
+def get_model_instance(app_name, model_name, id):
+  Model = apps.get_model(app_name, model_name)
+  instance = Model.objects.values().get(id=id)
+  return instance
+
+def strip_form_content(content):
+  fields = {}
+  for key, value in content['fields'].items():
+    print(key, value)
+    # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
+    if isinstance(value['value'], dict):
+      fields[key] = value['value']['value']
+    elif isinstance(value['value'], list):
+      fields[key] = value['value']
+    else:
+      fields[key] = value['value']
+    print(fields)
+  return fields
+
+def add_event(content, load=False):
+  try:
+    if load:
+      print("\n====LOADING====\n", content['form'], "\n", content['values'])
+      for key, item in content['form']['fields'].items():
+        if item['type'] == 'date':
+          item['value'] = content['values'][item['model_edit_field']].strftime('%b-%d-%Y')
+        # if item['type'] == 'select':
+        else:
+          item['value'] = content['values'][item['model_edit_field']]
+      # content['form']['fields']['user']['value'] = content['values']['user_id']
+      # content['form']['fields']['shift']['value'] = content['values']['shift_name_id']
+      # content['form']['fields']['shift_type']['value'] = content['values']['shift_type_id']
+      # content['form']['fields']['shift_date']['value'] = content['values']['shift_start'].strftime('%b-%d-%Y')
+      print("\n =====END LOADING====\n")
+      return content['form']
+    else:
+    # content = {
+    #   'fields': {
+    #     'user': {'label': 'User', 'type': 'select', 'value': {'label': 'Meyer', 'value': 1}, 'required': True},
+    #     'shift': {'label': 'Shift', 'type': 'select', 'value': {'label': 'Day', 'value': 1}, 'required': True},
+    #     'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': {'label': 'Switch', 'value': 6}, 'required': True},
+    #     'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': ['Feb-15-2024', 'Feb-16-2024'], 'required': True}},
+    #   model': {
+    #   'app': 'VetCalendar', 'model': 'Shifts'
+    # }}
+      fields = content
+      # for key, value in content['fields'].items():
+      #   fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
+      # print(fields)
+      user = User.objects.get(id=fields['user'])
+      shift_name = ShiftName.objects.get(id=fields['shift'])
+      shift_type = ShiftType.objects.get(id=fields['shift_type'])
+      dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
+      # Get the earliest and latest dates
+      earliest_date, latest_date = min(dates), max(dates)
+      if earliest_date == latest_date:
+        latest_date = earliest_date + datetime.timedelta(days=1)
+      # print('date filter ====>: ', earliest_date, latest_date)
+      # Filter the shifts
+      existing_shifts = Shifts.objects.filter(
+        Q(user=user),
+        Q(shift_start__date__gte=earliest_date),
+        Q(shift_start__date__lte=latest_date)
+      ).values_list('shift_start__date', 'id')
+      # print('Existing shifts===> :', existing_shifts)
+      existing_shifts_dict = {date.strftime('%b-%d-%Y'): id for date, id in existing_shifts}
+      for date in fields['shift_date']:
+        item = fields.copy()
+        item['shift_date'] = date
+        # print(existing_shifts_dict)
+        if date in existing_shifts_dict:
+          item['id'] = existing_shifts_dict[date]
+        # print(item)
+        shift = creat_update_shift(item)
+      return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
