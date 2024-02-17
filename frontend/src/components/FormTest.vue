@@ -29,7 +29,7 @@
               :type="field.type"
               outlined
               label-color="primary"
-              :rules="[field.required == 'True' ? requiredRule : null]"
+              :rules="field.required ? [requiredRule] : []"
             />
             <q-input 
               v-else-if="field.type === 'email'"
@@ -39,7 +39,7 @@
               :id="key"
               outlined
               label-color="primary"
-              :rules="[rules.required, rules.email]"
+              :rules="field.required ? [requiredRule, rules.email] : []"
             /> 
             <q-input 
               v-else-if="field.type === 'tel' || field.type === 'phone'"
@@ -52,7 +52,7 @@
               fill-mask
               outlined
               label-color="primary"
-              :rules="[field.required == 'True' ? requiredRule : null]"
+              :rules="field.required ? [requiredRule] : []"
             /> 
             <q-input 
               v-else-if="field.type === 'password'"
@@ -63,7 +63,7 @@
               :type="isPwd ? 'password' : 'text'"
               outlined
               label-color="primary"
-              :rules="[field.required == 'True' ? requiredRule : null]"
+              :rules="field.required ? [requiredRule] : []"
             > 
               <template v-slot:append>
                 <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
@@ -79,7 +79,7 @@
               outlined
               label-color="primary"
               map-options
-              :rules="[field.required == 'True' ? requiredRule : null]"
+              :rules="field.required ? [requiredRule] : []"
             /> -->
             
             <!-- :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))" -->
@@ -95,7 +95,7 @@
               user-chips
               map-options
               label-color="primary"
-              :rules="[field.required == 'True' ? rules.required : null]"
+              :rules="field.required ? [requiredRule] : []"
             />             -->
             <q-select        
               v-else-if="field.type === 'select' && key == 'model'"        
@@ -107,7 +107,7 @@
               outlined
               map-options
               label-color="primary"
-              :rules="[field.required == 'True' ? rules.required : null]"
+              :rules="field.required ? [requiredRule] : []"
               @update:modelValue="handleModelSelected"
             />
             <q-select        
@@ -120,7 +120,7 @@
               outlined
               map-options
               label-color="primary"
-              :rules="[field.required == 'True' ? rules.required : null]"
+              :rules="field.required ? [requiredRule] : []"
               @update:modelValue="handleTableSelected"
             />
             <div v-else-if="field.type === 'multi-select' && key == 'fields'">
@@ -136,7 +136,7 @@
                   use-chips
                   map-options
                   label-color="primary"
-                  :rules="[field.required == 'True' ? rules.required : null]"
+                  :rules="field.required ? [requiredRule] : []"
                   @update:modelValue="handleFieldSelected"
                 >
                   <template v-if="selectedFields" v-slot:append>
@@ -158,7 +158,7 @@
                   use-chips
                   map-options
                   label-color="primary"
-                  :rules="[field.required == 'True' ? rules.required : null]"
+                  :rules="field.required ? [requiredRule] : []"
                   @update:modelValue="handleOptionSelected"
                 >
                   <template v-if="fieldOptions" v-slot:append>
@@ -169,7 +169,7 @@
             </div>
             <q-select
               v-else-if="field.type === 'select'"
-              :options="form['options'].filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
+              :options="form['options'].filter(option => option.field === field.field_name).map(option => ({label: option.label, value: option.option}))"
               v-model="field.value"
               :label="field.label"
               :id="key"
@@ -177,7 +177,7 @@
               outlined
               map-options
               label-color="primary"
-              :rules="[field.required == 'True' ? rules.required : null]"
+              :rules="field.required ? [requiredRule] : []"
               @update:modelValue="handleOptionSelected"
             />
             <!-- :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.label, value: option.option}))" -->
@@ -193,7 +193,7 @@
               use-chips
               map-options
               label-color="primary"
-              :rules="[field.required == 'True' ? rules.required : null]"
+              :rules="field.required ? [requiredRule] : []"
             />
             <q-input
               v-else-if="field.type === 'date'"
@@ -203,7 +203,7 @@
               class="q-my-xs q-py-none"
               outlined
               label-color="primary"
-              :rules="[field.required == 'True' ? requiredRule : null]"
+              :rules="field.required ? [requiredRule] : []"
               >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -241,6 +241,7 @@
               :options="selectedFields"
               map-options
               @update="createValue"
+              :rules="field.required ? [requiredRule] : []"
             >
               <template v-if="customOptions" v-slot:append>
                 <q-icon name="cancel" color="red" @click.stop.prevent="customOptions = []" class="cursor-pointer" />
@@ -258,6 +259,7 @@
               multiple
               input-debounce="0"
               map-options
+              :rules="field.required ? [requiredRule] : []"
             >
               <template v-if="customOptions" v-slot:append>
                 <q-icon name="cancel" color="red" @click.stop.prevent="customOptions = []" class="cursor-pointer" />

@@ -3,7 +3,7 @@ from django.db.models import ForeignKey, ManyToManyField, Q
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
-from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts, FormBuilder
+from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts, FormBuilder, FormBuilderNew
 from django.forms.models import model_to_dict
 from .forms import QuickAddForm, ShiftNameForm
 from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
@@ -126,7 +126,7 @@ FORM_OPTION_LABELS = {
 
 JSON_FORM = {
   "form_name": "Add User", 
-  "module": "login", 
+  "app": "login", 
   "table": "User", 
   "fields": {
     "first_name": { "label": "First Name", "type": "text", "value": None, "required": True, "model_edit_field": "first_name"},
@@ -441,8 +441,8 @@ def get_app_from_model(app_names, model_name):
 def get_form(app_name, form_name):
   try:
     print(form_name)
-    module = import_module(f'{app_name}.forms')
-    form = getattr(module, form_name)
+    app = import_module(f'{app_name}.forms')
+    form = getattr(app, form_name)
     return form()
   except (ImportError, AttributeError):
     return None
@@ -648,7 +648,7 @@ def get_form_new(form_name):
     form_dict = {
       "fields": {},
       "options": [],
-      "model": {form.module: form.table}
+      "model": {form.app: form.table}
     }
 
     # Add fields to form_dict
@@ -703,7 +703,7 @@ def form_builder(request):
       # print(fields)
       fields = {
         "form_name": { "field": "form_name", "label": "Form Name", "type": "text", "required": True },
-        "module":  { "field": "module", "label": "Module", "type": "select", "required": False },
+        "app":  { "field": "app", "label": "Module", "type": "select", "required": False },
         "table":  { "field": "table", "label": "Table", "type": "select", "required": True },
         "fields":  { "field": "fields", "label": "Fields", "type": "multi-select", "required": True },
         "field_options":  { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": False },
@@ -724,7 +724,7 @@ def form_builder(request):
         if not model['app'] in apps:
           apps.append(model['app'])
           table_options.append({
-            "field": "module",
+            "field": "app",
             "label": model['app'],
             "option": model['app'],
           })
@@ -842,18 +842,18 @@ def create_update_form(request):
       options = form_data.get('field_options', None)
       custom = form_data.get('custom_options', None)
       model_data = form_data.get('table', None)
-      module = list(model_data.keys())[0] if model_data else ''
-      table = model_data.get(module, '')
+      app = list(model_data.keys())[0] if model_data else ''
+      table = model_data.get(app, '')
       form_id = form_data.get('id') if form_data.get('id') else None
       field_options = {option['field']: option for option in options} if options else {}
       custom_options = {option['field']: option for option in custom if 'field' in option} if custom else {}
       save_function = form_data.get('save_function', None)
-      print("Name: ", form_name, "\n Fields: ", fields, "\n Options", field_options, "\n Module: ", module, "Table: ", table)
+      print("Name: ", form_name, "\n Fields: ", fields, "\n Options", field_options, "\n Module: ", app, "Table: ", table)
       if form_id:
         try:
           form_builder = FormBuilder.objects.get(id=form_id)
           form_builder.form_name = form_name
-          form_builder.module = module
+          form_builder.app = app
           form_builder.table = table
           form_builder.fields = fields
           form_builder.field_options = field_options
@@ -863,7 +863,7 @@ def create_update_form(request):
         except FormBuilder.DoesNotExist:
           form_builder = FormBuilder.objects.create(
               form_name=form_name,
-              module=module,
+              app=app,
               table=table,
               fields=fields,
               field_options=field_options,
@@ -873,7 +873,7 @@ def create_update_form(request):
       else:
         form_builder = FormBuilder.objects.create(
           form_name=form_name,
-          module=module,
+          app=app,
           table=table,
           fields=fields,
           field_options=field_options,
@@ -904,18 +904,24 @@ def get_formbuilder_form(request, form=None, id=None):
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
     else:
       # content = json.loads(request.body)
-      print(form)
+      # print(form)
       if form != None:
-        form = FormBuilder.objects.values().get(form_name=form)
-        # print(form['module'], form['table'], form['save_function'])
+        form = FormBuilderNew.objects.values().get(form_name=form)
+        # print("FORM ====> \n", form)
+        for value in form['fields']:
+          if value['type'] == 'date':
+            value['value'] = None if value['value'] == '' else value['value']
+            # print(value)
+        # print(form['app'], form['model'], form['save_function'])
         if id:
-          values = get_model_instance(form['module'], form['table'], id)
+          values = get_model_instance(form['app'], form['model'], id)
           # print(values)
           function = globals()[form['save_function']]
           form = function({'form': form, "values": values}, True)
         
           print("\n Saved Test: ====> \n", form)
         # Function to read form['field_options'] and pull model objects
+        print("Field Options: ====> ", form['field_options'])
         options = pull_model_options(form['field_options'])
         options.extend(form['custom_options'])
         print("Updated Options: ====> ", options)
@@ -925,7 +931,7 @@ def get_formbuilder_form(request, form=None, id=None):
             convert_label(form['form_name']): {
               "fields": form["fields"],
               'options': options,
-              'model': { 'app': form['module'], 'model': form['table'] },
+              'model': { 'app': form['app'], 'model': form['model'] },
               'function': form['save_function']
             }
           },
@@ -939,16 +945,17 @@ def get_formbuilder_form(request, form=None, id=None):
   
 def pull_model_options(field_options):
   options = []
-  for item_key, item_value in field_options.items():
-    related_model_name = item_value.get('related_model')
-    option_label = item_value.get('option_label')
+  for item in field_options:
+    print(item)
+    related_model_name = item.get('related_model')
+    option_label = item.get('option_label')
     if related_model_name and option_label:
       app_name, model_name = related_model_name.split('.')
       related_model = apps.get_model(app_name, model_name)
       model_objects = related_model.objects.all()
       for obj in model_objects:
         option = {
-          'field': item_value['field'],
+          'field': item['field'],
           'option': obj.id,
           'label': getattr(obj, option_label)
         }
@@ -962,15 +969,15 @@ def get_model_instance(app_name, model_name, id):
 
 def strip_form_content(content):
   fields = {}
-  for key, value in content['fields'].items():
-    print(key, value)
+  for field in content['fields']:
+    print(field)
     # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
-    if isinstance(value['value'], dict):
-      fields[key] = value['value']['value']
-    elif isinstance(value['value'], list):
-      fields[key] = value['value']
+    if isinstance(field['value'], dict):
+      fields[field['field_name']] = field['value']['value']
+    # elif isinstance(field['value'], list):
+    #   fields[key] = value['value']
     else:
-      fields[key] = value['value']
+      fields[field['field_name']] = field['value']
     print(fields)
   return fields
 
@@ -1032,3 +1039,9 @@ def add_event(content, load=False):
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+@csrf_exempt
+def test_json_form(request):
+  test_form = FormBuilderNew.objects.values().first()
+  print(test_form)
+  return JsonResponse(test_form, status=200)
