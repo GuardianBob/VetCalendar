@@ -471,7 +471,7 @@ def get_model_form(request, model=None):
     print(form)
     field = find_key(form, ['select', 'multi-select'])
     print(field)
-    options = get_form_options(field, app_name, model)
+    options = get_form_options(field, app_name, model) if field else []
     print(form, options)
     context = {
       'forms': {
