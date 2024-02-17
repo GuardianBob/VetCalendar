@@ -417,6 +417,7 @@ def create_user_new(content):
     # data = data[0]['Basic Info']
     # data = list(data[0].values())[0]
     print(data)
+    data['middle_name'] = data.get('middle_name', '')
     if not User.objects.filter(email__icontains=data['email']):
       phone_number = data['phone_number']
       if isinstance(phone_number, str):

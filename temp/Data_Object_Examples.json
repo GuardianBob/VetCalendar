@@ -65,11 +65,11 @@
 "BuildForm":  { 
     "fields":  { 
       "form_name": "Build Form",
-      "module":  "VetCalendar",
+      "app":  "VetCalendar",
       "table_name":  "FormBuilder",
       "fields":  [
         { "field": "form_name", "label": "Form Name", "type": "text", "required": true },
-        { "field": "module", "label": "Module", "type": "select", "required": true },
+        { "field": "app", "label": "Module", "type": "select", "required": true },
         { "field": "table_name", "label": "Table", "type": "select", "required": true },
         { "field": "fields", "label": "Fields", "type": "multi-select", "required": true },
         { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": true },
@@ -79,8 +79,8 @@
         
       ],
       "custom_options":  [
-        { "field": "module", "option": "login", "label": "login"},
-        { "field": "module", "option": "VetCalendar", "label": "VetCalendar"},
+        { "field": "app", "option": "login", "label": "login"},
+        { "field": "app", "option": "VetCalendar", "label": "VetCalendar"},
         { "field": "table", "option": "ShiftName", "label": "ShiftName"},
         { "field": "table", "option": "ShiftType", "label": "ShiftType"},
         { "field": "table", "option": "UserInitials", "label": "UserInitials"},
@@ -119,7 +119,7 @@ Table Selected =>
 ]
 
 {'form_name': {'field': 'form_name', 'label': 'Form Name', 'type': 'text', 'required': True},
- 'module': {'field': 'module', 'label': 'Module', 'type': 'select', 'required': True},
+ 'app': {'field': 'app', 'label': 'Module', 'type': 'select', 'required': True},
  'table_name': {'field': 'table_name', 'label': 'Table', 'type': 'select', 'required': True},
  'fields': {'field': 'fields', 'label': 'Fields', 'type': 'multi-select', 'required': True},
  'field_options': {'field': 'field_options', 'label': 'Field Options', 'type': 'multi-select', 'required': False},
@@ -228,7 +228,7 @@ Options {
 {
   'id': 1, 
   'form_name': 'Add Shift', 
-  'module': 'VetCalendar', 
+  'app': 'VetCalendar', 
   'table': 'Shifts', 
   'fields': {
     'user': {'label': 'User', 'type': 'select', 'value': 'None', 'required': True},

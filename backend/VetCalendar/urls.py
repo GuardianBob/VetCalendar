@@ -19,4 +19,5 @@ urlpatterns = [
     path('get_field_options', views.get_field_options, name='get_field_options'),
     re_path(r'^get_formbuilder_form(?:/(?P<form>\w+))?(?:/(?P<id>\w+))?$', views.get_formbuilder_form, name='get_formbuilder_form'),
     path('add_json_form', views.add_json_form, name='add_json_form'),
+    path('test_json_form', views.test_json_form, name='test_json_form'),
 ]

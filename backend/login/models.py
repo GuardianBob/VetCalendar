@@ -16,8 +16,7 @@ class User(AbstractUser):
 
   def delete(self, *args, **kwargs):
     self.user_phone.all().delete()  # Delete all related phone numbers
-    self.user_level.all().delete()  # Delete all related access levels
-    self.user_privileges.all().delete()  # Delete all related privileges
+    self.access_levels.all().delete()  # Delete all related access levels
     super().delete(*args, **kwargs)  # Call the original delete method
 
 # class Email(models.Model):

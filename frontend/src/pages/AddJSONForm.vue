@@ -63,7 +63,7 @@ export default defineComponent({
       this.placeholder = `
       {
         "form_name": "Add Shift", 
-        "module": "VetCalendar", 
+        "app": "VetCalendar", 
         "table": "Shifts", 
         "fields": {
           "user": {"label": "User", "type": "select", "value": "None", "required": true, "model_edit_field": "user_id"},
