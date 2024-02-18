@@ -896,11 +896,19 @@ def get_formbuilder_form(request, form=None, id=None):
     if request.method == 'POST':
       content = json.loads(request.body)
       # content = list(content[0].values())[0]
-      for key in content:
-        print(content[key])
-        print(content[key]['function'])
-        function = globals()[content[key]['function']]
-        form_values = strip_form_content(content[key])
+      # print(content)
+      # for key in content:
+      #   print(content[key])
+      #   print(content[key]['function'])
+      #   function = globals()[content[key]['function']]
+      #   form_values = strip_form_content(content[key])
+      #   function(form_values)
+      for form in content:
+        print(form)
+        print(form['function'])
+        function = globals()[form['function']]
+        form_values = strip_form_content(form)
+        print(form_values)
         function(form_values)
         # add_event(content[key])
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
@@ -927,21 +935,121 @@ def get_formbuilder_form(request, form=None, id=None):
         options.extend(form['custom_options'])
         print("Updated Options: ====> ", options)
 
+        # context = {
+        #   'forms': {
+        #     convert_label(form['form_name']): {
+        #       "fields": form["fields"],
+        #       'options': options,
+        #       'model': { 'app': form['app'], 'model': form['model'] },
+        #       'function': form['save_function'],
+        #       'id': id if id else None,
+        #     }
+        #   },
+        # }
         context = {
-          'forms': {
-            convert_label(form['form_name']): {
+          'forms': [
+            {'title': convert_label(form['form_name']),
               "fields": form["fields"],
               'options': options,
               'model': { 'app': form['app'], 'model': form['model'] },
               'function': form['save_function'],
               'id': id if id else None,
-            }
-          },
+            },
+          ],
         }
         print(context)
         return JsonResponse(context)
       else:
         return JsonResponse({'message':'Request is invalid'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_forms_test(request, form=None, id=None):
+  try:
+    content = json.loads(request.body)
+    if request.method == 'POST':
+      # content = list(content[0].values())[0]
+      print(content['build'])
+      if not content['build'] == True:
+        # for key in content:
+        #   print(content[key])
+        #   print(content[key]['function'])
+        #   function = globals()[content[key]['function']]
+        #   form_values = strip_form_content(content[key])
+        #   function(form_values)
+        for form in content:
+          print(form)
+          print(form['function'])
+          function = globals()[form['function']]
+          form_values = strip_form_content(form)
+          # print(form_values)
+          # function(form_values)
+          # add_event(content[key])
+        return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+      else:
+        # content = json.loads(request.body)
+        print('trying the build')
+        # if form != None:
+        if content['forms'] != None:
+          forms = []
+          for form in content['forms']:
+            print(form)
+            form = FormBuilderNew.objects.values().get(form_name=form)
+            # print("FORM ====> \n", form)
+            for value in form['fields']:
+              if value['type'] == 'date':
+                value['value'] = None if value['value'] == '' else value['value']
+                # print(value)
+            # print(form['app'], form['model'], form['save_function'])
+            if content["id"]:
+              values = get_model_instance(form['app'], form['model'], content["id"])
+              print(values)
+              function = globals()[form['save_function']]
+              form = function({'form': form, "values": values}, True)
+              print("\n Saved Test: ====> \n", form)
+            # Function to read form['field_options'] and pull model objects
+            print("Field Options: ====> ", form['field_options'])
+            options = pull_model_options(form['field_options'])
+            options.extend(form['custom_options'])
+            print("Updated Options: ====> ", options)
+            forms.append({'title': convert_label(form['form_name']),
+              "fields": form["fields"],
+              'options': options,
+              'model': { 'app': form['app'], 'model': form['model'] },
+              'function': form['save_function'],
+              'id': id if id else None,
+            })
+            # context = {
+            #   'forms': {
+            #     convert_label(form['form_name']): {
+            #       "fields": form["fields"],
+            #       'options': options,
+            #       'model': { 'app': form['app'], 'model': form['model'] },
+            #       'function': form['save_function'],
+            #       'id': id if id else None,
+            #     }
+            #   },
+            # }
+        # context = {
+        #   'forms': [
+        #     {'title': convert_label(form['form_name']),
+        #       "fields": form["fields"],
+        #       'options': options,
+        #       'model': { 'app': form['app'], 'model': form['model'] },
+        #       'function': form['save_function'],
+        #       'id': id if id else None,
+        #     },
+        #   ],
+        # }
+        context = { 'forms' : forms}
+        print(context)
+        return JsonResponse(context)
+    else:
+      return JsonResponse({'message':'Request is invalid'}, status=500)
   except Exception as e:
     return trace_error(e, True)
   
@@ -972,7 +1080,7 @@ def get_model_instance(app_name, model_name, id):
 def strip_form_content(content):
   fields = {}
   for field in content['fields']:
-    print(field)
+    # print(field)
     # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
     if isinstance(field['value'], dict):
       fields[field['field_name']] = field['value']['value']
@@ -980,7 +1088,7 @@ def strip_form_content(content):
     #   fields[key] = value['value']
     else:
       fields[field['field_name']] = field['value']
-    print(fields)
+    # print(fields)
   return fields
 
 def add_event(content, load=False):

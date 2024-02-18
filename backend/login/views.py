@@ -1188,7 +1188,7 @@ def create_update_settings(settings):
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def admin_settings(request):
+def master_settings(request):
   try:
     if request.method == 'POST':
       settings = json.loads(request.body)

@@ -24,7 +24,7 @@
         </div>
       </div>
     </div>
-    <q-dialog v-model="add_shifts" position="left">
+    <q-dialog v-model="add_shifts" position="left" @hide="resetEventId">
       <q-card style="width: 90%" class="dialog-25">
         <BaseForm 
         :getForm="get_form" 
@@ -161,6 +161,11 @@ export default defineComponent({
       }
     },
 
+    resetEventId() {
+      this.event_id = false;
+      this.get_form = `/get_formbuilder_form/add_shift`
+    },
+
     store_updated_events(event) {
       // console.log(event)
       APIService.edit_event(event, true)
@@ -213,6 +218,7 @@ export default defineComponent({
     },
 
     form_complete() {
+      this.event_id = false
       this.add_shifts = false;
       this.getShiftsYear().then(() => {
         this.shift_count()

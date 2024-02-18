@@ -129,7 +129,7 @@ const linksList = [
         title: 'Admin Settings',
         caption: '',
         icon: 'construction',
-        link: '/admin_settings'
+        link: '/master_settings'
       },
     ]
   },

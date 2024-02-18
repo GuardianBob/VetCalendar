@@ -31,7 +31,7 @@ export default defineComponent({
   setup() {    
     return {
       show: ref(true),
-      get_form_api: ref("/get_formbuilder_form/add_user"),
+      get_form_api: ref("/get_formbuilder_form/add_shift"),
       save_form_api: ref("/get_formbuilder_form"),
     };
   },
