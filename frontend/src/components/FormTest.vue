@@ -15,7 +15,7 @@
           <!-- {{ form["options"] }} -->
           <div v-for="(data, key) in form" :key="key" :class="cols">
             <!-- {{ key }}  -->
-            <div v-for="(field, key) in data" :key="key" >
+            <div v-for="(field, key) in data" :key="key">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
               <!-- {{ key }} -->
