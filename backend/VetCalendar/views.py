@@ -192,10 +192,11 @@ def upload_file(request):
   print (request.POST['date'])
   input_date = request.POST["date"]
   # print(input_date[:3].isnumeric())
-  if input_date[:3].isnumeric():
-    input_date = datetime.strptime(input_date, '%Y %b') # Convert string date to datetime
-  else: 
-    input_date = datetime.strptime(input_date, '%b %Y')
+  input_date = parse_date(input_date).date()
+  # if input_date[:3].isnumeric():
+  #   input_date = datetime.strptime(input_date, '%Y %b') # Convert string date to datetime
+  # else: 
+  #   input_date = datetime.strptime(input_date, '%b %Y')
   input_month = input_date.strftime('%m')  # Convert datetime to month number
   short_month = input_date.strftime('%b')  # Convert datetime to short month, ex: "Nov"
   year = input_date.strftime('%Y')  # convert datetime to YYYY
@@ -887,8 +888,8 @@ def create_update_form(request):
     return trace_error(e, True)
   
 @api_view(['GET', 'POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
 @csrf_exempt
 def get_formbuilder_form(request, form=None, id=None):
   try:
@@ -937,7 +938,7 @@ def get_formbuilder_form(request, form=None, id=None):
             }
           },
         }
-        # print(context)
+        print(context)
         return JsonResponse(context)
       else:
         return JsonResponse({'message':'Request is invalid'}, status=500)

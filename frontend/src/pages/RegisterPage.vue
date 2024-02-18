@@ -1,7 +1,7 @@
 <template>
   <q-page class="items-center flex flex-center">
     <div class="row justify-center">
-      <BaseForm getForm="/login/account_request" submitForm="/login/account_request" page_title="Request Access" @done="user_created"/>
+      <BaseForm getForm="/login/account_request" submitForm="/login/account_request" page_title="Request Access (Broken)" @done="user_created" columns="one"/>
     </div>
   </q-page>
 </template>

@@ -66,6 +66,27 @@ handler.setFormatter(formatter)
 # Add the handler to the logger
 logger.addHandler(handler)
 
+TEMP_ACCOUNT_REQUEST_FORM = {
+  'Account Request': {
+    'fields': [
+      {'field_name': 'first_name', 'label': 'First Name', 'type': 'text', 'value': '', 'required': True, 'model_edit_field': 'first_name'},
+      {'field_name': 'last_name', 'label': 'Last Name', 'type': 'text', 'value': '', 'required': True, 'model_edit_field': 'last_name'},
+      {'field_name': 'email', 'label': 'E-Mail', 'type': 'email', 'value': '', 'required': True, 'model_edit_field': 'email'},
+      {'field_name': 'phone_number', 'label': 'Phone Number', 'type': 'phone', 'value': '', 'required': False, 'model_edit_field': 'phone_number'},
+      {'field_name': 'phone_type', 'label': 'Phone Type', 'type': 'select', 'value': '', 'required': False, 'model_edit_field': 'phone_type'}
+    ], 
+    'options': [
+      {'field': 'phone_type', 'option': 'Mobile', 'label': 'Mobile'},
+      {'field': 'phone_type', 'option': 'Home', 'label': 'Home'},
+      {'field': 'phone_type', 'option': 'Office', 'label': 'Office'},
+      {'field': 'phone_type', 'option': 'Other', 'label': 'Other'}
+    ], 
+    'model': {'app': 'login', 'model': 'AccountRequest'},
+    'function': 'account_request', 
+    'id': None
+  }
+}
+
 FORM_FIELD_LABELS = {
     "first_name": "First Name",
     "middle_name": "Middle Name",
@@ -598,14 +619,12 @@ def account_request(request):
       return JsonResponse({'message':'Request already made for that e-mail address.'}, status=500)
       
     else:
-      request_form = AccountRequestForm()
-      form = set_form_fields(request_form)
+      # request_form = AccountRequestForm()
+      # form = set_form_fields(request_form)
       context = {
-        'forms': {
-          'User Info': form, 
-        },
-        'options': get_form_options(),
+        'forms': TEMP_ACCOUNT_REQUEST_FORM
       }
+
       # return render(request, 'multiForm.html', context)
       return JsonResponse(context)
   except Exception as e:
