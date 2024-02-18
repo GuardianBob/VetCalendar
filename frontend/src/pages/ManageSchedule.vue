@@ -104,8 +104,8 @@ export default defineComponent({
       editEvent: ref({}),
       event_edit: ref(false),
       event_id: ref(),
-      get_form: ref('/quick_add'),
-      submit_form: ref('/quick_add'),
+      get_form: ref('/get_formbuilder_form/add_shift'),
+      submit_form: ref('/get_formbuilder_form'),
       multiDateSelect: ref(true),
       add_to_date: ref(null),
       delete_event: ref('/delete_event'),
@@ -178,8 +178,8 @@ export default defineComponent({
     },
 
     quick_add() {
-      this.get_form = '/quick_add'
-      this.submit_form = '/quick_add'
+      // this.get_form = '/quick_add'
+      // this.submit_form = '/quick_add'
       this.multiDateSelect = true
       this.add_shifts = true
     },
@@ -193,18 +193,19 @@ export default defineComponent({
       // event.backgroundColor = color
       // event.textColor = MainFunctions.getTextColor(event.borderColor)
       this.event_edit = true
-      this.get_form = `/edit_event/${info.id}`
-      this.submit_form = '/edit_event'
+      this.get_form = `/get_formbuilder_form/add_shift/${info.id}`
+      this.submit_form = '/get_formbuilder_form'
       this.multiDateSelect = false
       this.add_shifts = true
     },
 
     date_clicked(date) {
       console.log(date)
-      this.get_form = '/quick_add'
-      this.submit_form = '/quick_add'
+      this.get_form = '/get_formbuilder_form/add_shift'
+      this.submit_form = '/get_formbuilder_form'
       this.add_shifts = true
       this.add_to_date = date
+      console.log(this.form_data)
       this.form_data = {
         "date": date,
       }

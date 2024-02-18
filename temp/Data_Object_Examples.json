@@ -65,11 +65,11 @@
 "BuildForm":  { 
     "fields":  { 
       "form_name": "Build Form",
-      "app":  "VetCalendar",
+      "module":  "VetCalendar",
       "table_name":  "FormBuilder",
       "fields":  [
         { "field": "form_name", "label": "Form Name", "type": "text", "required": true },
-        { "field": "app", "label": "Module", "type": "select", "required": true },
+        { "field": "module", "label": "Module", "type": "select", "required": true },
         { "field": "table_name", "label": "Table", "type": "select", "required": true },
         { "field": "fields", "label": "Fields", "type": "multi-select", "required": true },
         { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": true },
@@ -79,8 +79,8 @@
         
       ],
       "custom_options":  [
-        { "field": "app", "option": "login", "label": "login"},
-        { "field": "app", "option": "VetCalendar", "label": "VetCalendar"},
+        { "field": "module", "option": "login", "label": "login"},
+        { "field": "module", "option": "VetCalendar", "label": "VetCalendar"},
         { "field": "table", "option": "ShiftName", "label": "ShiftName"},
         { "field": "table", "option": "ShiftType", "label": "ShiftType"},
         { "field": "table", "option": "UserInitials", "label": "UserInitials"},
@@ -119,7 +119,7 @@ Table Selected =>
 ]
 
 {'form_name': {'field': 'form_name', 'label': 'Form Name', 'type': 'text', 'required': True},
- 'app': {'field': 'app', 'label': 'Module', 'type': 'select', 'required': True},
+ 'module': {'field': 'module', 'label': 'Module', 'type': 'select', 'required': True},
  'table_name': {'field': 'table_name', 'label': 'Table', 'type': 'select', 'required': True},
  'fields': {'field': 'fields', 'label': 'Fields', 'type': 'multi-select', 'required': True},
  'field_options': {'field': 'field_options', 'label': 'Field Options', 'type': 'multi-select', 'required': False},
@@ -228,13 +228,13 @@ Options {
 {
   'id': 1, 
   'form_name': 'Add Shift', 
-  'app': 'VetCalendar', 
+  'module': 'VetCalendar', 
   'table': 'Shifts', 
   'fields': {
-    'user': {'label': 'User', 'type': 'select', 'value': 'None', 'required': True},
-    'shift': {'label': 'Shift', 'type': 'select', 'value': 'None', 'required': True},
-    'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': 'None', 'required': True},
-    'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': 'None', 'required': True}
+    'user': {'label': 'User', 'type': 'select', 'value': 'None', 'required': True, "model_edit_field": "user_id"},
+    'shift': {'label': 'Shift', 'type': 'select', 'value': 'None', 'required': True, "model_edit_field": "shift_name_id"},
+    'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': 'None', 'required': True, "model_edit_field": "shift_type_id"},
+    'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': 'None', 'required': True,"model_edit_field": "shift_start"}
   },
   'field_options': {
     'shift': {'field': 'shift', 'related_model': 'ShiftName', 'option_label': 'shift_label', 'option_value': 'id', 'type': 'select'},
@@ -299,3 +299,42 @@ Options {
         'app': 'VetCalendar', 'model': 'Shifts'
         }}}
         
+
+        {'fields': {
+          'user':  1,
+          'shift': 1,
+          'shift_type': 6,
+          'shift_date': ['Feb-15-2024', 'Feb-16-2024']}},
+
+
+          
+{
+  "form_name": "Add User", 
+  "module": "login", 
+  "table": "User", 
+  "fields": {
+    "first_name": {"label": "First Name", "type": "text", "value": "", "required": "True", "model_edit_field": "first_name"},
+    "middle_name": {"label": "Middle Name", "type": "text", "value": "", "required": "False", "model_edit_field": "middle_name"},
+    "last_name": {"label": "Last Name", "type": "text", "value": "", "required": "True", "model_edit_field": "last_name"},
+    "email": {"label": "E-Mail", "type": "text", "value": "", "required": "", "model_edit_field": "email"},
+    "phone_number": {"label": "Phone Number", "type": "phone", "value": "", "required": "False","model_edit_field": "phone_number"},
+    "phone_type": {"label": "Phone Type", "type": "select", "value": "", "required": "False","model_edit_field": "phone_type"}
+  },
+  "field_options": {
+    "shift": {"field": "shift", "related_model": "ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
+    "shift_type": {"field": "shift_type", "related_model": "ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
+    "user": {"field": "user", "related_model": "User", "option_label": "last_name", "option_value": "id", "type": "select"}
+  },
+  "custom_options": [
+    {"field": "phone_type", "option": "Mobile", "label": "Mobile"},
+    {"field": "phone_type", "option": "Home", "label": "Home"},
+    {"field": "phone_type", "option": "Office", "label": "Office"},
+    {"field": "phone_type", "option": "Other", "label": "Other"}
+  ],
+  "save_function": "add_user"
+}
+
+
+{"first_name": {"label": "First Name", "type": "text", "value": "", "required": "True", "model_edit_field": "first_name"}, "last_name": {"label": "Last Name", "type": "text", "value": "", "required": "True", "model_edit_field": "last_name"}, "email": {"label": "E-Mail", "type": "text", "value": "", "required": "True", "model_edit_field": "email"}, "phone_number": {"label": "Phone Number", "type": "phone", "value": "", "required": "False", "model_edit_field": "phone_number"}, "phone_type": {"label": "Phone Type", "type": "select", "value": "", "required": "False", "model_edit_field": "phone_type"}}
+
+{"field_name": "first_name", "settings": {"label": "First Name", "type": "text", "value": "", "required": true, "model_edit_field": "first_name"}}]

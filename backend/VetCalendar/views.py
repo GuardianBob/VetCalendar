@@ -18,7 +18,7 @@ import dateutil.parser as parser
 # import numpy as np
 from django.utils import timezone
 from django.middleware.csrf import get_token
-from dateutil.parser import parse
+from dateutil.parser import parse as parse_date
 from django.apps import apps
 from importlib import import_module
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -310,7 +310,7 @@ def quick_add(request):
         item = content
         item['shift_date'] = date
         # print(item)
-        shift_date = parse(date).date()
+        shift_date = parse_date(date).date()
         shift_start = convert_to_shift_datetime(date, shift_name.start_time)
         shift_end = convert_to_shift_datetime(date, shift_name.end_time)
         if shift_end < shift_start:
@@ -554,6 +554,7 @@ def creat_update_shift(data):
   if not data.get('user'):
     old_shift = Shifts.objects.get(id=data['id'])
     data['user'] = old_shift.user.id
+  # print(data['shift_date'])
   shift_start = convert_to_shift_datetime(data['shift_date'], shift_details.start_time)
   shift_end = convert_to_shift_datetime(data['shift_date'], shift_details.end_time)
   if shift_end < shift_start:
@@ -915,10 +916,9 @@ def get_formbuilder_form(request, form=None, id=None):
         # print(form['app'], form['model'], form['save_function'])
         if id:
           values = get_model_instance(form['app'], form['model'], id)
-          # print(values)
+          print(values)
           function = globals()[form['save_function']]
           form = function({'form': form, "values": values}, True)
-        
           print("\n Saved Test: ====> \n", form)
         # Function to read form['field_options'] and pull model objects
         print("Field Options: ====> ", form['field_options'])
@@ -932,7 +932,8 @@ def get_formbuilder_form(request, form=None, id=None):
               "fields": form["fields"],
               'options': options,
               'model': { 'app': form['app'], 'model': form['model'] },
-              'function': form['save_function']
+              'function': form['save_function'],
+              'id': id if id else None,
             }
           },
         }
@@ -985,12 +986,13 @@ def add_event(content, load=False):
   try:
     if load:
       print("\n====LOADING====\n", content['form'], "\n", content['values'])
-      for key, item in content['form']['fields'].items():
-        if item['type'] == 'date':
-          item['value'] = content['values'][item['model_edit_field']].strftime('%b-%d-%Y')
-        # if item['type'] == 'select':
+      for field in content['form']['fields']:
+      # for key, item in content['form']['fields'].items():
+        if field['type'] == 'date':
+          field['value'] = content['values'][field['model_edit_field']].strftime('%b-%d-%Y')
+        # if field['type'] == 'select':
         else:
-          item['value'] = content['values'][item['model_edit_field']]
+          field['value'] = content['values'][field['model_edit_field']]
       # content['form']['fields']['user']['value'] = content['values']['user_id']
       # content['form']['fields']['shift']['value'] = content['values']['shift_name_id']
       # content['form']['fields']['shift_type']['value'] = content['values']['shift_type_id']
@@ -1014,7 +1016,15 @@ def add_event(content, load=False):
       user = User.objects.get(id=fields['user'])
       shift_name = ShiftName.objects.get(id=fields['shift'])
       shift_type = ShiftType.objects.get(id=fields['shift_type'])
-      dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
+      # dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
+      # shift_date = parse_date(date).date()
+      if not isinstance(fields['shift_date'], list):
+        fields['shift_date'] = [fields['shift_date']]
+      # if isinstance(fields['shift_date'], list):
+      dates = [parse_date(date) for date in fields['shift_date']]
+      # else:
+      #   dates = [parse_date(fields['shift_date'])]
+      # print("======== DATES =========>  ", dates)
       # Get the earliest and latest dates
       earliest_date, latest_date = min(dates), max(dates)
       if earliest_date == latest_date:
@@ -1028,13 +1038,13 @@ def add_event(content, load=False):
       ).values_list('shift_start__date', 'id')
       # print('Existing shifts===> :', existing_shifts)
       existing_shifts_dict = {date.strftime('%b-%d-%Y'): id for date, id in existing_shifts}
+      # print(fields)
       for date in fields['shift_date']:
         item = fields.copy()
         item['shift_date'] = date
         # print(existing_shifts_dict)
         if date in existing_shifts_dict:
           item['id'] = existing_shifts_dict[date]
-        # print(item)
         shift = creat_update_shift(item)
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
   except Exception as e:

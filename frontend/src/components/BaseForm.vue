@@ -7,12 +7,19 @@
       <h1 class="text-h3 text-primary">{{ page_title }}</h1>
     </div>
     <q-form>
-      <div v-for="(data, title) in formData" :key="title" class="row justify-center">
+      <div v-for="(form, title) in formData" :key="title" class="row justify-center">
         <div class="row justify-center">
           <div class="col-12 col-md-12 col-lg-12">
             <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ title }}</h4>
           </div>
-          <div v-for="(field, key) in data" :key="key" :class="cols">
+          <!-- {{ form["options"] }} -->
+          <div v-for="(data, key) in form" :key="key" :class="cols">
+            <!-- {{ key }}  -->
+            <div v-for="(field, key) in data" :key="key" :class="cols">
+              <!-- {{ data.options }} -->
+              <!-- {{ field.label }} -->
+              <!-- {{ key }} -->
+            
             <q-input 
               v-if="field.type === 'input' || field.type === 'text' || field.type === 'number' || field.type === 'url' || field.type === 'time' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'color' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
@@ -22,7 +29,7 @@
               :type="field.type"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="field.required ? [requiredRule] : []"
             />
             <q-input 
               v-else-if="field.type === 'email'"
@@ -32,10 +39,10 @@
               :id="key"
               outlined
               label-color="primary"
-              :rules="[rules.required, rules.email]"
+              :rules="field.required ? [requiredRule, rules.email] : []"
             /> 
             <q-input 
-              v-else-if="field.type === 'tel'"
+              v-else-if="field.type === 'tel' || field.type === 'phone'"
               v-model="field.value" 
               :label="field.label" 
               class="q-my-xs q-py-none" 
@@ -45,6 +52,7 @@
               fill-mask
               outlined
               label-color="primary"
+              :rules="field.required ? [requiredRule] : []"
             /> 
             <q-input 
               v-else-if="field.type === 'password'"
@@ -55,13 +63,13 @@
               :type="isPwd ? 'password' : 'text'"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="field.required ? [requiredRule] : []"
             > 
               <template v-slot:append>
                 <q-icon :name="isPwd ? 'visibility_off' : 'visibility'" @click="isPwd = !isPwd" />
               </template>
             </q-input>
-            <q-select
+            <!-- <q-select
               v-else-if="field.type === 'select' && key === 'state'"
               v-model="field.value"
               :label="field.label"
@@ -71,23 +79,13 @@
               outlined
               label-color="primary"
               map-options
-              :rules="[field.required ? requiredRule : '']"
-            />
-            <q-select
-              v-else-if="field.type === 'select'"
-              :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
-              v-model="field.value"
-              :label="field.label"
-              :id="key"
-              class="q-my-xs q-py-none"
-              outlined
-              map-options
-              label-color="primary"
-              :rules="[field.required ? rules.required : '']"
-            />
-            <q-select
-              v-else-if="field.type === 'multi-select'"
-              :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))"
+              :rules="field.required ? [requiredRule] : []"
+            /> -->
+            
+            <!-- :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))" -->
+            <!-- <q-select
+              v-else-if="field.type === 'multi-select' && key === 'fields'"
+              :options="fieldChoices ? fieldChoices.map(option => ({label: option.label, value: option.option})) : []"
               v-model="field.value"
               :label="field.label"
               :id="key"
@@ -97,7 +95,105 @@
               user-chips
               map-options
               label-color="primary"
-              :rules="[field.required ? rules.required : '']"
+              :rules="field.required ? [requiredRule] : []"
+            />             -->
+            <q-select        
+              v-else-if="field.type === 'select' && key == 'model'"        
+              :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.model, value: option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              map-options
+              label-color="primary"
+              :rules="field.required ? [requiredRule] : []"
+              @update:modelValue="handleModelSelected"
+            />
+            <q-select        
+              v-else-if="field.type === 'select' && key == 'table'"        
+              :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.model, value: option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              map-options
+              label-color="primary"
+              :rules="field.required ? [requiredRule] : []"
+              @update:modelValue="handleTableSelected"
+            />
+            <div v-else-if="field.type === 'multi-select' && key == 'fields'">
+              <span v-show="fieldChoices">
+                <q-select        
+                  :options="fieldChoices ? fieldChoices.map(option => ({label: option.related_model ? '(' + option.related_model + '): ' + option.label : option.label, value: option})) : []"
+                  v-model="selectedFields"
+                  :label="field.label"
+                  :id="key"
+                  class="q-my-xs q-py-none"
+                  outlined
+                  multiple
+                  use-chips
+                  map-options
+                  label-color="primary"
+                  :rules="field.required ? [requiredRule] : []"
+                  @update:modelValue="handleFieldSelected"
+                >
+                  <template v-if="selectedFields" v-slot:append>
+                    <q-icon name="cancel" color="red" @click.stop.prevent="selectedFields = null" class="cursor-pointer" />
+                  </template>
+                </q-select>
+              </span>
+            </div>
+            <div v-else-if="field.type === 'multi-select' && key == 'field_options'">
+              <span v-show="selectedFields">
+                <q-select        
+                  :options="selectedFields"
+                  v-model="fieldOptions"
+                  :label="field.label"
+                  :id="key"
+                  class="q-my-xs q-py-none"
+                  outlined
+                  multiple
+                  use-chips
+                  map-options
+                  label-color="primary"
+                  :rules="field.required ? [requiredRule] : []"
+                  @update:modelValue="handleOptionSelected"
+                >
+                  <template v-if="fieldOptions" v-slot:append>
+                    <q-icon name="cancel" color="red" @click.stop.prevent="fieldOptions = null" class="cursor-pointer" />
+                  </template>
+                </q-select>
+              </span>
+            </div>
+            <q-select
+              v-else-if="field.type === 'select'"
+              :options="form['options'].filter(option => option.field === field.field_name).map(option => ({label: option.label, value: option.option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              map-options
+              label-color="primary"
+              :rules="field.required ? [requiredRule] : []"
+              @update:modelValue="handleOptionSelected"
+            />
+            <!-- :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.label, value: option.option}))" -->
+            <q-select
+              v-else-if="field.type === 'multi-select'"
+              :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.label, value: option.option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              use-chips
+              map-options
+              label-color="primary"
+              :rules="field.required ? [requiredRule] : []"
             />
             <q-input
               v-else-if="field.type === 'date'"
@@ -107,7 +203,7 @@
               class="q-my-xs q-py-none"
               outlined
               label-color="primary"
-              :rules="[field.required ? requiredRule : '']"
+              :rules="field.required ? [requiredRule] : []"
               >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -131,13 +227,52 @@
               outlined
               disable
             /> 
+            <q-select
+              v-else-if="field.type == 'multi-text' && key == 'custom_options'"
+              v-model="customOptions"
+              :label="field.label"
+              class="q-my-xs q-py-none"
+              outlined
+              use-input
+              use-chips
+              multiple
+              input-debounce="0"
+              @new-value="createValue"
+              :options="selectedFields"
+              map-options
+              @update="createValue"
+              :rules="field.required ? [requiredRule] : []"
+            >
+              <template v-if="customOptions" v-slot:append>
+                <q-icon name="cancel" color="red" @click.stop.prevent="customOptions = []" class="cursor-pointer" />
+              </template>
+            </q-select>
+            <q-select
+              v-else-if="field.type == 'multi-text'"
+              v-model="field.value"
+              :options="form['options'].filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
+              :label="field.label"
+              class="q-my-xs q-py-none"
+              outlined
+              use-input
+              use-chips
+              multiple
+              input-debounce="0"
+              map-options
+              :rules="field.required ? [requiredRule] : []"
+            >
+              <template v-if="customOptions" v-slot:append>
+                <q-icon name="cancel" color="red" @click.stop.prevent="customOptions = []" class="cursor-pointer" />
+              </template>
+            </q-select>
             <span v-else></span>
+          </div>
           </div>
         </div>
       </div>
       <div class="row justify-around q-my-md">
         <q-btn @click="submit" color="primary">Save</q-btn>
-        <q-btn v-show="delete_button" @click="confirm_delete" color="primary">Delete</q-btn>
+        <q-btn v-show="delete_button" @click="confirm_delete" color="negative">Delete</q-btn>
       </div>
     </q-form>
     <q-dialog v-model="confirm" persistent>
@@ -188,7 +323,16 @@ export default defineComponent({
     return {
       formData: ref(),
       loading: false,
-      options: ref(this.form_options),
+      options: ref(),
+      filteredTables: ref(),
+      fieldChoices: ref(),
+      selectedFields: ref(),
+      fieldOptions: ref(),
+      fieldOptionSettings: ref(),
+      customOptions: ref(),
+      customOptionSettings: ref(),
+      filterOptions: ref(),
+      showFields: ref(false),
       model: ref(),
       states: ref(statesJson.states),
       isPwd: ref(true),
@@ -265,9 +409,16 @@ export default defineComponent({
       return regex.test(event);
     },
 
+    getField(form, fieldName) {
+      return form.fields.find(field => field.field_name === fieldName);
+    },
+
     add_date(date) {
-      console.log(this.formData)
-      this.formData['']['shift_date']['value'] = [date];
+      let form = Object.values(this.formData)[0];
+      let field = this.getField(form, 'shift_date');
+      if (field) {
+        field.value = [date];
+      }
     },
 
     confirm_delete() {
@@ -282,10 +433,81 @@ export default defineComponent({
       }
     },
 
+    createValue (val, done) {
+      // Calling done(var) when new-value-mode is not set or "add", or done(var, "add") adds "var" content to the model
+      // and it resets the input textbox to empty string
+      // ----
+      // Calling done(var) when new-value-mode is "add-unique", or done(var, "add-unique") adds "var" content to the model
+      // only if is not already set
+      // and it resets the input textbox to empty string
+      // ----
+      // Calling done(var) when new-value-mode is "toggle", or done(var, "toggle") toggles the model with "var" content
+      // (adds to model if not already in the model, removes from model if already has it)
+      // and it resets the input textbox to empty string
+      // ----
+      // If "var" content is undefined/null, then it doesn't tampers with the model
+      // and only resets the input textbox to empty string
+
+      if (val.length > 0) {
+        console.log(val)
+        if (!this.customOptions.includes(val)) {
+          this.customOptions.push(val)
+        }
+        console.log(this.customOptions)
+        done(val, 'add-unique')
+      }
+    },
+
+    filterFn (val, update) {
+      update(() => {
+        if (val === '') {
+          this.filterOptions.value = this.customOptions
+        }
+        else {
+          const needle = val.toLowerCase()
+          this.filterOptions.value = this.customOptions.filter(
+            v => v.toLowerCase().indexOf(needle) > -1
+          )
+        }
+      })
+    },
+
+    handleTableSelected(event) {
+      console.log(event.label, event.value);
+      let data = {"app": event.value, "model": event.label}
+      console.log(data)
+      APIService.get_table_fields(event.value).then((res) => {
+        console.log(res.data);
+        this.fieldChoices, this.selectedFields = null;
+        this.fieldChoices = res.data.fields;
+      });
+    },
+
+    handleFieldSelected(event) {
+      // console.log("field ===> ", event);
+    },
+
+    handleOptionSelected(event) {
+      // console.log("Option ===> ", event);
+      // let data = []
+      // for (let i = 0; i < event.length; i++) {
+      //   console.log(event[i].label, event[i].value, event[i].value.related_model);
+      //   if (event[i].value.related_model) {
+      //     data.push(event[i].value.related_model);
+      //   }
+      // }
+      // APIService.get_field_options(event).then((res) => {
+      //   console.log(res.data);
+      // //   this.fieldOptionSettings = res.data;
+      // });
+    },
+
     delete_item() {
       console.log("Delete Event");
-      console.log(this.formData, this.formData['']['id']['value'])
-      api.post(this.delete_api, {id: this.formData['']['id']['value']}).then((res) => {
+      // console.log(this.formData)
+      let form = Object.values(this.formData)[0];
+      // console.log(form.id)
+      api.post(this.delete_api, {id: form.id}).then((res) => {
         console.log(res.data);
         this.$emit("done");
         Notify.create({
@@ -310,7 +532,24 @@ export default defineComponent({
 
     submit(event) {
       try {
-        console.log(this.formData)
+        let submitData = JSON.parse(JSON.stringify(this.formData));
+        // let func = ''
+        // let app = ''
+        for (let key in submitData) {
+          if (submitData[key].hasOwnProperty('options')) {
+            delete submitData[key]['options'];
+          }
+          // if (submitData[key].hasOwnProperty('function')) {
+          //   // console.log(submitData[key]['function']);
+          //   func = submitData[key]['function'];
+          // }
+          // if (submitData[key].hasOwnProperty('app')) {
+          //   // console.log(submitData[key]['app']);
+          //   app = submitData[key]['app'];
+          // }
+        }
+        console.log(submitData)
+
         // RETURNS VALUES ONLY 
         // const values = Object.values(this.formData).map(item => item.value);
 
@@ -336,43 +575,62 @@ export default defineComponent({
 
         // RETURNS KEY VALUE PAIRS AND ACCOUNTS FOR NESTED OBJECTS WITHIN NESTED OBJECTS.
         // YEAH, I know it's bad, but it works.
-        const entries = Object.entries(this.formData).map(([key, item]) => {
-          let value;
-          if (typeof item === 'object' && item !== null) {
-            // console.log("===> ", value)
-            value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
-              if (typeof subItem.value === 'object' && subItem !== null && subItem.value !== null) {
-                if (Array.isArray(subItem.value)) {
-                  console.log(subItem.value)
-                  // If subItem.value is an array, assign it directly to acc[subKey]
-                  acc[subKey] = subItem.value.map(item => item);
-                } else {
-                  console.log(subItem)
-                  acc[subKey] = subItem.value.value;
-                }
-                // acc[subKey] = subItem.value.value;
-                return acc;
-              } else {
-                acc[subKey] = subItem.value;
-                return acc;
-              }
-            }, {});
-          } else {
-            value = item;
-          }
-          // console.log(value)
-          return { [key]: value };
-        });
-        console.log(Object.keys(entries[0]).length)
-        let data
-        if (entries.length == 1) {
-          data = entries[0][Object.keys(entries[0])[0]];
-        } else {
-          data = entries
-        }
-        data["model"] = this.model;
-        console.log("new", this.submitForm, data);
-        api.post(this.submitForm, data).then((res) => {
+        // const entries = Object.entries(this.formData).map(([key, item]) => {
+        //   let value;
+        //   if (typeof item === 'object' && item !== null) {
+        //     // console.log("===> ", value)
+        //     value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
+        //       if (typeof subItem.value === 'object' && subItem !== null && subItem.value !== null) {
+        //         if (Array.isArray(subItem.value)) {
+        //           console.log(subItem.value)
+        //           // If subItem.value is an array, assign it directly to acc[subKey]
+        //           acc[subKey] = subItem.value.map(item => item);
+        //         } else {
+        //           console.log(subItem)
+        //           acc[subKey] = subItem.value.value;
+        //         }
+        //         // acc[subKey] = subItem.value.value;
+        //         return acc;
+        //       } else {
+        //         acc[subKey] = subItem.value;
+        //         return acc;
+        //       }
+        //     }, {});
+        //   } else {
+        //     value = item;
+        //   }
+        //   // console.log(value)
+        //   return { [key]: value };
+        // });
+        // console.log(Object.keys(entries[0]).length)
+        // let data
+        // if (entries.length == 1) {
+        //   data = entries[0][Object.keys(entries[0])[0]];
+        // } else {
+        //   data = entries
+        // }
+        // data["model"] = this.model;
+        // console.log("new", this.submitForm, data);
+        // let form_test = {
+        //   "Add Shift": {
+        //     "fields": {
+        //       "user": {"label": "User", "type": "select", "value": "None", "required": true},
+        //       "shift": {"label": "Shift", "type": "select", "value": "None", "required": true},
+        //       "shift_type": {"label": "Shift Type", "type": "select", "value": "None", "required": true},
+        //       "shift_date": {"label": "Shift Date", "type": "date", "value": "None", "required": true}
+        //     },
+        //     "field_options": [
+        //       {"field": "shift", "related_model": "ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
+        //       {"field": "shift_type", "related_model": "ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
+        //       {"field": "user", "related_model": "User", "option_label": "last_name", "option_value": "id", "type": "select"}
+        //     ],
+        //     "custom_options": [{}],
+        //     "model": {"VetCalendar" : "Shifts"},
+        //     "id": "1"
+        //   }
+        // }
+
+        api.post(this.submitForm, submitData).then((res) => {
           console.log(res.data);
           this.$emit("done");
           Notify.create({
@@ -403,10 +661,11 @@ export default defineComponent({
       await api.get(this.getForm).then(async (results) => {
         console.log(results.data);
         this.formData = results.data.forms;
-        this.options = results.data.options ? results.data.options : null;
-        this.model = results.data.model ? results.data.model : null;
-        // console.log(this.formData["Add New Item"].permission_label)
 
+        // this.options = results.data.options ? results.data.options : null;
+        // this.model = results.data.forms["Build Form"].model ? results.data.forms["Build Form"].model : null;
+        // console.log(this.formData["Add New Item"].permission_label)
+        console.log(this.formData, this.model);
         if (this.add_to_form_date) {
           this.add_date(this.add_to_form_date)
         }
