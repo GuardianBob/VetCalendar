@@ -20,7 +20,6 @@ google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
 djangorestframework-simplejwt = "*"
 django-jsonform = "*"
-psycopg2 = "*"
 
 [dev-packages]
 

@@ -8,9 +8,9 @@ import axios from 'axios'
 // "export default () => {}" function below (which runs individually
 // for each client)
 let HTTP = ''
-if (process.env.DEV_ENV == "true") {
+if (process.env.LOCAL_DEV_ENV == "true") {
   HTTP = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}`
-} else if (process.env.DEV_ENV == "false" && process.env.TEST_ENV == "true") {
+} else if (process.env.LOCAL_DEV_ENV == "false" && process.env.TEST_ENV == "true") {
   HTTP = `https://${process.env.REST_API_TEST}`
 } else {
   HTTP = `https://${process.env.REST_API_LIVE}`

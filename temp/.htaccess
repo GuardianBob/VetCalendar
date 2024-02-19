@@ -8,7 +8,7 @@ PassengerStartupFile index.html
 # DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
 <IfModule Litespeed>
 SetEnv REST_API_LIVE "vet-backend-dev.jmeyer-dev.com"
-SetEnv DEV_ENV "false"
+SetEnv LOCAL_DEV_ENV "false"
 SetEnv GOOGLE_API_KEY "AIzaSyCqY5w-TqT7zCTo3Luce0Wxs0EZ5GRZlj0"
 SetEnv GOOGLE_CLIENT_ID "854796710958-fg3k7vs95g96ooeke6i09dnkt7bop3ns.apps.googleusercontent.com"
 </IfModule>

@@ -10,7 +10,7 @@ class User(AbstractUser):
   initials = models.CharField(max_length=10, blank=True)
   nickname = models.CharField(max_length=50, blank=True)
   phone_number = models.CharField(max_length=50, blank=True)
-  phone_type = models.CharField(max_length=50, default="mobile")
+  phone_type = models.CharField(max_length=50, default="mobile", blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 

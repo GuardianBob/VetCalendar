@@ -109,9 +109,9 @@ class APIService {
     console.log("uploading", formData);
     // return api.post("/upload_file", { file })
     let upload_url = ''
-    if (process.env.DEV_ENV == "true") {
+    if (process.env.LOCAL_DEV_ENV == "true") {
       upload_url = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}/upload_file`
-    } else if (process.env.DEV_ENV == "false" && process.env.TEST_ENV == "true") {
+    } else if (process.env.LOCAL_DEV_ENV == "false" && process.env.TEST_ENV == "true") {
       upload_url = `https://${process.env.REST_API_TEST}/upload_file`
     } else {
       upload_url = `https://${process.env.REST_API_LIVE}/upload_file`
@@ -181,7 +181,7 @@ class APIService {
 
   // get_user_list(formData) {
   //   let upload_url = ''
-  //   if (process.env.DEV_ENV == "true") {
+  //   if (process.env.LOCAL_DEV_ENV == "true") {
   //     upload_url = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}/return_user_list`
   //   } else {
   //     upload_url = `https://${process.env.REST_API_LIVE}/return_user_list`
