@@ -112,11 +112,42 @@ export default {
           this.handleEventChange(info);
         },
         eventClick: (info) => {
-          this.editCal ? this.handleEventClicked(info) : null;
+          // this.editCal ? this.handleEventClicked(info) : null;
+          // console.log(this.$q.platform.is.desktop)
+          if (this.$q.platform.is.desktop) {
+            // Handle event click on mobile device
+            if (this.clickTimeout) {
+              clearTimeout(this.clickTimeout);
+              this.clickTimeout = null;
+              this.editCal ? this.handleEventClicked(info) : null; // Handle double click
+            } else {
+              this.clickTimeout = setTimeout(() => {
+                this.clickTimeout = null;
+                // Handle single click if necessary
+              }, 500); // Wait for 250ms before deciding if it's a single or double click
+            }
+          } else {
+            this.editCal ? this.handleEventClicked(info) : null;
+          }
         },
         dateClick: (info) => {
           // console.log('Date clicked:', info.dateStr);
-          this.editCal ? this.handleDateClicked(info) : null;
+          if (this.$q.platform.is.desktop) {
+            // Handle event click on mobile device
+            if (this.clickTimeout) {
+              clearTimeout(this.clickTimeout);
+              this.clickTimeout = null;
+              this.editCal ? this.handleDateClicked(info) : null; // Handle double click
+            } else {
+              this.clickTimeout = setTimeout(() => {
+                this.clickTimeout = null;
+                // Handle single click if necessary
+              }, 500); // Wait for 250ms before deciding if it's a single or double click
+            }
+          } else {
+            this.editCal ? this.handleDateClicked(info) : null;
+          }
+          
         },
         headerToolbar: $q.screen.xs
           ? {
@@ -159,6 +190,7 @@ export default {
       updated_events: ref([]),
       editEvents: ref(false),
       event_id: ref(),
+      clickTimeout: ref(null),
     }
   },
 
