@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
-from .models import User, Address, CityState, Phone, AccessLevel, UserPrivileges, Occupation, User_Info, Email, FormOptions, PasswordReset, AccountRequest
+from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
 from django.middleware import csrf
-from .forms import AccountRequestForm, Login_Form, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, EmailForm
+from .forms import AccountRequestForm, Login_Form, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, PermissionForm, AccessLevelForm
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.forms.models import model_to_dict
 import random, secrets, re, traceback, sys
@@ -16,7 +16,8 @@ from django.conf import settings
 from datetime import timedelta
 from django.core import serializers
 from django.contrib.auth.hashers import make_password
-from .scripts import set_form_fields, generate_password
+from .scripts import set_form_fields, generate_password, get_settings_columns
+from django.apps import apps
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -64,6 +65,27 @@ handler.setFormatter(formatter)
 
 # Add the handler to the logger
 logger.addHandler(handler)
+
+TEMP_ACCOUNT_REQUEST_FORM = {
+  'Account Request': {
+    'fields': [
+      {'field_name': 'first_name', 'label': 'First Name', 'type': 'text', 'value': '', 'required': True, 'model_edit_field': 'first_name'},
+      {'field_name': 'last_name', 'label': 'Last Name', 'type': 'text', 'value': '', 'required': True, 'model_edit_field': 'last_name'},
+      {'field_name': 'email', 'label': 'E-Mail', 'type': 'email', 'value': '', 'required': True, 'model_edit_field': 'email'},
+      {'field_name': 'phone_number', 'label': 'Phone Number', 'type': 'phone', 'value': '', 'required': False, 'model_edit_field': 'phone_number'},
+      {'field_name': 'phone_type', 'label': 'Phone Type', 'type': 'select', 'value': '', 'required': False, 'model_edit_field': 'phone_type'}
+    ], 
+    'options': [
+      {'field': 'phone_type', 'option': 'Mobile', 'label': 'Mobile'},
+      {'field': 'phone_type', 'option': 'Home', 'label': 'Home'},
+      {'field': 'phone_type', 'option': 'Office', 'label': 'Office'},
+      {'field': 'phone_type', 'option': 'Other', 'label': 'Other'}
+    ], 
+    'model': {'app': 'login', 'model': 'AccountRequest'},
+    'function': 'account_request', 
+    'id': None
+  }
+}
 
 FORM_FIELD_LABELS = {
     "first_name": "First Name",
@@ -167,8 +189,8 @@ class ProfileFields():
     address_fields = ['user_address__' + f.name for f in Address._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
     citystate_fields = ['user_city_state__' + f.name for f in CityState._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
     phone_fields = ['user_phone__' + f.name for f in Phone._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    level_fields = ['user_level__' + f.name for f in AccessLevel._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
-    privileges_fields = ['user_privileges__' + f.name for f in UserPrivileges._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    level_fields = ['access_levels__' + f.name for f in AccessLevel._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
+    privileges_fields = ['user_privileges__' + f.name for f in Permission._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
     occupation_fields = ['user_occupation__' + f.name for f in Occupation._meta.get_fields() if f.name not in ['user', 'created_at', 'updated_at']]
 
 user_info_fields = [
@@ -409,6 +431,40 @@ def create_user(request):
   print("something went wrong")
   return JsonResponse({'message':'Something went wrong'}, status=500)
 
+def create_user_new(content):
+  try:
+    # data = request.POST.copy()
+    data = content
+    # data = data[0]['Basic Info']
+    # data = list(data[0].values())[0]
+    print(data)
+    data['middle_name'] = data.get('middle_name', '')
+    if not User.objects.filter(email__icontains=data['email']):
+      phone_number = data['phone_number']
+      if isinstance(phone_number, str):
+        phone_number = re.sub('\D', '', phone_number)
+      user, created = User.objects.update_or_create(
+        username=data['email'],
+        initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
+        defaults={
+          'first_name': data['first_name'],
+          'middle_name': data['middle_name'],
+          'last_name': data['last_name'],
+          'email': data['email'],
+          'phone_number': phone_number,
+          'phone_type': data['phone_type'],
+          # 'nickname': data['nickname'],
+        }
+      )
+      if created:
+        generate_password(user)
+
+      return JsonResponse({'message':'New User Successfully Added'}, status=200)
+    print("Email already exists")
+    return JsonResponse({'message':'Email already exists'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+
 def verify_new_user(email):
   print(email)
   user = User.objects.filter(email__icontains=email)
@@ -563,14 +619,12 @@ def account_request(request):
       return JsonResponse({'message':'Request already made for that e-mail address.'}, status=500)
       
     else:
-      request_form = AccountRequestForm()
-      form = set_form_fields(request_form)
+      # request_form = AccountRequestForm()
+      # form = set_form_fields(request_form)
       context = {
-        'forms': {
-          'User Info': form, 
-        },
-        'options': get_form_options(),
+        'forms': TEMP_ACCOUNT_REQUEST_FORM
       }
+
       # return render(request, 'multiForm.html', context)
       return JsonResponse(context)
   except Exception as e:
@@ -627,7 +681,7 @@ def set_initials(data):
 def get_user_list(request):
     # print(request.META.get('HTTP_AUTHORIZATION'))
     # print(request.session)
-    users = User.objects.select_related('user_level').values('id', 'first_name', 'last_name', 'initials', 'email', 'user_level__name')
+    users = User.objects.select_related('access_levels').values('id', 'first_name', 'last_name', 'initials', 'email', 'access_levels__access')
     # print(users)
     user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
     user_data = json.dumps(user_dict)   
@@ -641,7 +695,7 @@ def get_user_list(request):
 #     def get(self, request):
 #         print(request.META.get('HTTP_AUTHORIZATION'))
 #         print(request.session)
-#         users = User.objects.select_related('user_level').values('id', 'first_name', 'last_name', 'initials', 'email', 'user_level__name')
+#         users = User.objects.select_related('access_levels').values('id', 'first_name', 'last_name', 'initials', 'email', 'access_levels__access')
 #         print(users)
 #         user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
 #         user_data = json.dumps(user_dict)   
@@ -830,6 +884,11 @@ def update_user(request):
 def get_form_options():
   form_options = FormOptions.objects.filter(Q(option_model='phone') | Q(option_model='occupation'))
   options = [{'field': option.option_field, 'option': option.option, 'label': option.option_label} for option in form_options]
+  return options
+
+def get_access_options():
+  options = Permission.objects.all()
+  options = [{'field': 'permissions', 'option': option.id, 'label': option.permission} for option in options]
   return options
 
 def get_user_address(user):
@@ -1109,3 +1168,78 @@ def update_user_profile(request):
   else:
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
+def create_update_settings(settings):
+  for setting in settings.values():
+    if 'data' in setting:
+      if 'model' in setting:
+        # print(setting['model'])
+        Model = apps.get_model('login', setting['model'])  # Get the model dynamically          
+        data = setting['data']
+        # print(data)
+        for item in data:
+          # print(item['id'])
+          item, created = Model.objects.update_or_create(
+            id=item.get('id'),
+            defaults={key: value for key, value in item.items() if key in [f.name for f in Model._meta.get_fields()]}
+          )
+  return 
+
+@csrf_exempt
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def master_settings(request):
+  try:
+    if request.method == 'POST':
+      settings = json.loads(request.body)
+      create_update_settings(settings)
+      return JsonResponse({'message': 'Settings Updated!'}, status=200)
+    else:
+      permissions = Permission.objects.all().values('id', 'permission', 'description')
+      permission_dict = [permission for permission in permissions] # Convert QuerySet into List of Dictionaries
+      print(permissions)
+      accessLevels = AccessLevel.objects.all().values()
+      access_dict = [access for access in accessLevels] # Convert QuerySet into List of Dictionaries
+      context = {
+        'Edit Permissions': {
+          'columns': get_settings_columns(permissions[0]),
+          'data': permission_dict,
+          'model': 'Permission'
+        },
+        'Edit Access Levels': {
+          'columns': get_settings_columns(accessLevels[0]),
+          'data': access_dict,
+          'model': 'AccessLevel',
+          'options': get_access_options(),
+        },
+      }
+      # Return the data as JSON
+      return JsonResponse(context)
+  except Exception as e:
+    return trace_error(e, True)
+  
+# def get_settings_columns(data):
+#   # print(data)
+#   headers = []
+#   for key, value in data.items():
+#     if 'id' not in key:
+#       transformed_key = key.replace('_', ' ').title()
+#       type = "text"
+#       if 'time' in key:
+#         type = "time"
+#       if 'color' in key:
+#         type = "color"
+#       if 'description' in key:
+#         type = "textarea"
+#       if 'id' in key or 'name' in key:
+#         type = "fixed"
+#       headers.append({
+#         "name": key,
+#         "label": transformed_key,
+#         "field": key,
+#         "sortable": True,
+#         "align": 'left',
+#         "type": type
+#       })
+#   # print(headers)
+#   return headers

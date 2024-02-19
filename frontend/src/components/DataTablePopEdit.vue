@@ -25,6 +25,16 @@
                 </div>
               </q-popup-edit>
             </div>
+            <div v-else-if="col.type == 'textarea'">
+              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
+              <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
+                <q-input type="textarea" v-model="scope.value" dense autofocus/>
+                <div class="text-center">
+                  <q-btn v-close-popup label="OK" color="grey-8" size="sm" flat @click="scope.set"/>
+                  <q-btn v-close-popup label="Cancel" color="deep-orange-13" size="sm" flat/>
+                </div>
+              </q-popup-edit>
+            </div>
             <div v-else-if="col.type == 'time'">
               <q-btn dense flat color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
               <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
@@ -53,6 +63,20 @@
           </q-td>
         </q-tr>
       </template>
+      <template v-slot:no-data="{ icon, message, filter }">
+        <div class="full-width row flex-center text-accent q-gutter-sm">
+          <q-icon size="2em" name="sentiment_dissatisfied" />
+          <span>
+            Well this is sad... {{ message }}
+          </span>
+          <q-icon size="2em" :name="filter ? 'filter_b_and_w' : icon" />
+        </div>
+      </template>
+      <template v-if="add_item" v-slot:bottom>
+        <q-tr class="">
+          <q-btn icon="add" round color="accent" @click="addItem"></q-btn>
+        </q-tr>
+      </template>
     </q-table>
   </div>
 </template>
@@ -66,7 +90,9 @@ export default {
   props: [
     "columns",
     "rowData",
+    "model",
     "separator",
+    "add_item",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -78,10 +104,12 @@ export default {
       info: ref(false),
       userData: ref([]),
       pageTitle: ref(''),   
+      newItem: ref({}),
     }
   },
 
   watch: {
+    
   },
 
   computed: {
@@ -91,6 +119,11 @@ export default {
   methods: {
     editBtn(data) {
       this.parentFunc01(data)
+    },
+
+    addItem() {
+      this.$emit('add_item', this.model)
+      // this.newItem = {};
     },
 
     getBrightness(color) {

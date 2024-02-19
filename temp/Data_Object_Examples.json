@@ -1,0 +1,340 @@
+[
+{
+"forms": {
+  "<FormName>":  { 
+    "fields":  { 
+      "shift":  { "label": "Shift", "type": "select", "value": null, "required": true },
+      "shift_date":  { "label": "Shift Date", "type": "date", "value": null, "required": true },
+      "shift_type":  { "label": "Shift Type", "type": "select", "value": null, "required": true },
+      "user":  { "label": "User", "type": "select", "value": null, "required": true }
+    },  
+    "options":  [ 
+      {  "field": "shift", "label": "Day", "option": 1 },
+      { "field": "shift", "option": 2, "label": "First Swing" },
+      { "field": "shift", "option": 3, "label": "Second Swing" },
+      { "field": "shift", "option": 4, "label": "Overnight" },
+      { "field": "shift_type", "option": 1, "label": "Regular" }
+    ],
+    "model": {"<AppName>" : "<ModelName>"}
+  }
+}},
+
+{
+  "tables": {
+    "<TableName>":  { 
+      "columns":  [
+        {"name": "shift_name", "label": "Shift Name", "type": "fixed", "value": null, "align": "left", "field": "shift_name", "sortable": true },
+        {"name": "shift_label", "label": "Shift Label", "type": "text", "value": null, "align": "left", "field": "shift_label", "sortable": true },
+        {"name": "start_time", "label": "Start TIme", "type": "time", "value": null, "align": "left", "field": "start_time", "sortable": true },
+        {"name": "end_time", "label": "End Time", "type": "time", "value": null, "align": "left", "field": "end_time", "sortable": true }
+      ],  
+      "data": [  
+        {"id": 1, "start_time": "07:00:00", "end_time": "18:00:00", "shift_label": "Day", "shift_name": "day"},
+        {"id": 1, "start_time": "07:00:00", "end_time": "18:00:00", "shift_label": "Day", "shift_name": "day"},
+        ...
+      ], 
+      "options":  [ 
+              ],
+      "model": {"<AppName>" : "<ModelName>"}
+    }
+  }},
+
+  {
+    "Form": {
+      "app": "<AppName>",
+      "model": "<ModelName>",
+      "fields": [ "list of fields in Model > User selectes multiple to use as inputs. Fields needs to have user set which fields to use, field labels, input type, and if required" ],
+      "options": [ {"field" : "name of field in current model", "option": "ID of ForeiegnKey item used in 'fields'", "label" : "field used for label of item in Model of Foreign Key" }} ],
+      "custom_options": [ "Additional comma separated list of options to be used in the form" ]      
+    }
+  },
+
+  // Could use a lookup to get a label for Form items if necessary
+  {
+    "ItemLabel": {
+      "<Model Item Name>": "<Item Label Name>",
+      ...
+    }
+  }
+  
+]
+
+{"user": 4, "shift": 3, "shift_type": 2, "shift_date": ["Feb-20-2024", "Feb-21-2024", "Feb-22-2024"], "model": {"VetCalendar": "Shifts"}}
+
+
+"BuildForm":  { 
+    "fields":  { 
+      "form_name": "Build Form",
+      "module":  "VetCalendar",
+      "table_name":  "FormBuilder",
+      "fields":  [
+        { "field": "form_name", "label": "Form Name", "type": "text", "required": true },
+        { "field": "module", "label": "Module", "type": "select", "required": true },
+        { "field": "table_name", "label": "Table", "type": "select", "required": true },
+        { "field": "fields", "label": "Fields", "type": "multi-select", "required": true },
+        { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": true },
+        { "field": "custom_options", "label": "Custom Options", "type": "multi-item-text", "required": true },
+      ],
+      "field_options":  [
+        
+      ],
+      "custom_options":  [
+        { "field": "module", "option": "login", "label": "login"},
+        { "field": "module", "option": "VetCalendar", "label": "VetCalendar"},
+        { "field": "table", "option": "ShiftName", "label": "ShiftName"},
+        { "field": "table", "option": "ShiftType", "label": "ShiftType"},
+        { "field": "table", "option": "UserInitials", "label": "UserInitials"},
+        { "field": "table", "option": "Shifts", "label": "Shifts"},
+
+        { "field": "table", "option": "User", "label": "User"
+    ],
+    },  
+    "model": {"VetCalendar" : "FormBuilder"}
+  }
+
+
+Table Selected =>
+  Fetch fields for table => display Fields selection box with list of fetched fields
+    Fields selected => 
+      if field is foreign key, fetch field names from foreign table and display new selection options for label and value ot be used for form selection options
+      if field is not foreign key, display input type selection box with options for input type
+        if "select" input type is selected, display input boxes for label and value to be used for form selection options
+      
+
+  [{'field': 'shift', 'option': 1, 'label': 'Day'}
+  , {'field': 'shift', 'option': 2, 'label': 'First Swing'}
+  , {'field': 'shift', 'option': 3, 'label': 'Second Swing'}
+  , {'field': 'shift', 'option': 4, 'label': 'Overnight'}
+  , {'field': 'shift_type', 'option': 1, 'label': 'Regular'}
+  , {'field': 'shift_type', 'option': 2, 'label': 'Extra'}
+  , {'field': 'shift_type', 'option': 3, 'label': 'Relief'}
+  , {'field': 'shift_type', 'option': 4, 'label': 'Holiday'}
+  , {'field': 'shift_type', 'option': 5, 'label': 'Vacation'}
+  , {'field': 'shift_type', 'option': 6, 'label': 'Switch'}
+  , {'field': 'shift_type', 'option': 7, 'label': 'CE'}
+  , {'field': 'user', 'option': 1, 'label': 'Meyer (JM)'}
+  , {'field': 'user', 'option': 2, 'label': 'Bear (SB)'}
+  , {'field': 'user', 'option': 3, 'label': 'Batson (BB)'}
+  , {'field': 'user', 'option': 4, 'label': 'Ackley (MA)'}
+]
+
+{'form_name': {'field': 'form_name', 'label': 'Form Name', 'type': 'text', 'required': True},
+ 'module': {'field': 'module', 'label': 'Module', 'type': 'select', 'required': True},
+ 'table_name': {'field': 'table_name', 'label': 'Table', 'type': 'select', 'required': True},
+ 'fields': {'field': 'fields', 'label': 'Fields', 'type': 'multi-select', 'required': True},
+ 'field_options': {'field': 'field_options', 'label': 'Field Options', 'type': 'multi-select', 'required': False},
+ 'custom_options': {'field': 'custom_options', 'label': 'Custom Options', 'type': 'multi-select', 'required': False}}      
+
+ [{'model': 'ShiftName', 'app': 'VetCalendar'},
+  {'model': 'ShiftType', 'app': 'VetCalendar'},
+  {'model': 'UserInitials', 'app': 'VetCalendar'},
+  {'model': 'Shifts', 'app': 'VetCalendar'},
+  {'model': 'Calendar', 'app': 'VetCalendar'},
+  {'model': 'Vacation', 'app': 'VetCalendar'},
+  {'model': 'FormBuilder', 'app': 'VetCalendar'},
+  {'model': 'TableBuilder', 'app': 'VetCalendar'},
+  {'model': 'User', 'app': 'login'},
+  {'model': 'PasswordReset', 'app': 'login'},
+  {'model': 'Address', 'app': 'login'},
+  {'model': 'CityState', 'app': 'login'},
+  {'model': 'Phone', 'app': 'login'},
+  {'model': 'Permission', 'app': 'login'},
+  {'model': 'AccessLevel', 'app': 'login'},
+  {'model': 'Occupation', 'app': 'login'},
+  {'model': 'FormOptions', 'app': 'login'},
+  {'model': 'AccountRequest', 'app': 'login'}]
+
+  [{'field': 'table_name', 'option': 'ShiftName', 'label': 'ShiftName'},
+   {'field': 'table_name', 'option': 'ShiftType', 'label': 'ShiftType'},
+   {'field': 'table_name', 'option': 'UserInitials', 'label': 'UserInitials'},
+   {'field': 'table_name', 'option': 'Shifts', 'label': 'Shifts'},
+   {'field': 'table_name', 'option': 'Calendar', 'label': 'Calendar'},
+   {'field': 'table_name', 'option': 'Vacation', 'label': 'Vacation'},
+   {'field': 'table_name', 'option': 'FormBuilder', 'label': 'FormBuilder'},
+   {'field': 'table_name', 'option': 'TableBuilder', 'label': 'TableBuilder'},
+   {'field': 'table_name', 'option': 'User', 'label': 'User'},
+   {'field': 'table_name', 'option': 'PasswordReset', 'label': 'PasswordReset'},
+   {'field': 'table_name', 'option': 'Address', 'label': 'Address'},
+   {'field': 'table_name', 'option': 'CityState', 'label': 'CityState'},
+   {'field': 'table_name', 'option': 'Phone', 'label': 'Phone'},
+   {'field': 'table_name', 'option': 'Permission', 'label': 'Permission'},
+   {'field': 'table_name', 'option': 'AccessLevel', 'label': 'AccessLevel'},
+   {'field': 'table_name', 'option': 'Occupation', 'label': 'Occupation'},
+   {'field': 'table_name', 'option': 'FormOptions', 'label': 'FormOptions'},
+   {'field': 'table_name', 'option': 'AccountRequest', 'label': 'AccountRequest'}]
+
+   [{'field': 'id'},
+    {'field': 'access'},
+    {'field': 'permissions', 'related_model': 'Permission', 
+      'related_fields': [
+        'access_levels', 'id', 'permission', 'description']},
+    {'field': 'users', 'related_model': 'User', 
+      'related_fields': [
+        'logentry', 'user_shifts', 'user_vacations', 'passwordreset', 'address', 'citystate', 'user_phone', 'access_levels', 'occupation', 'id', 'password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active', 'date_joined', 'middle_name', 'initials', 'nickname', 'phone_number', 'phone_type', 'created_at', 'updated_at', 'groups', 'user_permissions']}]
+
+[{'field': 'id'},
+ {'field': 'access'},
+ {'field': 'permissions', 'related_model': 'Permission', 'related_fields': 
+  ['permission', 'description']},
+ {'field': 'users', 'related_model': 'User', 'related_fields': 
+  ['password', 'last_login', 'is_superuser', 'username', 'first_name', 'last_name', 'email', 'is_staff', 'is_active', 'date_joined', 'middle_name', 'initials', 'nickname', 'phone_number', 'phone_type', 'created_at', 'updated_at', 'groups', 'user_permissions']}]
+
+
+
+{
+  "Add Shift": {
+    "fields": {
+      "user": {"label": "User", "type": "select", "value": null, "required": true},
+      "shift": {"label": "Shift", "type": "select", "value": null, "required": true},
+      "shift_type": {"label": "Shift Type", "type": "select", "value": null, "required": true},
+      "shift_date": {"label": "Shift Date", "type": "date", "value": null, "required": true}
+    },
+    "options": [
+      {"field": "shift", "related_model": "VetCalendar.ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
+      {"field": "shift_type", "related_model": "VetCalendar.ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
+      {"field": "user", "related_model": "login.User", "option_label": "last_name", "option_value": "id", "type": "select"}
+    ],
+    "custom_options": [{}],
+    "model": {"VetCalendar" : "Shifts"},
+    "id": "1"
+  }
+}
+
+Options {
+  'shift': {
+    'field': 'shift',
+    'related_model': 'ShiftName',
+    'option_label': 'shift_label',
+    'option_value': 'id',
+    'type': 'select'
+  }, 
+ 'shift_type': {
+    'field': 'shift_type',
+    'related_model': 'ShiftType',
+    'option_label': 'type_label',
+    'option_value': 'id',
+    'type': 'select'
+  }, 
+ 'user': {
+  'field': 'user',
+  'related_model': 'User',
+  'option_label': 'last_name',
+  'option_value': 'id',
+  'type': 'select'
+  }}
+
+
+
+{
+  'id': 1, 
+  'form_name': 'Add Shift', 
+  'module': 'VetCalendar', 
+  'table': 'Shifts', 
+  'fields': {
+    'user': {'label': 'User', 'type': 'select', 'value': 'None', 'required': True, "model_edit_field": "user_id"},
+    'shift': {'label': 'Shift', 'type': 'select', 'value': 'None', 'required': True, "model_edit_field": "shift_name_id"},
+    'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': 'None', 'required': True, "model_edit_field": "shift_type_id"},
+    'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': 'None', 'required': True,"model_edit_field": "shift_start"}
+  },
+  'field_options': {
+    'shift': {'field': 'shift', 'related_model': 'ShiftName', 'option_label': 'shift_label', 'option_value': 'id', 'type': 'select'},
+    'shift_type': {'field': 'shift_type', 'related_model': 'ShiftType', 'option_label': 'type_label', 'option_value': 'id', 'type': 'select'},
+    'user': {'field': 'user', 'related_model': 'User', 'option_label': 'last_name', 'option_value': 'id', 'type': 'select'}
+  },
+  'custom_options': {},
+  'created_at': datetime.datetime(2024, 2, 16, 3, 29, 17, 525664, tzinfo=datetime.timezone.utc), 'updated_at': datetime.datetime(2024, 2, 16, 3, 29, 17, 526690, tzinfo=datetime.timezone.utc)
+}
+
+
+{
+  'forms': {
+    '': {
+      'user': {'label': 'User', 'type': 'select', 'value': None, 'required': True},
+      'shift': {'label': 'Shift', 'type': 'select', 'value': None, 'required': True},
+      'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': None, 'required': True},
+      'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': None, 'required': True}
+      }
+    },
+  'options': [
+    {'field': 'shift', 'option': 1, 'label': 'Day'},
+    {'field': 'shift', 'option': 2, 'label': 'First Swing'},
+    {'field': 'shift', 'option': 3, 'label': 'Second Swing'},
+    {'field': 'shift', 'option': 4, 'label': 'Overnight'},
+    {'field': 'shift_type', 'option': 1, 'label': 'Regular'},
+    {'field': 'shift_type', 'option': 2, 'label': 'Extra'},
+    {'field': 'shift_type', 'option': 3, 'label': 'Relief'},
+    {'field': 'shift_type', 'option': 4, 'label': 'Holiday'},
+    {'field': 'shift_type', 'option': 5, 'label': 'Vacation'},
+    {'field': 'shift_type', 'option': 6, 'label': 'Switch'},
+    {'field': 'shift_type', 'option': 7, 'label': 'CE'},
+    {'field': 'user', 'option': 1, 'label': 'Meyer (JM)'},
+    {'field': 'user', 'option': 2, 'label': 'Bear (SB)'},
+    {'field': 'user', 'option': 3, 'label': 'Batson (BB)'},
+    {'field': 'user', 'option': 4, 'label': 'Ackley (MA)'}]}
+
+    [{'field': 'shift', 'option': 1, 'label': 'Day'},
+     {'field': 'shift', 'option': 2, 'label': 'First Swing'},
+     {'field': 'shift', 'option': 3, 'label': 'Second Swing'},
+     {'field': 'shift', 'option': 4, 'label': 'Overnight'},
+     {'field': 'shift_type', 'option': 1, 'label': 'Regular'},
+     {'field': 'shift_type', 'option': 2, 'label': 'Extra'},
+     {'field': 'shift_type', 'option': 3, 'label': 'Relief'},
+     {'field': 'shift_type', 'option': 4, 'label': 'Holiday'},
+     {'field': 'shift_type', 'option': 5, 'label': 'Vacation'},
+     {'field': 'shift_type', 'option': 6, 'label': 'Switch'},
+     {'field': 'shift_type', 'option': 7, 'label': 'CE'},
+     {'field': 'user', 'option': 1, 'label': 'Meyer'},
+     {'field': 'user', 'option': 2, 'label': 'Bear'},
+     {'field': 'user', 'option': 3, 'label': 'Batson'},
+     {'field': 'user', 'option': 4, 'label': 'Ackley'}]
+
+     {
+      'Add Shift': {
+        'fields': {
+          'user': {'label': 'User', 'type': 'select', 'value': {'label': 'Meyer', 'value': 1}, 'required': True},
+          'shift': {'label': 'Shift', 'type': 'select', 'value': {'label': 'Day', 'value': 1}, 'required': True},
+          'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': {'label': 'Switch', 'value': 6}, 'required': True},
+          'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': ['Feb-15-2024', 'Feb-16-2024'], 'required': True}},
+      'model': {
+        'app': 'VetCalendar', 'model': 'Shifts'
+        }}}
+        
+
+        {'fields': {
+          'user':  1,
+          'shift': 1,
+          'shift_type': 6,
+          'shift_date': ['Feb-15-2024', 'Feb-16-2024']}},
+
+
+          
+{
+  "form_name": "Add User", 
+  "module": "login", 
+  "table": "User", 
+  "fields": {
+    "first_name": {"label": "First Name", "type": "text", "value": "", "required": "True", "model_edit_field": "first_name"},
+    "middle_name": {"label": "Middle Name", "type": "text", "value": "", "required": "False", "model_edit_field": "middle_name"},
+    "last_name": {"label": "Last Name", "type": "text", "value": "", "required": "True", "model_edit_field": "last_name"},
+    "email": {"label": "E-Mail", "type": "text", "value": "", "required": "", "model_edit_field": "email"},
+    "phone_number": {"label": "Phone Number", "type": "phone", "value": "", "required": "False","model_edit_field": "phone_number"},
+    "phone_type": {"label": "Phone Type", "type": "select", "value": "", "required": "False","model_edit_field": "phone_type"}
+  },
+  "field_options": {
+    "shift": {"field": "shift", "related_model": "ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
+    "shift_type": {"field": "shift_type", "related_model": "ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
+    "user": {"field": "user", "related_model": "User", "option_label": "last_name", "option_value": "id", "type": "select"}
+  },
+  "custom_options": [
+    {"field": "phone_type", "option": "Mobile", "label": "Mobile"},
+    {"field": "phone_type", "option": "Home", "label": "Home"},
+    {"field": "phone_type", "option": "Office", "label": "Office"},
+    {"field": "phone_type", "option": "Other", "label": "Other"}
+  ],
+  "save_function": "add_user"
+}
+
+
+{"first_name": {"label": "First Name", "type": "text", "value": "", "required": "True", "model_edit_field": "first_name"}, "last_name": {"label": "Last Name", "type": "text", "value": "", "required": "True", "model_edit_field": "last_name"}, "email": {"label": "E-Mail", "type": "text", "value": "", "required": "True", "model_edit_field": "email"}, "phone_number": {"label": "Phone Number", "type": "phone", "value": "", "required": "False", "model_edit_field": "phone_number"}, "phone_type": {"label": "Phone Type", "type": "select", "value": "", "required": "False", "model_edit_field": "phone_type"}}
+
+{"field_name": "first_name", "settings": {"label": "First Name", "type": "text", "value": "", "required": true, "model_edit_field": "first_name"}}]

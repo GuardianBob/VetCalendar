@@ -11,7 +11,7 @@
     </q-dialog>
     <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">  
       <div class="dialog-60">
-        <BaseForm getForm="/login/create_user" submitForm="/login/create_user" :closeButton="true" page_title="Add New User" @done="user_created"/>
+        <BaseForm :getForm="get_form_api" :submitForm="save_form_api" :closeButton="true" page_title="Add New User" @done="user_created" columns="one"/>
       </div>    
     </q-dialog>
   </q-page>
@@ -55,7 +55,8 @@ export default defineComponent({
       api_data: ref({}),
       createForm: ref({}),
       formOptions: ref({}),
-      getForm: ref({}),
+      get_form_api: ref('/get_formbuilder_form/add_user'),
+      save_form_api: ref('/get_formbuilder_form'),
       // columns: ref([
       //   // Replace with database columns
       //   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },

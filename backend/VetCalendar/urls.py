@@ -13,4 +13,12 @@ urlpatterns = [
     re_path(r'^edit_event(?:/(?P<id>\d+))?$', views.edit_event, name='edit_event'),
     path('schedule_settings', views.schedule_settings, name='schedule_settings'),
     path('get_keys', views.get_keys, name='get_keys'),
+    re_path(r'^get_model_form(?:/(?P<model>\w+))?$', views.get_model_form, name='get_model_form'),
+    re_path(r'^add_edit_form(?:/(?P<id>\d+))?$', views.form_builder, name='form_builder'),
+    path('get_table_fields', views.get_table_fields, name='get_table_fields'),
+    path('get_field_options', views.get_field_options, name='get_field_options'),
+    re_path(r'^get_formbuilder_form(?:/(?P<form>\w+))?(?:/(?P<id>\w+))?$', views.get_formbuilder_form, name='get_formbuilder_form'),
+    path('add_json_form', views.add_json_form, name='add_json_form'),
+    path('test_json_form', views.test_json_form, name='test_json_form'),
+    path('get_forms_test', views.get_forms_test, name='get_forms_test'),
 ]

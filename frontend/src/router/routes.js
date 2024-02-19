@@ -62,9 +62,10 @@ const routes = [
         beforeEnter: requireAuth,
       },
       {
-        path: "/schedule",
-        name: "schedule",
-        component: () => import("pages/Schedule.vue"),
+        path: "/manage_schedule",
+        name: "manage_schedule",
+        component: () => import("pages/ManageSchedule.vue"),
+        beforeEnter: requireAuth,
       },
       {
         path: "/schedule_import",
@@ -79,7 +80,16 @@ const routes = [
       {
         path: "/schedule_settings",
         name: "schedule settings",
-        component: () => import("pages/SchedSettings.vue"),
+        component: () => import("pages/SettingsPage.vue"),
+        beforeEnter: requireAuth,
+        props: { api_route: '/schedule_settings', page_title: 'Schedule Settings'},
+      },
+      {
+        path: "/master_settings",
+        name: "master settings",
+        component: () => import("pages/SettingsPage.vue"),
+        beforeEnter: requireAuth,
+        props: { api_route: '/login/master_settings', page_title: 'Admin Settings'},
       },
       // {
       //   path: "/create_user",
@@ -93,12 +103,17 @@ const routes = [
       },
       {
         path: "/blank",
-        component: () => import("pages/IndexPageOld.vue"),
+        component: () => import("pages/BuildTest.vue"),
         // beforeEnter: requireAuth,
       },
       {
         path: "/form",
         component: () => import("pages/FormsBlank.vue"),
+        // beforeEnter: requireAuth,
+      },
+      {
+        path: "/add_json_form",
+        component: () => import("pages/AddJSONForm.vue"),
         // beforeEnter: requireAuth,
       },
     ],

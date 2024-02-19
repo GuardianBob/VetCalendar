@@ -78,6 +78,15 @@ class APIService {
     }
   }
 
+  admin_settings(data) {
+    this.setTokenHeader();
+    if (!data) {
+      return api.get('/login/admin_settings');
+    } else {
+      return api.post('/login/admin_settings', data);
+    }
+  }
+
   get_login_csrf() {
     return api.get('/login/get_csrf');
   }
@@ -157,6 +166,11 @@ class APIService {
     }
   }
 
+  get_model_form(model) {
+    this.setTokenHeader();
+    return api.get(`/get_model_form/${model}`);
+  }
+
   test_calendar() {
     return api.post('/calendar/test');
   }
@@ -181,6 +195,37 @@ class APIService {
   //     headers: { "Content-Type": "multipart/form-data" },
   //   })
   // }
+
+  add_edit_form(data) {
+    this.setTokenHeader();
+    if (!data) {
+      return api.get('/add_edit_form');
+    }
+    return api.post('/add_edit_form', data)
+  }
+
+  get_table_fields(data) {
+    this.setTokenHeader();
+    return api.post('/get_table_fields', data)
+  }
+
+  get_field_options(data) {
+    this.setTokenHeader();
+    return api.post('/get_field_options', data)
+  }
+
+  get_formbuilder_form(form) {
+    return api.get(`/get_formbuilder_form/${form}`)
+  }
+
+  submit_formbuilder_form(data) {
+    return api.post(`/get_formbuilder_form/${data}`)
+  }
+
+  add_json_form(data) {
+    this.setTokenHeader();
+    return api.post('/add_json_form', data)
+  }
 
   get_user_list() {
     this.setTokenHeader();

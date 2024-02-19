@@ -1,5 +1,7 @@
-from .models import User, Address, CityState, Phone, Email, AccessLevel, UserPrivileges, Occupation, FormOptions, AccountRequest
+from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, AccountRequest
+from django.contrib.auth.forms import UserChangeForm
 from django import forms
+from VetCalendar.scripts import convert_label
 import datetime
 import bcrypt, re
 
@@ -88,6 +90,11 @@ FORM_FIELDS = {
     "new_password": "New Password",
     "verify_password": "Verify Password",
     "remember_me": "Remember Me",
+    "access_title": "Access Group Title",
+    "permissions": "Permissions",
+    "permission": "Permission",
+    "description": "Description",
+
 }
 
 # PHONE_TYPE = (
@@ -113,6 +120,12 @@ def field_options(field):
   # print(form_options.values())
   return form_options
 
+class CustomUserChangeForm(UserChangeForm):
+  password = forms.CharField(required=False)
+  initials = forms.CharField(required=False)
+
+  class Meta(UserChangeForm.Meta):
+    pass
 
 class Register_Form(forms.Form):
   first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
@@ -233,6 +246,7 @@ class CityStateForm(forms.ModelForm):
       self.fields = set_attributes(self.fields)
       self = identify_choice_fields(self)
 
+
 class PhoneForm(forms.ModelForm):
     phone_number = forms.CharField(max_length=50, widget=forms.TextInput, required=True)
     phone_type = forms.ChoiceField(required=False)
@@ -257,15 +271,47 @@ class PhoneForm(forms.ModelForm):
       cleaned_data['phone_number'] = re.sub(r'-', '', phone_number)  # remove all dashes
       return cleaned_data
 
-class EmailForm(forms.ModelForm):
-    email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=False)
-    class Meta:
-        model = Email
-        fields = ['email']
+# class EmailForm(forms.ModelForm):
+#     email = forms.EmailField(max_length=200, widget=forms.EmailInput, required=False)
+#     class Meta:
+#         model = Email
+#         fields = ['email']
     
+#     def __init__(self, *args, **kwargs):
+#       super(EmailForm, self).__init__(*args, **kwargs)
+#       self.fields = set_attributes(self.fields)
+
+# class AccessGroupForm(forms.ModelForm):
+#   access_title = forms.CharField(max_length=100, required=True)
+#   permissions = forms.ModelMultipleChoiceField(queryset=Permission.objects.all(), required=True, widget=forms.CheckboxSelectMultiple)
+#   class Meta:
+#       model = AccessLevel
+#       fields = ['access_title', 'permissions']
+
+#   def __init__(self, *args, **kwargs):
+#     super(AccessGroupForm, self).__init__(*args, **kwargs)
+#     self.fields = set_attributes(self.fields)
+#     self = identify_choice_fields(self)
+
+class PermissionForm(forms.ModelForm):
+    class Meta:
+        model = Permission
+        fields = ['permission', 'description']
+
     def __init__(self, *args, **kwargs):
-      super(EmailForm, self).__init__(*args, **kwargs)
+      super(PermissionForm, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
+      self = identify_choice_fields(self)
+
+class AccessLevelForm(forms.ModelForm):
+    class Meta:
+        model = AccessLevel
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+      super(AccessLevelForm, self).__init__(*args, **kwargs)
+      self.fields = set_attributes(self.fields)
+      self = identify_choice_fields(self)
 
 # Split into individual forms that display on the same page to look like different form sections.
 class UserAdminUpdateForm(forms.Form):
@@ -346,7 +392,7 @@ def set_attributes(fields):
     fields[name].widget.attrs.update({
       'class' : 'form-control input-field',
       'id' : name,
-      'placeholder': str(FORM_FIELDS[name]),
+      'placeholder': set_label(name),
     })
     if name == 'phone_number':
       fields[name].widget.attrs.update({
@@ -371,3 +417,9 @@ def identify_choice_fields(form):
 
 def clean_number(phone_number):
   return re.sub('\D', '', phone_number)
+
+def set_label(label):
+  try :
+    return str(FORM_FIELDS[label])
+  except:
+    return convert_label(label)

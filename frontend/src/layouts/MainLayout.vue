@@ -117,13 +117,19 @@ const linksList = [
         title: 'Manage Schedule',
         caption: '',
         icon: 'calendar_month',
-        link: '/schedule'
+        link: '/manage_schedule'
       },
       {
         title: 'Schedule Settings',
         caption: '',
         icon: 'settings',
         link: '/schedule_settings'
+      },
+      {
+        title: 'Admin Settings',
+        caption: '',
+        icon: 'construction',
+        link: '/master_settings'
       },
     ]
   },
@@ -133,16 +139,22 @@ const linksList = [
     icon: 'construction',
     sublinks : [
       {
-        title: 'BlankTest',
+        title: 'Blank Test',
         caption: '',
         icon: 'upload_file',
         link: '/blank'
       },
       {
-        title: 'FormTest',
+        title: 'Form Test',
         caption: '',
         icon: 'feed',
         link: '/form'
+      },
+      {
+        title: 'Add JSON Form',
+        caption: '',
+        icon: 'feed',
+        link: '/add_json_form'
       },
     ]
   },

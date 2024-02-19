@@ -63,6 +63,8 @@ FORM_FIELD_TYPES = {
   'shift_label': 'input',
   'start_time': 'time',
   'end_time': 'time',
+  'shift_color': 'color',
+  'permissions': 'multi-select',
 }
 
 FORM_FIELD_LABELS = {
@@ -74,9 +76,15 @@ FORM_FIELD_LABELS = {
 
 REQUIRED_FIELDS = [
   'shift',
+  'shift_name',
   'shift_type',
   'user',
   'shift_date',
+]
+
+REMOVE_FIELDS = [
+  'created_at',
+  'updated_at',
 ]
 
 def fix_timezone(dt):
@@ -360,18 +368,39 @@ def add_shifts(shifts):
   except Exception as e:
     print('An error occurred: %s' % e)  
     return trace_error(e, True)
+  
+SEARCH_LIST = [
+  'permission',
+]
 
-def set_form_fields(form):
+def find_locked(array1, array2 = SEARCH_LIST):
+  # Convert both arrays to sets
+  set1 = set(array1)
+  set2 = set(array2)
+  # Find the intersection of the two sets
+  common_elements = set1 & set2
+
+  # If there are at least two common elements, trigger the function
+  if len(common_elements) >= 2:
+    return True
+  return False
+
+def set_form_fields(form, model=''):
   new_form = {}
+  print("===============>    ", list(form.fields.keys()))
   field_names = list(form.fields.keys())
   for field in field_names:
-    
-    new_form[field] = {      
-      'label': FORM_FIELD_LABELS[field] if field in FORM_FIELD_LABELS else convert_label(field),
-      'type': FORM_FIELD_TYPES[field],
-      'value': None,
-      'required': field in REQUIRED_FIELDS,
-    }    
+    if not field in REMOVE_FIELDS:
+      new_form[field] = {      
+        'label': FORM_FIELD_LABELS[field] if field in FORM_FIELD_LABELS else convert_label(field),
+        'type': FORM_FIELD_TYPES[field] if field in FORM_FIELD_TYPES else 'input',
+        'value': None,
+        'required': field in REQUIRED_FIELDS if field in REQUIRED_FIELDS else False,
+      }    
+  if find_locked(field_names):
+    new_form['permission']['type'] = 'locked'
+  if model == 'ShiftType':
+    new_form['shift_type']['type'] = 'input'
   return new_form
 
 def convert_label(name):

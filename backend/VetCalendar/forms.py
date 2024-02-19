@@ -2,6 +2,7 @@ from django import forms
 import datetime
 import re
 from .models import ShiftName, ShiftType, Shifts, Calendar
+from .scripts import convert_label
 
 FORM_FIELDS = {
   'user': 'User',
@@ -24,7 +25,7 @@ class QuickAddForm(forms.Form):
       super(QuickAddForm, self).__init__(*args, **kwargs)
       self.fields = set_attributes(self.fields)
 
-class ShiftTimeForm(forms.ModelForm):
+class ShiftNameForm(forms.ModelForm):
   class Meta:
     model = ShiftName
     fields = ['shift_name', 'shift_label', 'start_time', 'end_time']
@@ -34,7 +35,21 @@ class ShiftTimeForm(forms.ModelForm):
     }
 
   def __init__(self, *args, **kwargs):
-    super(ShiftTimeForm, self).__init__(*args, **kwargs)
+    super(ShiftNameForm, self).__init__(*args, **kwargs)
+    self.fields = set_attributes(self.fields)
+
+class ShiftTypeForm(forms.ModelForm):
+  class Meta:
+    model = ShiftType
+    fields = ['shift_type', 'shift_color', 'type_label']
+    widgets = {
+      'shift_type': forms.TextInput(attrs={'type': 'text'}),
+      'shift_color': forms.TextInput(attrs={'type': 'color'}),
+      'shift_label': forms.TextInput(attrs={'type': 'text'}),
+    }
+
+  def __init__(self, *args, **kwargs):
+    super(ShiftTypeForm, self).__init__(*args, **kwargs)
     self.fields = set_attributes(self.fields)
 
 def set_attributes(fields):
@@ -44,7 +59,7 @@ def set_attributes(fields):
     fields[name].widget.attrs.update({
       'class' : 'form-control input-field',
       'id' : name,
-      'placeholder': str(FORM_FIELDS[name]),
+      'placeholder': set_label(name),
     })
     if name == 'phone_number':
       fields[name].widget.attrs.update({
@@ -53,3 +68,10 @@ def set_attributes(fields):
       })
     fields[name].label = ''
   return fields
+
+def set_label(label):
+  try :
+    return str(FORM_FIELDS[label])
+  except:
+    return convert_label(label)
+    

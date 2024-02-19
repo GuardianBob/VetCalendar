@@ -3,7 +3,7 @@
     <div class="row justify-center">
       <!-- <q-dialog v-model="show"> -->
         <!-- <Forms /> -->
-        <BaseForm getForm="/quick_add" submitForm="/quick_add" :isSingle="true" :closeButton="true" page_title="Quick-Schedule" @done="user_created"/>
+        <BuildForm :getForm="get_form_api" :submitForm="save_form_api" :closeButton="true" page_title="Build Form" @done="submitted" columns="one"/>
       <!-- </q-dialog> -->
     </div>
   </q-page>
@@ -13,7 +13,8 @@
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
 // import Forms from 'components/Forms.vue'
-import BaseForm from 'components/BaseForm.vue'
+import BuildForm from 'components/BuildForm.vue'
+import APIService from "../../services/api";
 
 export default defineComponent({
   name: "FormsPage",
@@ -21,7 +22,7 @@ export default defineComponent({
     // vue linter no use error bypass
 
     // Forms,
-    BaseForm,
+    BuildForm,
   },
   data() {
     return {
@@ -30,6 +31,8 @@ export default defineComponent({
   setup() {    
     return {
       show: ref(true),
+      get_form_api: ref("/add_edit_form"),
+      save_form_api: ref("/add_edit_form"),
     };
   },
   watch: {
@@ -39,14 +42,17 @@ export default defineComponent({
 
   },
   methods: {
-    
+    submitted(){
+    },
   },
 
   created() {
   },
   
   mounted() {
-    
+    APIService.get_formbuilder_form().then((response) => {
+      console.log(response);
+    });
   },
 
 })
