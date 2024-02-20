@@ -6,17 +6,16 @@
     <div class="col-12 text-center">
       <h1 class="text-h3 text-primary">{{ page_title }}</h1>
     </div>
-    <q-form>
+    <q-form >
       <!-- {{ formData.settings }} -->
-      <div v-for="form in formData" :key="form.multiDateSelect" class="row justify-center">
-        <div class="row justify-center">
+        <div v-for="form in formData" :key="form.title">
+          <div class="row justify-center">
           <!-- {{ form }} -->
           <div class="col-12 col-md-12 col-lg-12">
             <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ form.title }}</h4>
           </div>
           <!-- {{ form.fields }} -->
-          <div :class="cols">
-          <div v-for="(field, key) in form.fields" :key="key">
+          <div v-for="(field, key) in form.fields" :key="key" :class="cols">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
               <!-- {{ field }} -->
@@ -270,8 +269,7 @@
           </div>
           </div>
         </div>
-      </div>
-      <div class="row justify-around q-my-md">
+      <div class="row justify-center q-my-md">
         <q-btn @click="submit" color="primary">Save</q-btn>
         <q-btn v-show="delete_button" @click="confirm_delete" color="negative">Delete</q-btn>
       </div>
@@ -301,6 +299,7 @@ export default defineComponent({
     "page_title",
     "getForm",
     "submitForm",
+    "forms",
     "form_data",
     "form_options",
     "closeButton",
@@ -325,6 +324,7 @@ export default defineComponent({
       formData: ref(),
       loading: false,
       options: ref(),
+      fetch_data: ref(),
       filteredTables: ref(),
       fieldChoices: ref(),
       selectedFields: ref(),
@@ -682,7 +682,12 @@ export default defineComponent({
 
     async get_form() {
       console.log(this.getForm); // login/create_user
-      await api.post('/get_forms_test', {'build': true, 'forms':['user_basic_info', 'user_address'], 'id': 3}).then(async (results) => {
+      let body = {
+        "forms": this.forms,
+        "save": false,
+        "id": 9
+      }
+      await api.post(this.getForm, body).then(async (results) => {
         console.log(results.data);
         this.formData = results.data.forms;
 
