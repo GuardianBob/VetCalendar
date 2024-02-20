@@ -147,7 +147,7 @@ class FormBuilderNew(models.Model):
           'label': {'type': 'string'},
           'type': {
             'type': 'string',
-            'choices': ['text', 'select', 'date', 'phone', 'email', 'number', 'checkbox', 'time', 'textarea', 'multi-text', 'multi-select', 'hidden', 'password'],
+            'choices': ['text', 'select', 'date', 'phone', 'email', 'number', 'checkbox', 'time', 'textarea', 'multi-text', 'multi-select', 'hidden', 'password', 'color'],
             },
           'value': {'type': 'string', 'default': ''},
           'required': {'type': 'boolean', 'default': False},
@@ -171,7 +171,7 @@ class FormBuilderNew(models.Model):
           'option_value': {'type': 'string'},
           'type': {
             'type': 'string',
-            'choices': ['text', 'select', 'date', 'phone', 'email', 'number', 'checkbox', 'time', 'textarea', 'multi-text', 'multi-select', 'hidden', 'password'],
+            'choices': ['text', 'select', 'date', 'phone', 'email', 'number', 'checkbox', 'time', 'textarea', 'multi-text', 'multi-select', 'hidden', 'password', 'color'],
           },
         }
       # }

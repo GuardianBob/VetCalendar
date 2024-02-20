@@ -6,14 +6,34 @@ from django.apps import apps
 from importlib import import_module
 import logging
 import logging.handlers
+from django.db import models
+
+# Create a logger
+logger = logging.getLogger(__name__)
+
+# Set the log level
+logger.setLevel(logging.ERROR)
+
+# Create a rotating file handler
+handler = logging.handlers.RotatingFileHandler('error.log', maxBytes=20000, backupCount=5)
+
+# Create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# Add the handler to the logger
+logger.addHandler(handler)
 
 def trace_error(e, isForm=False):
   exc_type, exc_value, exc_traceback = sys.exc_info()
   filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+  error_message = f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}"
+  logger.error(error_message)
+  logger.error("Error: ", e)
   print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
   print("Error: ", e)
   if isForm:
-    return JsonResponse({'message':'Form is invalid'}, status=500)
+      return JsonResponse({'message':'Form is invalid'}, status=500)
   return JsonResponse({'message':'Something went wrong'}, status=500)
 
 def convert_label(name):
@@ -34,11 +54,11 @@ def strip_form_content(content):
     # print(field)
     # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
     if isinstance(field['value'], dict):
-      fields[field['field_name']] = field['value']['value']
+      fields[field['model_edit_field']] = field['value']['value']
     # elif isinstance(field['value'], list):
     #   fields[key] = value['value']
     else:
-      fields[field['field_name']] = field['value']
+      fields[field['model_edit_field']] = field['value']
     # print(fields)
   return fields
 
@@ -63,17 +83,53 @@ def pull_model_options(field_options):
 
 def get_model_instance(app_name, model_name, id):
   try:
+    print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} \n id: {id}')
     Model = apps.get_model(app_name, model_name)
     instance = Model.objects.values().get(id=id)
     return instance
   except Model.DoesNotExist:
     return None
   
+def is_foreign_key(model, field_name):
+  field_object = model._meta.get_field(field_name)
+  return isinstance(field_object, models.ForeignKey)
+
+def save_model(model, values, id=None):
+  print(f'save_model: \n{model} \n{values} \n{id}')
+  # try:
+  Model = apps.get_model(model['app'], model['model'])
+  for key, value in values.items():
+    if is_foreign_key(Model, key):
+      print(f"{key} is a ForeignKey.")
+      value = get_model_instance(model['app'], key.capitalize(), id)
+      print("\n foreign key: \n", value)
+  if id != None:
+    print(' \n updating instance')
+    instance = Model.objects.get(id=id)
+    for key, value in values.items():
+      setattr(instance, key, value)
+    print(instance)
+    instance.save()
+  else:
+    instance = Model(**values)
+    instance.save()  
+  # except Exception as e:
+  #   return trace_error(e, True)  
+  
+def get_function(app_name, function_name):
+    module = import_module(f'{app_name}.views')
+    print(module)
+    function = getattr(module, function_name)
+    print(function)
+    return function
+  
 def fill_form(form, values):
   print("\n====LOADING====\n", form, "\n", 'values')
   for field in form['fields']:
     if field['type'] == 'date':
       field['value'] = values[field['model_edit_field']].strftime('%b-%d-%Y')
+    elif field['field_name'] == 'foreign_key':
+      field['value'] = values['id']
     else:
       field['value'] = values[field['model_edit_field']]
   print("\n =====END LOADING====\n")
@@ -86,6 +142,7 @@ def fill_form(form, values):
 def process_forms_test(content): 
   try:
     # content = list(content[0].values())[0]
+    print('\n \n', content)
     if content['save'] == True:
       return save_form(content['forms'])
     else:
@@ -100,12 +157,14 @@ def build_form(content):
     if content['forms'] != None:
       forms = []
       for form in content['forms']:
-        print(form)
+        # print(form)
         form = FormBuilderNew.objects.values().get(form_name=form)
         # print("FORM ====> \n", form)
         for value in form['fields']:
           if value['type'] == 'date':
             value['value'] = None if value['value'] == '' else value['value']
+          if value['type'] == 'multi-select':
+            value['value'] = [] if value['value'] == '' else value['value']
             # print(value)
         # print(form['app'], form['model'], form['save_function'])
         if "id" in content:
@@ -148,12 +207,21 @@ def build_form(content):
 def save_form(content):
   try:
     for form in content:
+      print('\n ========== Attempting to save ========== \n')
       print(form)
       print(form['function'])
-      function = globals()[form['function']]
+      print(form['model']['app'])
       form_values = strip_form_content(form)
       print(form_values)
-      # function(form_values)
+      if form['function'] != None:
+        save_function = get_function(form['model']['app'], form['function'])
+        save_function(form_values)
+      # function = globals()[form['function']]
+      else:  
+        if form['id'] != None or form['id'] != '':
+          save_model(form['model'], form_values , form['id'])
+        else:      
+          save_model(form['model'], form_values, None)
     return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)

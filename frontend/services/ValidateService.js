@@ -51,6 +51,13 @@ class ValidateService {
         }
       },
 
+      color: value => {
+        const hex3Pattern = /^#([A-Fa-f0-9]{3})$/i;
+        const hex6Pattern = /^#([A-Fa-f0-9]{6})$/i;
+        const rgbPattern = /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/i;
+        return !value || hex3Pattern.test(value) || hex6Pattern.test(value) || rgbPattern.test(value) || 'Invalid color option.';
+      },
+
       // Password Validators
       // Multiple options depending on what is required by client.
       // Minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character:

@@ -13,8 +13,8 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone, convert_label
 from login.scripts import get_settings_columns
 from login.views import create_user_new
-import datetime, json, traceback, sys, re, pytz, os
-from datetime import datetime, date, timedelta
+import json, traceback, sys, re, pytz, os
+from datetime import date, timedelta
 import dateutil.parser as parser
 # import numpy as np
 from django.utils import timezone
@@ -315,7 +315,7 @@ def quick_add(request):
         shift_start = convert_to_shift_datetime(date, shift_name.start_time)
         shift_end = convert_to_shift_datetime(date, shift_name.end_time)
         if shift_end < shift_start:
-          shift_end = shift_end + datetime.timedelta(hours=24)
+          shift_end = shift_end + timedelta(hours=24)
         print(f'start: {shift_start}, end: {shift_end}')
         existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
         if existing_shift:
@@ -559,7 +559,7 @@ def creat_update_shift(data):
   shift_start = convert_to_shift_datetime(data['shift_date'], shift_details.start_time)
   shift_end = convert_to_shift_datetime(data['shift_date'], shift_details.end_time)
   if shift_end < shift_start:
-    shift_end = shift_end + datetime.timedelta(hours=24)
+    shift_end = shift_end + timedelta(hours=24)
   # print(f'start: {shift_start}, end: {shift_end}')
   shift, created = Shifts.objects.update_or_create(
     id=data.get('id'),
@@ -972,21 +972,6 @@ def handle_forms(request):
   try:
     content = json.loads(request.body)
     print(content)
-
-    return JsonResponse({'message':'Testing...'}, status=200)
-    # else:
-    #   return JsonResponse({'message':'Request is invalid'}, status=500)
-  except Exception as e:
-    return trace_error(e, True)
-
-@api_view(['GET', 'POST'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
-@csrf_exempt
-def handle_forms(request):
-  try:
-    content = json.loads(request.body)
-    print(content)
     return process_forms_test(content)
     # else:
     #   return JsonResponse({'message':'Request is invalid'}, status=500)
@@ -1166,7 +1151,7 @@ def add_event(content, load=False):
       # Get the earliest and latest dates
       earliest_date, latest_date = min(dates), max(dates)
       if earliest_date == latest_date:
-        latest_date = earliest_date + datetime.timedelta(days=1)
+        latest_date = earliest_date + timedelta(days=1)
       # print('date filter ====>: ', earliest_date, latest_date)
       # Filter the shifts
       existing_shifts = Shifts.objects.filter(

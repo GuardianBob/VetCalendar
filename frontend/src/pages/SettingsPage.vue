@@ -15,7 +15,7 @@
     </div>
     <q-dialog v-model="new_item" transition-show="slide-down" transition-hide="slide-up">  
       <div class="dialog-60">
-        <BaseForm :getForm="get_form_api" :submitForm="save_form_api" :closeButton="true" page_title="Add New Item" @done="user_created" columns="one"/>
+        <component :is="dynamicComponent" :getForm="get_form_api" :submitForm="save_form_api" :forms="forms" :closeButton="true" page_title="Add New Item" @done="user_created" columns="one"/>
       </div>    
     </q-dialog>
   </q-page>
@@ -27,7 +27,8 @@ import { defineComponent, ref, onMounted } from 'vue'
 // import Forms from 'components/Forms.vue'
 import { Notify } from "quasar"
 import DataTablePopEdit from 'components/DataTablePopEdit.vue'
-import BaseForm from 'components/BaseForm.vue'
+import FormTest from 'components/FormTest.vue';
+import BaseForm from 'components/BaseForm.vue';
 import APIService from "../../services/api"
 import { api } from "boot/axios";
 
@@ -36,14 +37,22 @@ export default defineComponent({
   props: [
     'api_route',
     'page_title',
+    'forms_input',
+    'get_form_api',
+    'save_form_api',
   ],
   components: {
     // Forms,
     DataTablePopEdit,
-    BaseForm,
+    // BaseForm,
   },
   data() {
     return {
+      dynamicComponent: null,
+      components: {
+        FormTest,
+        BaseForm
+      }
     }
   },
   setup() {    
@@ -54,8 +63,7 @@ export default defineComponent({
       shift_columns: ref([]),
       type_columns: ref([]),
       settings: ref(),
-      get_form_api: ref(),
-      save_form_api: ref(),
+      forms: ref([]),
       new_item: ref(false),
     };
   },
@@ -90,8 +98,21 @@ export default defineComponent({
 
     addNewItem(model) {
       console.log(model)
-      this.get_form_api = `/get_model_form/${model}`
-      this.save_form_api = `/get_model_form`
+      console.log(this.forms_input)
+      let obj = [
+        { model: 'ShiftName', form: 'add_shift_info'}, 
+        { model: 'ShiftType', form: 'add_shift_type' },
+        ]
+      console.log(this.forms_input.find(item => item.model === model).form)
+      // if (model === 'ShiftName') {
+      //   this.forms = ['add_shift_info']
+      // } else if (model === 'ShiftType') {
+      //   this.forms = ['add_shift_type']
+      // }
+      this.forms = [this.forms_input.find(item => item.model === model).form]
+      console.log(this.get_form_api, this.forms)
+      // this.get_form_api = `/get_model_form/${model}`
+      // this.save_form_api = `/get_model_form`
       this.new_item = true
       // APIService.get_model_form(model).then((response) => {
       //   console.log(response.data)
@@ -129,6 +150,8 @@ export default defineComponent({
   },
   
   mounted() {
+    const componentName = process.env.VUE_APP_FORM_PAGE;
+    this.dynamicComponent = this.components[componentName];
     // this.get_settings()
   },
 

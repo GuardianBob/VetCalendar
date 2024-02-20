@@ -7,11 +7,37 @@
     </div>
     <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
-      <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" @done="user_updated" @close-dialog="view_user = false"/>
+      <div class="dialog-60">
+        <!-- <ProfileEdit :api_string="api_string" :user_id="user_id" :adminEdit="admin" :parentFunc01="edit_user" @done="user_updated" @close-dialog="view_user = false"/> -->
+        <component 
+          :is="dynamicComponent" 
+          :getForm="get_form_api" 
+          :submitForm="save_form_api"
+          delete_api="/login/delete_user"
+          :forms="forms" 
+          :item_id="user_id"
+          :closeButton="true" 
+          :delete_button="true"
+          :cancel_button="true"
+          :doubleVerify="true"
+          page_title="User Details" 
+          @done="user_updated" 
+          columns="two"
+        />
+      </div>
     </q-dialog>
     <q-dialog v-model="new_user" transition-show="slide-down" transition-hide="slide-up">  
       <div class="dialog-60">
-        <BaseForm :getForm="get_form_api" :submitForm="save_form_api" :closeButton="true" page_title="Add New User" @done="user_created" columns="one"/>
+        <component 
+        :is="dynamicComponent" 
+        :getForm="get_form_api" 
+        :submitForm="save_form_api" 
+        :forms="forms" 
+        :closeButton="true" 
+        page_title="Add New User" 
+        @done="user_created" 
+        columns="one"
+      />
       </div>    
     </q-dialog>
   </q-page>
@@ -26,6 +52,7 @@ import dummyData from "components/dummyData.json"
 import { useMainStore } from "stores/main-store.js"
 import { useFormFields } from "stores/form-fields.js"
 import ProfileEdit from "components/ProfileEdit.vue"
+import FormTest from 'src/components/FormTest.vue'
 import BaseForm from 'src/components/BaseForm.vue'
 // import { validators } from "app/services/ValidateService";
 const mainStore = useMainStore();
@@ -37,7 +64,7 @@ export default defineComponent({
   components: {
     DataTable,
     ProfileEdit,
-    BaseForm,
+    // FormTest,
   },
   setup() {
     return {
@@ -55,8 +82,9 @@ export default defineComponent({
       api_data: ref({}),
       createForm: ref({}),
       formOptions: ref({}),
-      get_form_api: ref('/get_formbuilder_form/add_user'),
-      save_form_api: ref('/get_formbuilder_form'),
+      forms: ref(['add_user']),
+      get_form_api: ref('/handle_forms'),
+      save_form_api: ref('/login/user_profile'),
       // columns: ref([
       //   // Replace with database columns
       //   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
@@ -75,6 +103,11 @@ export default defineComponent({
     return {
       // rules: ValidateService.validators,
       loading: false,
+      dynamicComponent: null,
+      components: {
+        FormTest,
+        BaseForm
+      }
     }
   },
 
@@ -86,6 +119,10 @@ export default defineComponent({
     async edit_user(userInfo) {
       console.log(userInfo.id)
       this.getForm = "/login/user_profile/" + userInfo.id
+      this.get_form_api = "/handle_forms"
+      this.save_form_api = "/login/user_profile"
+      this.forms = ["user_basic_info", "user_address", "user_city", "user_occupation"]
+      this.user_id = userInfo.id
       await this.get_user_profile(userInfo.id)
       this.userInfo = userInfo
       console.log(this.api_data)
@@ -100,6 +137,8 @@ export default defineComponent({
 
     add_user() {
       // this.userInfo = []
+      this.get_form_api = "/handle_forms"
+      this.save_form_api = "/handle_forms"
       this.new_user = true
     },
 
@@ -146,7 +185,9 @@ export default defineComponent({
       this.formOptions = res.data.options
     });
     // Update column headers with code from SchedSettings.vue
-    console.log(formStore.formFields.columns);
+    // console.log(formStore.formFields.columns);
+    const componentName = process.env.VUE_APP_FORM_PAGE;
+    this.dynamicComponent = this.components[componentName];
     // console.log(mainStore.getCookie('csrftoken'))
   },
 })

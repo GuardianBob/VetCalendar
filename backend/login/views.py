@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
+from backend.utils import trace_error, process_forms_test, strip_form_content
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -583,7 +584,8 @@ def get_csrf(request):
 @permission_classes([IsAuthenticated])
 def delete_user(request):
   print(request.body)
-  user = User.objects.get(id=request.body)
+  content = json.loads(request.body)
+  user = User.objects.get(id=content['id'])
   print(user.first_name + " " + user.last_name)
   user.delete()
   return JsonResponse({'message': 'User deleted'}, status=200)
@@ -594,39 +596,43 @@ def register(request):
   return HttpResponse("Hit registration function")
 
 @csrf_exempt
-def account_request(request):
+def request_access(request):
+  print("request access function")
   try:
-    if request.method == 'POST':
-      data = json.loads(request.body.decode("utf-8"))
-      data = list(data[0].values())[0]
-      print(data)
-      if not User.objects.filter(email__icontains=data['email']) and not AccountRequest.objects.filter(email__icontains=data['email']):
-        phone_number = data['phone_number']
-        if isinstance(phone_number, str):
-          phone_number = re.sub('\D', '', phone_number)
-        request, created = AccountRequest.objects.update_or_create(
-          defaults={
-            'first_name': data['first_name'],
-            'last_name': data['last_name'],
-            'email': data['email'],
-            'phone_number': phone_number,
-            'phone_type': data['phone_type'],
-          }
-        )
-        print("hit account request POST")
-        return JsonResponse({'message':'Request Sent'}, status=200)
-      print("Request already made for that e-mail address.")
-      return JsonResponse({'message':'Request already made for that e-mail address.'}, status=500)
-      
+    content = json.loads(request.body)
+    print(content)
+    if not 'save' in content or not content['save']:
+      content['forms'] = ['account_request']
+      return process_forms_test(content)
     else:
-      # request_form = AccountRequestForm()
-      # form = set_form_fields(request_form)
-      context = {
-        'forms': TEMP_ACCOUNT_REQUEST_FORM
-      }
+      return account_request(content['forms'][0])
+    # else:
+    #   return JsonResponse({'message':'Request is invalid'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
 
-      # return render(request, 'multiForm.html', context)
-      return JsonResponse(context)
+@csrf_exempt
+def account_request(content):
+  try:
+    form_values = strip_form_content(content)
+    print(form_values['email'])
+    if not User.objects.filter(email__icontains=form_values['email']) and not AccountRequest.objects.filter(email__icontains=form_values['email']):
+      phone_number = form_values['phone_number']
+      if isinstance(phone_number, str):
+        phone_number = re.sub('\D', '', phone_number)
+      request, created = AccountRequest.objects.update_or_create(
+        defaults={
+          'first_name': form_values['first_name'],
+          'last_name': form_values['last_name'],
+          'email': form_values['email'],
+          'phone_number': phone_number,
+          'phone_type': form_values['phone_type'],
+        }
+      )
+      #   print("hit account request POST")
+      return JsonResponse({'message':'Request Sent'}, status=200)
+    print("Request already made for that e-mail address.")
+    return JsonResponse({'message':'Request already made for that e-mail address.'}, status=500)
   except Exception as e:
     return trace_error(e, True)
 
@@ -988,7 +994,7 @@ def user_profile(request, id = 0):
     user_data = get_user_data(request, id, True)
     # print(type(user_data), user_data)
     return user_data
-  else:
+  else:    
     return update_user_profile(request)
   
 def create_user_model(data):
@@ -1087,15 +1093,23 @@ def update_user_profile(request):
   if request.method == 'POST':
     # resp = request.data  # or request.data if you're using Django REST Framework
     data = json.loads(request.body.decode("utf-8"))
-    print(data)
+    print(data['forms'])
+
     # print(resp['Basic Info'])
-    for item in data:
+    user = None
+    for item in data['forms']:
+      if item['model']['model'] == 'User':
+        user = User.objects.get(email=item['id'])
+    for item in data['forms']:
+      if item['model']['model'] == 'User':
+        user = User.objects.get(email=item['id'])
+      print(item)
       for key, value in item.items():
         # print(key)
         # # Get the user
         # user = User.objects.get(email=data['Basic Info']['email'])
+        user = User.objects.get(email=value['email'])
         if key == 'Basic Info':
-          user = User.objects.get(email=value['email'])
           result = update_user_model(user, value)
           if isinstance(result, str):  # If the result is an error message
             print("An error occurred:", result)
