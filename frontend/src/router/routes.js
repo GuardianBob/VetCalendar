@@ -108,7 +108,7 @@ const routes = [
       },
       {
         path: "/form",
-        component: () => import("pages/FormsBlank.vue"),
+        component: () => import("pages/BuildTest.vue"),
         // beforeEnter: requireAuth,
       },
       {

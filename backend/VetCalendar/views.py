@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db.models import ForeignKey, ManyToManyField, Q
+from backend.utils import trace_error, process_forms_test
 from django.http import JsonResponse
 from .serializers import CalendarSerializer
 from django.core import serializers
@@ -32,7 +33,6 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
-import datetime
 import logging.handlers
 
 # Create your views here.
@@ -152,14 +152,14 @@ JSON_FORM = {
 # ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
 TIMEZONE = pytz.timezone('America/Los_Angeles')
 
-def trace_error(e, isForm=False):
-  exc_type, exc_value, exc_traceback = sys.exc_info()
-  filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
-  print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
-  print("Error: ", e)
-  if isForm:
-    return JsonResponse({'message':'Form is invalid'}, status=500)
-  return JsonResponse({'message':'Something went wrong'}, status=500)
+# def trace_error(e, isForm=False):
+#   exc_type, exc_value, exc_traceback = sys.exc_info()
+#   filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+#   print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
+#   print("Error: ", e)
+#   if isForm:
+#     return JsonResponse({'message':'Form is invalid'}, status=500)
+#   return JsonResponse({'message':'Something went wrong'}, status=500)
 
 
 def get_shift_options():
@@ -968,90 +968,119 @@ def get_formbuilder_form(request, form=None, id=None):
 # @authentication_classes([JWTAuthentication])
 # @permission_classes([IsAuthenticated])
 @csrf_exempt
-def get_forms_test(request, form=None, id=None):
+def handle_forms(request):
   try:
     content = json.loads(request.body)
-    if request.method == 'POST':
-      # content = list(content[0].values())[0]
-      print(content['build'])
-      if not content['build'] == True:
-        # for key in content:
-        #   print(content[key])
-        #   print(content[key]['function'])
-        #   function = globals()[content[key]['function']]
-        #   form_values = strip_form_content(content[key])
-        #   function(form_values)
-        for form in content:
-          print(form)
-          print(form['function'])
-          function = globals()[form['function']]
-          form_values = strip_form_content(form)
-          # print(form_values)
-          # function(form_values)
-          # add_event(content[key])
-        return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
-      else:
-        # content = json.loads(request.body)
-        print('trying the build')
-        # if form != None:
-        if content['forms'] != None:
-          forms = []
-          for form in content['forms']:
-            print(form)
-            form = FormBuilderNew.objects.values().get(form_name=form)
-            # print("FORM ====> \n", form)
-            for value in form['fields']:
-              if value['type'] == 'date':
-                value['value'] = None if value['value'] == '' else value['value']
-                # print(value)
-            # print(form['app'], form['model'], form['save_function'])
-            if content["id"]:
-              values = get_model_instance(form['app'], form['model'], content["id"])
-              print(values)
-              function = globals()[form['save_function']]
-              form = function({'form': form, "values": values}, True)
-              print("\n Saved Test: ====> \n", form)
-            # Function to read form['field_options'] and pull model objects
-            print("Field Options: ====> ", form['field_options'])
-            options = pull_model_options(form['field_options'])
-            options.extend(form['custom_options'])
-            print("Updated Options: ====> ", options)
-            forms.append({'title': convert_label(form['form_name']),
-              "fields": form["fields"],
-              'options': options,
-              'model': { 'app': form['app'], 'model': form['model'] },
-              'function': form['save_function'],
-              'id': id if id else None,
-            })
-            # context = {
-            #   'forms': {
-            #     convert_label(form['form_name']): {
-            #       "fields": form["fields"],
-            #       'options': options,
-            #       'model': { 'app': form['app'], 'model': form['model'] },
-            #       'function': form['save_function'],
-            #       'id': id if id else None,
-            #     }
-            #   },
-            # }
-        # context = {
-        #   'forms': [
-        #     {'title': convert_label(form['form_name']),
-        #       "fields": form["fields"],
-        #       'options': options,
-        #       'model': { 'app': form['app'], 'model': form['model'] },
-        #       'function': form['save_function'],
-        #       'id': id if id else None,
-        #     },
-        #   ],
-        # }
-        context = { 'forms' : forms}
-        print(context)
-        return JsonResponse(context)
-    else:
-      return JsonResponse({'message':'Request is invalid'}, status=500)
+    print(content)
+
+    return JsonResponse({'message':'Testing...'}, status=200)
+    # else:
+    #   return JsonResponse({'message':'Request is invalid'}, status=500)
   except Exception as e:
     return trace_error(e, True)
+
+@api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+@csrf_exempt
+def handle_forms(request):
+  try:
+    content = json.loads(request.body)
+    print(content)
+    return process_forms_test(content)
+    # else:
+    #   return JsonResponse({'message':'Request is invalid'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+  
+# @api_view(['GET', 'POST'])
+# # @authentication_classes([JWTAuthentication])
+# # @permission_classes([IsAuthenticated])
+# @csrf_exempt
+# def get_forms_test(request, form=None, id=None):
+#   try:
+#     content = json.loads(request.body)
+#     if request.method == 'POST':
+#       # content = list(content[0].values())[0]
+#       print(content['build'])
+#       if not content['build'] == True:
+#         # for key in content:
+#         #   print(content[key])
+#         #   print(content[key]['function'])
+#         #   function = globals()[content[key]['function']]
+#         #   form_values = strip_form_content(content[key])
+#         #   function(form_values)
+#         for form in content:
+#           print(form)
+#           print(form['function'])
+#           function = globals()[form['function']]
+#           form_values = strip_form_content(form)
+#           # print(form_values)
+#           # function(form_values)
+#           # add_event(content[key])
+#         return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+#       else:
+#         # content = json.loads(request.body)
+#         print('trying the build')
+#         # if form != None:
+#         if content['forms'] != None:
+#           forms = []
+#           for form in content['forms']:
+#             print(form)
+#             form = FormBuilderNew.objects.values().get(form_name=form)
+#             # print("FORM ====> \n", form)
+#             for value in form['fields']:
+#               if value['type'] == 'date':
+#                 value['value'] = None if value['value'] == '' else value['value']
+#                 # print(value)
+#             # print(form['app'], form['model'], form['save_function'])
+#             if content["id"]:
+#               values = get_model_instance(form['app'], form['model'], content["id"])
+#               print(values)
+#               function = globals()[form['save_function']]
+#               form = function({'form': form, "values": values}, True)
+#               print("\n Saved Test: ====> \n", form)
+#             # Function to read form['field_options'] and pull model objects
+#             print("Field Options: ====> ", form['field_options'])
+#             options = pull_model_options(form['field_options'])
+#             options.extend(form['custom_options'])
+#             print("Updated Options: ====> ", options)
+#             forms.append({'title': convert_label(form['form_name']),
+#               "fields": form["fields"],
+#               'options': options,
+#               'model': { 'app': form['app'], 'model': form['model'] },
+#               'function': form['save_function'],
+#               'id': id if id else None,
+#             })
+#             # context = {
+#             #   'forms': {
+#             #     convert_label(form['form_name']): {
+#             #       "fields": form["fields"],
+#             #       'options': options,
+#             #       'model': { 'app': form['app'], 'model': form['model'] },
+#             #       'function': form['save_function'],
+#             #       'id': id if id else None,
+#             #     }
+#             #   },
+#             # }
+#         # context = {
+#         #   'forms': [
+#         #     {'title': convert_label(form['form_name']),
+#         #       "fields": form["fields"],
+#         #       'options': options,
+#         #       'model': { 'app': form['app'], 'model': form['model'] },
+#         #       'function': form['save_function'],
+#         #       'id': id if id else None,
+#         #     },
+#         #   ],
+#         # }
+#         context = { 'forms' : forms}
+#         print(context)
+#         return JsonResponse(context)
+#     else:
+#       return JsonResponse({'message':'Request is invalid'}, status=500)
+#   except Exception as e:
+#     return trace_error(e, True)
   
 def pull_model_options(field_options):
   options = []

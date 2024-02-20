@@ -3,7 +3,9 @@
     <div class="row justify-center">
       <!-- <q-dialog v-model="show"> -->
         <!-- <Forms /> -->
-        <FormTest :getForm="get_form_api" :multiDateSelect="true" :submitForm="save_form_api" :closeButton="true" page_title="Build Form" @done="submitted" columns="one"/>
+        <div class="col-6">
+          <FormTest :getForm="get_form_api" :submitForm="save_form_api" :forms="forms" :multiDateSelect="true" :closeButton="true" page_title="Build Form" @done="submitted" columns="one"/>
+        </div>
       <!-- </q-dialog> -->
     </div>
   </q-page>
@@ -31,8 +33,12 @@ export default defineComponent({
   setup() {    
     return {
       show: ref(true),
-      get_form_api: ref("/get_formbuilder_form/add_shift"),
-      save_form_api: ref("/get_formbuilder_form"),
+      forms: ref(['user_basic_info', 'user_address', 'user_city', 'user_occupation']),
+      // forms: ref(['user_basic_info', 'user_address']),     
+      // forms: ref(['add_user']),
+      // forms: ref(['add_shift']),
+      get_form_api: ref("/handle_forms"),
+      save_form_api: ref("/handle_forms"),
     };
   },
   watch: {
