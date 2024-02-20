@@ -54,11 +54,11 @@ def strip_form_content(content):
     # print(field)
     # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
     if isinstance(field['value'], dict):
-      fields[field['model_edit_field']] = field['value']['value']
+      fields[field['field_name']] = field['value']['value']
     # elif isinstance(field['value'], list):
     #   fields[key] = value['value']
     else:
-      fields[field['model_edit_field']] = field['value']
+      fields[field['field_name']] = field['value']
     # print(fields)
   return fields
 

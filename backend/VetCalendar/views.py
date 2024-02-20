@@ -1135,7 +1135,7 @@ def add_event(content, load=False):
       fields = content
       # for key, value in content['fields'].items():
       #   fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
-      # print(fields)
+      print(fields)
       user = User.objects.get(id=fields['user'])
       shift_name = ShiftName.objects.get(id=fields['shift'])
       shift_type = ShiftType.objects.get(id=fields['shift_type'])

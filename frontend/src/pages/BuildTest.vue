@@ -64,7 +64,7 @@ export default defineComponent({
       get_form_api: ref("/handle_forms"),
       // get_form_api: ref("/login/request_access"),
       save_form_api: ref("/handle_forms"),
-      item_id: ref(9),
+      // item_id: ref(9),
     };
   },
   watch: {
