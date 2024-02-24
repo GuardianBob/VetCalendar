@@ -19,7 +19,6 @@
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
               <!-- {{ field }} -->
-            
             <q-input 
               v-if="field.type === 'input' || field.type === 'text' || field.type === 'number' || field.type === 'url' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
@@ -350,6 +349,7 @@ export default defineComponent({
     "submitForm",
     "item_id",
     "forms",
+    'linked_forms',
     "form_data",
     "form_options",
     "closeButton",
@@ -630,6 +630,7 @@ export default defineComponent({
         let body = {
           "forms": submitData,
           "save": true,
+          'linked': this.linked_forms
         }
         if (this.verifySubmit) {
         api.post(this.submitForm, body).then((res) => {
@@ -664,7 +665,8 @@ export default defineComponent({
       let body = {
         "forms": this.forms,
         "save": false,
-        "id": this.item_id
+        "id": this.item_id,
+        'linked': this.linked_forms
       }
       await api.post(this.getForm, body).then(async (results) => {
         console.log(results.data);

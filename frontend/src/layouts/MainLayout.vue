@@ -156,12 +156,12 @@ const linksList = [
         icon: 'feed',
         link: '/form'
       },
-      {
-        title: 'Add JSON Form',
-        caption: '',
-        icon: 'feed',
-        link: '/add_json_form'
-      },
+      // {
+      //   title: 'Add JSON Form',
+      //   caption: '',
+      //   icon: 'feed',
+      //   link: '/add_json_form'
+      // },
     ]
   },
   // {

@@ -85,7 +85,26 @@ def get_model_instance(app_name, model_name, id):
   try:
     print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} \n id: {id}')
     Model = apps.get_model(app_name, model_name)
+    instance = Model.objects.get(id=id)
+    return instance
+  except Model.DoesNotExist:
+    return None
+
+def get_model_values(app_name, model_name, id):
+  try:
+    print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} \n id: {id}')
+    Model = apps.get_model(app_name, model_name)
     instance = Model.objects.values().get(id=id)
+    return instance
+  except Model.DoesNotExist:
+    return None
+  
+def get_linked_model_values(app_name, model_name, foreign_key, id):
+  try:
+    print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} ')
+    Model = apps.get_model(app_name, model_name)
+    instance = Model.objects.values().filter(**{foreign_key: id}).first()
+    print("Linked Instance: ====> ", instance)
     return instance
   except Model.DoesNotExist:
     return None
@@ -101,7 +120,7 @@ def save_model(model, values, id=None):
   for key, value in values.items():
     if is_foreign_key(Model, key):
       print(f"{key} is a ForeignKey.")
-      value = get_model_instance(model['app'], key.capitalize(), id)
+      value = get_model_values(model['app'], key.capitalize(), id)
       print("\n foreign key: \n", value)
   if id != None:
     print(' \n updating instance')
@@ -115,6 +134,29 @@ def save_model(model, values, id=None):
     instance.save()  
   # except Exception as e:
   #   return trace_error(e, True)  
+    
+def save_linked_model(model, values, id=None):
+  print(f'save_model: \n{model} \n{values} \n{id}')
+  # try:
+  # Model = apps.get_model(model['app'], model['model'])
+  # for key, value in values.items():
+  #   if is_foreign_key(Model, key):
+  #     print(f"{key} is a ForeignKey.")
+  #     value = get_model_values(model['app'], key.capitalize(), id)
+  #     print("\n foreign key: \n", value)
+  # if id != None:
+  #   print(' \n updating instance')
+  #   instance = Model.objects.get(id=id)
+  #   for key, value in values.items():
+  #     setattr(instance, key, value)
+  #   print(instance)
+  #   instance.save()
+  # else:
+  #   instance = Model(**values)
+  #   instance.save()  
+  return
+  # except Exception as e:
+  #   return trace_error(e, True)
   
 def get_function(app_name, function_name):
     module = import_module(f'{app_name}.views')
@@ -124,14 +166,17 @@ def get_function(app_name, function_name):
     return function
   
 def fill_form(form, values):
-  print("\n====LOADING====\n", form, "\n", 'values')
+  print("\n====LOADING====\n", form, "\n", values)
   for field in form['fields']:
     if field['type'] == 'date':
       field['value'] = values[field['model_edit_field']].strftime('%b-%d-%Y')
     elif field['field_name'] == 'foreign_key':
-      field['value'] = values['id']
+      f_key = field['model_edit_field']
+      print("foreign key: ====> ", f_key)
+      field['value'] = values[f'{f_key}_id']
     else:
-      field['value'] = values[field['model_edit_field']]
+      field['value'] = values[field['model_edit_field']] if field['model_edit_field'] in values else ''
+    
   print("\n =====END LOADING====\n")
   return form
 
@@ -142,9 +187,9 @@ def fill_form(form, values):
 def process_forms_test(content): 
   try:
     # content = list(content[0].values())[0]
-    print('\n \n', content)
+    # print('\n \n', content)
     if content['save'] == True:
-      return save_form(content['forms'])
+      return save_form(content)
     else:
       return build_form(content)
   except Exception as e:
@@ -156,6 +201,15 @@ def build_form(content):
     # if form != None:
     if content['forms'] != None:
       forms = []
+      main_model = None
+      linked_instance = None
+      if 'linked' in content and content['linked'] == True and 'id' in content:
+        print("Linked Item: ====> ", content['forms'][0])
+        form_model = FormBuilderNew.objects.values('app', 'model').get(form_name=content['forms'][0])
+        # print("Form Model: ====> ", form_model)
+        main_model = form_model['model']
+        # linked_instance = get_model_values(form_model['app'], form_model['model'], content['id'])
+        # print("Linked Instance: ====> ", linked_instance)
       for form in content['forms']:
         # print(form)
         form = FormBuilderNew.objects.values().get(form_name=form)
@@ -168,8 +222,16 @@ def build_form(content):
             # print(value)
         # print(form['app'], form['model'], form['save_function'])
         if "id" in content:
-          values = get_model_instance(form['app'], form['model'], content["id"])
-          print(values)
+          values = None
+          if 'linked' in content and content['linked'] == True and form['model'] != main_model:
+            print(form)
+            for field in form['fields']:
+              if 'foreign_key' in field['field_name']:
+                print("foreign key: ====> ", field['model_edit_field'])
+                values = get_linked_model_values(form['app'], form['model'], field['model_edit_field'], content["id"])
+          else:
+            values = get_model_values(form['app'], form['model'], content["id"])
+            # print(values)
           if values:
             form = fill_form(form, values)
             # function = globals()[form['save_function']]
@@ -206,22 +268,33 @@ def build_form(content):
 
 def save_form(content):
   try:
-    for form in content:
+    main_form = content['forms'][0]    
+    print('first form =====> : \n', main_form)
+    for form in content['forms']:
       print('\n ========== Attempting to save ========== \n')
       print(form)
       print(form['function'])
       print(form['model']['app'])
       form_values = strip_form_content(form)
       print(form_values)
-      if form['function'] != None:
-        save_function = get_function(form['model']['app'], form['function'])
-        save_function(form_values)
-      # function = globals()[form['function']]
-      else:  
-        if form['id'] != None or form['id'] != '':
-          save_model(form['model'], form_values , form['id'])
-        else:      
-          save_model(form['model'], form_values, None)
-    return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+      if 'linked' in content and content['linked'] == True:        
+        save_function = get_function(main_form['model']['app'], main_form['function'])
+        save_function(form_values, form['model'], main_form['id'])
+        # save_linked_model(form['model'], form_values , main_form['id'])
+      else:
+        if form['function'] != None:
+          save_function = get_function(form['model']['app'], form['function'])
+          print('form ID =====> : ', form['id'])
+          if form['id'] != None and form['id'] != '':
+            save_function(form_values, form['id'])
+          else:
+            save_function(form_values)
+        # function = globals()[form['function']]
+        else:  
+          if form['id'] != None or form['id'] != '':
+            save_model(form['model'], form_values , form['id'])
+          else:      
+            save_model(form['model'], form_values, None)
+    return JsonResponse({'message': main_form['title'] + f' Added/Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)

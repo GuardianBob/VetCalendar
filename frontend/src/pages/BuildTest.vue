@@ -10,6 +10,7 @@
             :submitForm="save_form_api" 
             :item_id="item_id"
             :forms="forms" 
+            :linked_forms="linked_forms"
             :multiDateSelect="true" 
             :closeButton="true" 
             :doubleVerify="true"
@@ -57,14 +58,17 @@ export default defineComponent({
     return {
       show: ref(true),
       page_title: ref("Form Test"),
+      item_id: ref(9),
+      // forms: ref(['access_settings']),
       forms: ref(['user_basic_info', 'user_address', 'user_city', 'user_occupation']),
       // forms: ref(['user_basic_info', 'user_address']),     
       // forms: ref(['add_user']),
       // forms: ref(['add_shift']),
+      // forms: ref(['user_profile']),
       get_form_api: ref("/handle_forms"),
       // get_form_api: ref("/login/request_access"),
       save_form_api: ref("/handle_forms"),
-      // item_id: ref(9),
+      linked_forms: ref(true),
     };
   },
   watch: {
@@ -82,8 +86,8 @@ export default defineComponent({
   },
   
   mounted() {
-    const componentName = process.env.VUE_APP_FORM_PAGE;
-    this.dynamicComponent = this.components[componentName];
+    // const componentName = process.env.VUE_APP_FORM_PAGE;
+    this.dynamicComponent = this.components['BaseForm'];
     // APIService.get_formbuilder_form().then((response) => {
     //   console.log(response);
     // });

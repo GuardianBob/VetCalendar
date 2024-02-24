@@ -15,6 +15,7 @@
           :submitForm="save_form_api"
           delete_api="/login/delete_user"
           :forms="forms" 
+          :linked_forms="linked_forms"
           :item_id="user_id"
           :closeButton="true" 
           :delete_button="true"
@@ -84,7 +85,8 @@ export default defineComponent({
       formOptions: ref({}),
       forms: ref(['add_user']),
       get_form_api: ref('/handle_forms'),
-      save_form_api: ref('/login/user_profile'),
+      save_form_api: ref('/handle_forms'),
+      linked_forms: ref(false),
       // columns: ref([
       //   // Replace with database columns
       //   { name: 'name', align: 'left', label: 'Name', field: 'name', sortable: true },
@@ -118,10 +120,11 @@ export default defineComponent({
   methods: {
     async edit_user(userInfo) {
       console.log(userInfo.id)
-      this.getForm = "/login/user_profile/" + userInfo.id
-      this.get_form_api = "/handle_forms"
-      this.save_form_api = "/login/user_profile"
+      // this.getForm = "/login/user_profile/" + userInfo.id
+      // this.get_form_api = "/handle_forms"
+      // this.save_form_api = "/login/user_profile"
       this.forms = ["user_basic_info", "user_address", "user_city", "user_occupation"]
+      this.linked_forms = true
       this.user_id = userInfo.id
       await this.get_user_profile(userInfo.id)
       this.userInfo = userInfo
@@ -137,8 +140,10 @@ export default defineComponent({
 
     add_user() {
       // this.userInfo = []
-      this.get_form_api = "/handle_forms"
-      this.save_form_api = "/handle_forms"
+      // this.get_form_api = "/handle_forms"
+      // this.save_form_api = "/handle_forms"
+      this.forms = ["add_user"]
+      this.linked_forms = false
       this.new_user = true
     },
 

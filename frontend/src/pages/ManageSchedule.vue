@@ -172,8 +172,8 @@ export default defineComponent({
     },
 
     resetEventId() {
-      this.event_id = false;
-      this.get_form = `/get_formbuilder_form/add_shift`
+      this.event_id = null;
+      this.get_form = `/handle_forms`
     },
 
     store_updated_events(event) {
@@ -210,15 +210,15 @@ export default defineComponent({
       this.event_edit = true
       // this.get_form = `/get_formbuilder_form/add_shift/${info.id}`
       this.get_form = `/handle_forms`
-      this.submit_form = '/get_formbuilder_form'
+      this.submit_form = '/handle_forms'
       this.multiDateSelect = false
       this.add_shifts = true
     },
 
     date_clicked(date) {
       console.log(date)
-      this.get_form = '/get_formbuilder_form/add_shift'
-      this.submit_form = '/get_formbuilder_form'
+      this.get_form = '/handle_forms'
+      this.submit_form = '/handle_forms'
       this.add_shifts = true
       this.add_to_date = date
       console.log(this.form_data)
@@ -229,7 +229,7 @@ export default defineComponent({
     },
 
     form_complete() {
-      this.event_id = false
+      this.event_id = null
       this.add_shifts = false;
       this.getShiftsYear().then(() => {
         this.shift_count()

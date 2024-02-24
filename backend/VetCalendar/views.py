@@ -321,7 +321,7 @@ def quick_add(request):
         if existing_shift:
           item['id'] = existing_shift.id
           print(item)
-        shift = creat_update_shift(item)
+        shift = create_update_shift(item)
         #   print(existing_shift.shift_start)
         #   existing_shift.shift = shift
         #   existing_shift.shift_type = shift_type
@@ -550,7 +550,7 @@ def save_schedule_updates(request):
     return trace_error(e, True)
 #================================================================================  
 
-def creat_update_shift(data):
+def create_update_shift(data):
   shift_details = ShiftName.objects.get(id=data['shift'])
   if not data.get('user'):
     old_shift = Shifts.objects.get(id=data['id'])
@@ -585,7 +585,7 @@ def edit_event(request, id=None):
       # content = list(content[0].values())[0]
       print(content)
       print(content['id'])
-      creat_update_shift(content)
+      create_update_shift(content)
 
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
     else:
@@ -1105,24 +1105,29 @@ def strip_form_content(content):
     # print(fields)
   return fields
 
-def add_event(content, load=False):
+def add_event(content, event_id=None):
   try:
-    if load:
-      print("\n====LOADING====\n", content['form'], "\n", content['values'])
-      for field in content['form']['fields']:
-      # for key, item in content['form']['fields'].items():
-        if field['type'] == 'date':
-          field['value'] = content['values'][field['model_edit_field']].strftime('%b-%d-%Y')
-        # if field['type'] == 'select':
-        else:
-          field['value'] = content['values'][field['model_edit_field']]
-      # content['form']['fields']['user']['value'] = content['values']['user_id']
-      # content['form']['fields']['shift']['value'] = content['values']['shift_name_id']
-      # content['form']['fields']['shift_type']['value'] = content['values']['shift_type_id']
-      # content['form']['fields']['shift_date']['value'] = content['values']['shift_start'].strftime('%b-%d-%Y')
-      print("\n =====END LOADING====\n")
-      return content['form']
-    else:
+    # if event_id != None:
+    #   print("\n====LOADING====\n", content, "\n")
+    #   event = Shifts.objects.get(id=event_id)
+    #   event.user = content['user']
+    #   event.shift = content['shift']
+    #   event.shift_type = content['shift_type']
+    #   event.shift_date = content['shift_date']
+    #   for field in content['form']['fields']:
+    #   # for key, item in content['form']['fields'].items():
+    #     if field['type'] == 'date':
+    #       field['value'] = content['values'][field['model_edit_field']].strftime('%b-%d-%Y')
+    #     # if field['type'] == 'select':
+    #     else:
+    #       field['value'] = content['values'][field['model_edit_field']]
+    #   # content['form']['fields']['user']['value'] = content['values']['user_id']
+    #   # content['form']['fields']['shift']['value'] = content['values']['shift_name_id']
+    #   # content['form']['fields']['shift_type']['value'] = content['values']['shift_type_id']
+    #   # content['form']['fields']['shift_date']['value'] = content['values']['shift_start'].strftime('%b-%d-%Y')
+    #   print("\n =====END LOADING====\n")
+    #   return content['form']
+    # else:
     # content = {
     #   'fields': {
     #     'user': {'label': 'User', 'type': 'select', 'value': {'label': 'Meyer', 'value': 1}, 'required': True},
@@ -1132,44 +1137,48 @@ def add_event(content, load=False):
     #   model': {
     #   'app': 'VetCalendar', 'model': 'Shifts'
     # }}
-      fields = content
-      # for key, value in content['fields'].items():
-      #   fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
-      print(fields)
-      user = User.objects.get(id=fields['user'])
-      shift_name = ShiftName.objects.get(id=fields['shift'])
-      shift_type = ShiftType.objects.get(id=fields['shift_type'])
-      # dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
-      # shift_date = parse_date(date).date()
-      if not isinstance(fields['shift_date'], list):
-        fields['shift_date'] = [fields['shift_date']]
-      # if isinstance(fields['shift_date'], list):
-      dates = [parse_date(date) for date in fields['shift_date']]
-      # else:
-      #   dates = [parse_date(fields['shift_date'])]
-      # print("======== DATES =========>  ", dates)
-      # Get the earliest and latest dates
-      earliest_date, latest_date = min(dates), max(dates)
-      if earliest_date == latest_date:
-        latest_date = earliest_date + timedelta(days=1)
-      # print('date filter ====>: ', earliest_date, latest_date)
-      # Filter the shifts
-      existing_shifts = Shifts.objects.filter(
-        Q(user=user),
-        Q(shift_start__date__gte=earliest_date),
-        Q(shift_start__date__lte=latest_date)
-      ).values_list('shift_start__date', 'id')
-      # print('Existing shifts===> :', existing_shifts)
-      existing_shifts_dict = {date.strftime('%b-%d-%Y'): id for date, id in existing_shifts}
-      # print(fields)
-      for date in fields['shift_date']:
-        item = fields.copy()
-        item['shift_date'] = date
-        # print(existing_shifts_dict)
-        if date in existing_shifts_dict:
-          item['id'] = existing_shifts_dict[date]
-        shift = creat_update_shift(item)
+    fields = content
+    # for key, value in content['fields'].items():
+    #   fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
+    print(fields, '\n', event_id)
+    user = User.objects.get(id=fields['user'])
+    shift_name = ShiftName.objects.get(id=fields['shift'])
+    shift_type = ShiftType.objects.get(id=fields['shift_type'])
+    # dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
+    # shift_date = parse_date(date).date()
+    if event_id != None:
+      fields['id'] = event_id
+      shift = create_update_shift(fields)
       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+    if not isinstance(fields['shift_date'], list):
+      fields['shift_date'] = [fields['shift_date']]
+    # if isinstance(fields['shift_date'], list):
+    dates = [parse_date(date) for date in fields['shift_date']]
+    # else:
+    #   dates = [parse_date(fields['shift_date'])]
+    # print("======== DATES =========>  ", dates)
+    # Get the earliest and latest dates
+    earliest_date, latest_date = min(dates), max(dates)
+    if earliest_date == latest_date:
+      latest_date = earliest_date + timedelta(days=1)
+    # print('date filter ====>: ', earliest_date, latest_date)
+    # Filter the shifts
+    existing_shifts = Shifts.objects.filter(
+      Q(user=user),
+      Q(shift_start__date__gte=earliest_date),
+      Q(shift_start__date__lte=latest_date)
+    ).values_list('shift_start__date', 'id')
+    # print('Existing shifts===> :', existing_shifts)
+    existing_shifts_dict = {date.strftime('%b-%d-%Y'): id for date, id in existing_shifts}
+    # print(fields)
+    for date in fields['shift_date']:
+      item = fields.copy()
+      item['shift_date'] = date
+      # print(existing_shifts_dict)
+      if date in existing_shifts_dict:
+        item['id'] = existing_shifts_dict[date]
+      shift = create_update_shift(item)
+    return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
   
