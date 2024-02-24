@@ -26,9 +26,12 @@
     </div>
     <q-dialog v-model="add_shifts" position="left" @hide="resetEventId">
       <q-card style="width: 90%" class="dialog-25">
-        <BaseForm 
-        :getForm="get_form" 
-        :submitForm="submit_form" 
+        <component 
+        :is="dynamicComponent"
+        :getForm="get_form_api" 
+        :submitForm="save_form_api" 
+        :forms="forms"
+        :item_id="event_id"
         :isSingle="true" 
         :closeButton="true" 
         page_title="Quick-Schedule" 
@@ -50,7 +53,8 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import APIService from "../../services/api"
 import Calendar from 'components/Calendar.vue'
-import BaseForm from 'components/BaseForm.vue'
+import FormTest from 'components/FormTest.vue';
+import BaseForm from 'components/BaseForm.vue';
 import MainFunctions from '../../services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
@@ -65,11 +69,16 @@ export default defineComponent({
   components: {
     Calendar,
     DataTable,
-    BaseForm,
+    // BaseForm,
   },
   data() {
     return {
       calfunc: new CalendarFunctions(),
+      dynamicComponent: null,
+      components: {
+        FormTest,
+        BaseForm
+      }
     }
   },
   setup() {
@@ -104,8 +113,9 @@ export default defineComponent({
       editEvent: ref({}),
       event_edit: ref(false),
       event_id: ref(),
-      get_form: ref('/get_formbuilder_form/add_shift'),
-      submit_form: ref('/get_formbuilder_form'),
+      forms: ref(['add_shift']),
+      get_form_api: ref("/handle_forms"),
+      save_form_api: ref("/handle_forms"),
       multiDateSelect: ref(true),
       add_to_date: ref(null),
       delete_event: ref('/delete_event'),
@@ -162,8 +172,8 @@ export default defineComponent({
     },
 
     resetEventId() {
-      this.event_id = false;
-      this.get_form = `/get_formbuilder_form/add_shift`
+      this.event_id = null;
+      this.get_form = `/handle_forms`
     },
 
     store_updated_events(event) {
@@ -198,16 +208,17 @@ export default defineComponent({
       // event.backgroundColor = color
       // event.textColor = MainFunctions.getTextColor(event.borderColor)
       this.event_edit = true
-      this.get_form = `/get_formbuilder_form/add_shift/${info.id}`
-      this.submit_form = '/get_formbuilder_form'
+      // this.get_form = `/get_formbuilder_form/add_shift/${info.id}`
+      this.get_form = `/handle_forms`
+      this.submit_form = '/handle_forms'
       this.multiDateSelect = false
       this.add_shifts = true
     },
 
     date_clicked(date) {
       console.log(date)
-      this.get_form = '/get_formbuilder_form/add_shift'
-      this.submit_form = '/get_formbuilder_form'
+      this.get_form = '/handle_forms'
+      this.submit_form = '/handle_forms'
       this.add_shifts = true
       this.add_to_date = date
       console.log(this.form_data)
@@ -218,7 +229,7 @@ export default defineComponent({
     },
 
     form_complete() {
-      this.event_id = false
+      this.event_id = null
       this.add_shifts = false;
       this.getShiftsYear().then(() => {
         this.shift_count()
@@ -303,13 +314,15 @@ export default defineComponent({
   },
   
   mounted() {
-
+    const componentName = process.env.VUE_APP_FORM_PAGE;
+    this.dynamicComponent = this.components[componentName];
     console.log(this.store.dummyData.shiftCountColumns)
     this.columnLabels = this.store.dummyData.shiftCountColumns
     // this.get_user_list();
     this.getShiftsYear().then(() => {
       this.shift_count()
     });
+    
   },
   
 })

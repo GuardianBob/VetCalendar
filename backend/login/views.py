@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
+from backend.utils import trace_error, process_forms_test, strip_form_content
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -583,7 +584,8 @@ def get_csrf(request):
 @permission_classes([IsAuthenticated])
 def delete_user(request):
   print(request.body)
-  user = User.objects.get(id=request.body)
+  content = json.loads(request.body)
+  user = User.objects.get(id=content['id'])
   print(user.first_name + " " + user.last_name)
   user.delete()
   return JsonResponse({'message': 'User deleted'}, status=200)
@@ -594,39 +596,43 @@ def register(request):
   return HttpResponse("Hit registration function")
 
 @csrf_exempt
-def account_request(request):
+def request_access(request):
+  print("request access function")
   try:
-    if request.method == 'POST':
-      data = json.loads(request.body.decode("utf-8"))
-      data = list(data[0].values())[0]
-      print(data)
-      if not User.objects.filter(email__icontains=data['email']) and not AccountRequest.objects.filter(email__icontains=data['email']):
-        phone_number = data['phone_number']
-        if isinstance(phone_number, str):
-          phone_number = re.sub('\D', '', phone_number)
-        request, created = AccountRequest.objects.update_or_create(
-          defaults={
-            'first_name': data['first_name'],
-            'last_name': data['last_name'],
-            'email': data['email'],
-            'phone_number': phone_number,
-            'phone_type': data['phone_type'],
-          }
-        )
-        print("hit account request POST")
-        return JsonResponse({'message':'Request Sent'}, status=200)
-      print("Request already made for that e-mail address.")
-      return JsonResponse({'message':'Request already made for that e-mail address.'}, status=500)
-      
+    content = json.loads(request.body)
+    print(content)
+    if not 'save' in content or not content['save']:
+      content['forms'] = ['account_request']
+      return process_forms_test(content)
     else:
-      # request_form = AccountRequestForm()
-      # form = set_form_fields(request_form)
-      context = {
-        'forms': TEMP_ACCOUNT_REQUEST_FORM
-      }
+      return account_request(content['forms'][0])
+    # else:
+    #   return JsonResponse({'message':'Request is invalid'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
 
-      # return render(request, 'multiForm.html', context)
-      return JsonResponse(context)
+@csrf_exempt
+def account_request(content):
+  try:
+    form_values = strip_form_content(content)
+    print(form_values['email'])
+    if not User.objects.filter(email__icontains=form_values['email']) and not AccountRequest.objects.filter(email__icontains=form_values['email']):
+      phone_number = form_values['phone_number']
+      if isinstance(phone_number, str):
+        phone_number = re.sub('\D', '', phone_number)
+      request, created = AccountRequest.objects.update_or_create(
+        defaults={
+          'first_name': form_values['first_name'],
+          'last_name': form_values['last_name'],
+          'email': form_values['email'],
+          'phone_number': phone_number,
+          'phone_type': form_values['phone_type'],
+        }
+      )
+      #   print("hit account request POST")
+      return JsonResponse({'message':'Request Sent'}, status=200)
+    print("Request already made for that e-mail address.")
+    return JsonResponse({'message':'Request already made for that e-mail address.'}, status=500)
   except Exception as e:
     return trace_error(e, True)
 
@@ -988,7 +994,7 @@ def user_profile(request, id = 0):
     user_data = get_user_data(request, id, True)
     # print(type(user_data), user_data)
     return user_data
-  else:
+  else:    
     return update_user_profile(request)
   
 def create_user_model(data):
@@ -1062,6 +1068,7 @@ def update_address_city_model(user, data):
     return trace_error(e, True)
 
 def update_occupation_model(user, data):
+  print("Updating Occupation")
   try:
     # Try to get the existing address
     occupation = user.user_occupation.first()
@@ -1087,81 +1094,103 @@ def update_user_profile(request):
   if request.method == 'POST':
     # resp = request.data  # or request.data if you're using Django REST Framework
     data = json.loads(request.body.decode("utf-8"))
-    print(data)
+    print(data['forms'])
+
     # print(resp['Basic Info'])
-    for item in data:
-      for key, value in item.items():
-        # print(key)
-        # # Get the user
-        # user = User.objects.get(email=data['Basic Info']['email'])
-        if key == 'Basic Info':
-          user = User.objects.get(email=value['email'])
-          result = update_user_model(user, value)
+    user = None
+    user_id = data['forms'][0]['id']
+    user = User.objects.get(id=user_id)
+    print(data['forms'][0]['id'])
+    for item in data['forms']:
+      # if item['model']['model'] == 'User':
+      print(item['title'])
+      if 'Basic Info' in item['title']:
+        result = update_user_model(user, item)
+        if isinstance(result, str):  # If the result is an error message
+          print("An error occurred:", result)
+          return JsonResponse({'error': result}, status=500)
+      elif 'Address' in item['title']:
+        result = update_address_city_model(user, item)
+        if isinstance(result, str):  # If the result is an error message
+          print("An error occurred:", result)
+          return JsonResponse({'error': result}, status=500)
+      elif 'Occupation' in item['title']:
+          result = update_occupation_model(user, item)
           if isinstance(result, str):  # If the result is an error message
             print("An error occurred:", result)
             return JsonResponse({'error': result}, status=500)
-          # user_info_form = UserInfoForm(value, instance=user)
-          # if user_info_form.is_valid():
-          #   print("valid")
-          #   user_info_form.save()
-          # else:
-          #   print("Basic invalid")
-          #   print(user_info_form.errors)
-        elif key == 'Address':
-          result = update_address_city_model(user, value)
-          if isinstance(result, str):  # If the result is an error message
-            print("An error occurred:", result)
-            return JsonResponse({'error': result}, status=500)
-          # try:
-          #   # Try to get the existing address
-          #   address = user.user_address
-          # except User.user_address.RelatedObjectDoesNotExist:
-          #   # If the user doesn't have an address, create a new one
-          #   if value['street'] == '' or value['street2'] == '' or value['apt_num'] == '':
-          #     continue
-          #   address = Address.objects.create(user=user)
-          # address_form = AddressForm(value, instance=address)
-          # if address_form.is_valid():
-          #   address_form.save()
+      # for key, value in item.items():
+      #   # print(key[0])
+      #   # # Get the user
+      #   # user = User.objects.get(email=data['Basic Info']['email'])
+      #   # user = User.objects.get(email=value['email'])
+      #   if key == 'Basic Info':
+      #     result = update_user_model(user, value)
+      #     if isinstance(result, str):  # If the result is an error message
+      #       print("An error occurred:", result)
+      #       return JsonResponse({'error': result}, status=500)
+      #     # user_info_form = UserInfoForm(value, instance=user)
+      #     # if user_info_form.is_valid():
+      #     #   print("valid")
+      #     #   user_info_form.save()
+      #     # else:
+      #     #   print("Basic invalid")
+      #     #   print(user_info_form.errors)
+      #   elif key == 'Address':
+      #     result = update_address_city_model(user, value)
+      #     if isinstance(result, str):  # If the result is an error message
+      #       print("An error occurred:", result)
+      #       return JsonResponse({'error': result}, status=500)
+      #     # try:
+      #     #   # Try to get the existing address
+      #     #   address = user.user_address
+      #     # except User.user_address.RelatedObjectDoesNotExist:
+      #     #   # If the user doesn't have an address, create a new one
+      #     #   if value['street'] == '' or value['street2'] == '' or value['apt_num'] == '':
+      #     #     continue
+      #     #   address = Address.objects.create(user=user)
+      #     # address_form = AddressForm(value, instance=address)
+      #     # if address_form.is_valid():
+      #     #   address_form.save()
 
-          # try:
-          #   # Try to get the existing address
-          #   city_state = user.user_city_state
-          # except User.user_city_state.RelatedObjectDoesNotExist:
-          #   # If the user doesn't have an city_state, create a new one
-          #   if value['city'] == '' and value['state'] == '' and value['zipcode'] == '':
-          #     continue
-          #   city_state = CityState.objects.create(user=user)
-          # city_state_form = CityStateForm(value, instance=city_state)
-          # if city_state_form.is_valid():
-          #   city_state_form.save()
-          # # city_state_form = CityStateForm(value, instance=user.user_city_state)
-          # # if city_state_form.is_valid():
-          # #   city_state_form.save()
+      #     # try:
+      #     #   # Try to get the existing address
+      #     #   city_state = user.user_city_state
+      #     # except User.user_city_state.RelatedObjectDoesNotExist:
+      #     #   # If the user doesn't have an city_state, create a new one
+      #     #   if value['city'] == '' and value['state'] == '' and value['zipcode'] == '':
+      #     #     continue
+      #     #   city_state = CityState.objects.create(user=user)
+      #     # city_state_form = CityStateForm(value, instance=city_state)
+      #     # if city_state_form.is_valid():
+      #     #   city_state_form.save()
+      #     # # city_state_form = CityStateForm(value, instance=user.user_city_state)
+      #     # # if city_state_form.is_valid():
+      #     # #   city_state_form.save()
 
-        elif key == 'Occupation':
-          result = update_occupation_model(user, value)
-          if isinstance(result, str):  # If the result is an error message
-            print("An error occurred:", result)
-            return JsonResponse({'error': result}, status=500)
-          # try:
-          #   # Try to get the existing address
-          #   occupation = user.user_occupation.first()
-          # except User.user_occupation.RelatedObjectDoesNotExist:
-          #   # If the user doesn't have an occupation, create a new one
-          #   continue
-          # if occupation is None:
-          #   # If the user doesn't have an occupation, skip to the next iteration
-          #   if value['occupation'] == '':
-          #     continue
-          #   occupation = Occupation.objects.create(user=user)
-          # occupation_form = UpdateOccupationForm(value, instance=occupation)
-          # if occupation_form.is_valid():
-          #   occupation_form.save()
-          # # occupation = user.user_occupation.get()
-          # # occupation_form = UpdateOccupationForm(value, instance=occupation)
-          # # if occupation_form.is_valid():
-          # #   occupation_form.save() 
+      #   elif key == 'Occupation':
+      #     result = update_occupation_model(user, value)
+      #     if isinstance(result, str):  # If the result is an error message
+      #       print("An error occurred:", result)
+      #       return JsonResponse({'error': result}, status=500)
+      #     # try:
+      #     #   # Try to get the existing address
+      #     #   occupation = user.user_occupation.first()
+      #     # except User.user_occupation.RelatedObjectDoesNotExist:
+      #     #   # If the user doesn't have an occupation, create a new one
+      #     #   continue
+      #     # if occupation is None:
+      #     #   # If the user doesn't have an occupation, skip to the next iteration
+      #     #   if value['occupation'] == '':
+      #     #     continue
+      #     #   occupation = Occupation.objects.create(user=user)
+      #     # occupation_form = UpdateOccupationForm(value, instance=occupation)
+      #     # if occupation_form.is_valid():
+      #     #   occupation_form.save()
+      #     # # occupation = user.user_occupation.get()
+      #     # # occupation_form = UpdateOccupationForm(value, instance=occupation)
+      #     # # if occupation_form.is_valid():
+      #     # #   occupation_form.save() 
 
     return JsonResponse({'message': 'User updated successfully'})
 
@@ -1243,3 +1272,48 @@ def master_settings(request):
 #       })
 #   # print(headers)
 #   return headers
+  
+def save_user_profile(data, model=None, id=None):
+  print('form data ====> : \n \n', id, '\n', model, '\n', data)
+  user = User.objects.get(id=id)
+  if model['model'] == 'User':
+    instance = user
+    for key, value in data.items():
+      setattr(instance, key, value)
+      instance.save()
+  else:
+    print('model: ', model['model'])
+    if not all(value in {None, ''} for value in data.values()):
+      if model['model'] == 'Address':
+        try:
+          address = Address.objects.get(user=user)
+        except Address.DoesNotExist:
+          address = Address.objects.create(user=user)
+        address.street = data['street']
+        address.street2 = data['street2']
+        address.apt_num = data['apt_num']
+        address.save()
+      elif model['model'] == 'CityState':
+        print(data['zipcode'])
+        try:
+          city_state = CityState.objects.get(user=user)
+          city_state.city = data['city']
+          city_state.state = data['state']
+          city_state.zipcode = data['zipcode']
+          city_state.save()
+        except CityState.DoesNotExist:
+          city_state = CityState.objects.create(
+            user=user,
+            city = data['city'],
+            state = data['state'],
+            zipcode = data['zipcode']
+          )
+        city_state.save()
+      elif model['model'] == 'Occupation':
+        try:
+          occupation = Occupation.objects.get(user=user)
+          occupation.occupation = data['occupation']
+          occupation.save()
+        except Occupation.DoesNotExist:
+          occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
+  return

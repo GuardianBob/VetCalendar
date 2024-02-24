@@ -44,8 +44,15 @@ const routes = [
       },
       {
         path: "/register",
-        name: "register",
-        component: () => import("pages/RegisterPage.vue"),
+        // name: "register",
+        // component: () => import("pages/RegisterPage.vue"),
+        component: () => import("pages/FormsPage.vue"),
+        // beforeEnter: requireAuth,
+        props: { 
+          page_title: 'Request Access',
+          get_form_api: '/login/request_access',
+          save_form_api: '/login/request_access',
+        }
       },
       // ============================= LOGGED IN USER PAGES =============================
       {
@@ -82,14 +89,32 @@ const routes = [
         name: "schedule settings",
         component: () => import("pages/SettingsPage.vue"),
         beforeEnter: requireAuth,
-        props: { api_route: '/schedule_settings', page_title: 'Schedule Settings'},
+        props: { 
+          api_route: '/schedule_settings',
+          page_title: 'Schedule Settings',
+          forms_input: [
+            { model: 'ShiftName', form: 'add_shift_info'}, 
+            { model: 'ShiftType', form: 'add_shift_type' },
+          ],
+          get_form_api: '/handle_forms',
+          save_form_api: '/handle_forms',
+        },
       },
       {
         path: "/master_settings",
         name: "master settings",
         component: () => import("pages/SettingsPage.vue"),
         beforeEnter: requireAuth,
-        props: { api_route: '/login/master_settings', page_title: 'Admin Settings'},
+        props: { 
+          api_route: '/login/master_settings', 
+          page_title: 'Admin Settings',
+          forms_input: [
+            { model: 'Permission', form: 'permission_settings'}, 
+            { model: 'AccessLevel', form: 'access_settings' },
+          ],
+          get_form_api: '/handle_forms',
+          save_form_api: '/handle_forms',
+        },
       },
       // {
       //   path: "/create_user",
@@ -97,19 +122,37 @@ const routes = [
       //   beforeEnter: requireAuth,
       // },
       {
+        path: "/blank",
+        component: () => import("pages/FormsPage.vue"),
+        // beforeEnter: requireAuth,
+        props: { 
+          page_title: 'Forms Page Test',
+          forms: ['add_user'],
+          get_form_api: '/handle_forms',
+          save_form_api: '/handle_forms',
+        }
+      },
+      {
         path: "/forms_page",
         component: () => import("pages/FormsPage.vue"),
         // beforeEnter: requireAuth,
-      },
-      {
-        path: "/blank",
-        component: () => import("pages/BuildTest.vue"),
-        // beforeEnter: requireAuth,
+        props: { 
+          page_title: 'Forms Page Test',
+          forms: ['add_shift'],
+          get_form_api: '/handle_forms',
+          save_form_api: '/handle_forms',
+        }
       },
       {
         path: "/form",
-        component: () => import("pages/FormsBlank.vue"),
+        component: () => import("pages/BuildTest.vue"),
         // beforeEnter: requireAuth,
+        // props: { 
+        //   page_title: 'Add User',
+        //   forms: ['add_user'],
+        //   get_form_api: '/handle_forms',
+        //   save_form_api: '/handle_forms',
+        // }
       },
       {
         path: "/add_json_form",
