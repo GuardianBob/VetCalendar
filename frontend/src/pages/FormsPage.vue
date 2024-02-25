@@ -1,12 +1,9 @@
 <template>
   <q-page class="items-center flex flex-center">
     <div class="row q-mx-md full-width justify-around">
-      <!-- <q-dialog v-model="show"> -->
-        <!-- <Forms /> -->
         <div class="col-6 col-xs-10 col-sm-6 col-md-6 col-lg-3 col-xl-2 q-px-lg" style="border: 4px solid #1976d2; border-radius: 10px">
           <FormTest :getForm="get_form_api" :submitForm="save_form_api" :forms="forms" :multiDateSelect="true" :page_title="page_title" @done="submitted" columns="two"/>
         </div>
-      <!-- </q-dialog> -->
     </div>
   </q-page>
 </template>
