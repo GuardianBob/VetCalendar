@@ -60,10 +60,6 @@ import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
 
-// import QuickAdd from "components/QuickAdd.vue"
-
-const month_abbrev = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
 export default defineComponent({
   name: "ScheduleShifts",
   components: {
@@ -177,19 +173,8 @@ export default defineComponent({
     },
 
     store_updated_events(event) {
-      // console.log(event)
-      APIService.edit_event(event, true)
-      // const foundEvent = this.updated_events.find(item => item.id == event.id);
-      // if (foundEvent) {
-      //   // Deep clone the array before updating it
-      //   this.updated_events = JSON.parse(JSON.stringify(this.updated_events)).map(item =>
-      //     item.id === event.id ? { ...item, ...event } : item
-      //   );
-      // } else {
-      //   this.updated_events.push(event);
-      // }
-      // console.log(this.updated_events)
-      
+      // ========== Save Dragged Event ==========
+      APIService.edit_event(event, true) // This saves events that are dragged and dropped
     },
 
     quick_add() {
@@ -202,13 +187,7 @@ export default defineComponent({
     edit_event(info) {
       console.log(info.id)
       this.event_id = info.id
-      // let event = this.events.find(obj => obj.id == info.id);
-      // console.log(event, event.borderColor)
-      // let color = event.borderColor
-      // event.backgroundColor = color
-      // event.textColor = MainFunctions.getTextColor(event.borderColor)
       this.event_edit = true
-      // this.get_form = `/get_formbuilder_form/add_shift/${info.id}`
       this.get_form = `/handle_forms`
       this.submit_form = '/handle_forms'
       this.multiDateSelect = false
@@ -259,52 +238,6 @@ export default defineComponent({
       }
       // console.log(this.user_shifts)
     },
-
-    // async getShiftsYear() {
-    //   console.log(this.date)
-    //   this.$q.loading.show()
-    //   // let calendarApi = this.$refs.fullCalendar.getApi()
-    //   let year_start = new Date("01 " + this.date).getFullYear()
-    //   let year_end = new Date("01 " + this.date).getFullYear()
-    //   // console.log(year_start, year_end)
-    //   if (year_end - year_start <= 1) {
-    //     year_end += 1
-    //   }
-    //   let new_start = new Date((year_start - 1).toString() + "/12/15")
-    //   let new_end = new Date((year_end).toString() + "/01/15")
-    //   // console.log(year_start, year_end, parseInt(this.date.slice(4,8)))
-    //   console.log(new_start, new_end)
-    //   await APIService.return_shifts({ "start": new_start, "end": new_end })
-    //     .then(res => {
-    //       console.log(res.data)
-    //       if (res.data != "No Shifts") {
-    //         // this.calendarOptions.events = []
-    //         this.shifts = []
-    //         // console.log(events)
-    //         this.users = res.data.users.sort()
-    //         res.data.shifts.map(event => {
-    //           // console.log(event)
-    //           // this.calendarOptions.events.push({
-    //           //   // Add event to displayed calendar
-    //           //   "title": event["user"],
-    //           //   "start": event["start"],
-    //           //   // "end": shift["end"]["dateTime"],
-    //           // })
-    //           this.shifts.push({
-    //             // Add event to displayed calendar
-    //             "title": event["user"],
-    //             "start": event["start"],
-    //             // "end": shift["end"]["dateTime"],
-    //           })
-    //         })
-    //         // console.log(this.shifts)
-    //         // 
-    //       }
-    //     })
-    //   console.log(this.shifts)
-    //   // calendarApi.updateSize()
-    //   this.$q.loading.hide()
-    // },
   },
 
   created() {

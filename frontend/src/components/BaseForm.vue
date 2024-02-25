@@ -122,24 +122,7 @@
               label-color="primary"
               map-options
               :rules="field.required ? [rules.required] : []"
-            />
-            <!-- :options="states.map(option => ({label: option.model, value: option}))" -->
-            <!-- :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))" -->
-            <!-- :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))" -->
-            <!-- <q-select
-              v-else-if="field.type === 'multi-select' && key === 'fields'"
-              :options="fieldChoices ? fieldChoices.map(option => ({label: option.label, value: option.option})) : []"
-              v-model="field.value"
-              :label="field.label"
-              :id="key"
-              class="q-my-xs q-py-none"
-              outlined
-              multiple
-              user-chips
-              map-options
-              label-color="primary"
-              :rules="field.required ? [rules.required] : []"
-            />             -->
+            />            
             <q-select        
               v-else-if="field.type === 'select' && key == 'model'"        
               :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.model, value: option}))"
@@ -404,35 +387,6 @@ export default defineComponent({
   },
 
   watch: {
-    // formData: {
-    //   deep: true,
-    //   handler(newVal) {
-    //     console.log(newVal);
-    //     // if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
-    //     //   const dateRanges = newVal[''].shift_date.value;
-    //     //   // console.log(dateRanges);
-    //     // }
-    //   },
-    // },
-    // formData: {
-    //   deep: true,
-    //   handler(newVal) {
-    //     // console.log(newVal);
-    //     if (newVal["Add New Item"] != undefined && newVal["Add New Item"].permission) {
-    //       let permission_label = newVal["Add New Item"].permission.value;
-    //       // console.log(permission_label)
-    //       // Replace spaces with underscores
-    //       if (permission_label) {
-    //         permission_label = permission_label
-    //         .toLowerCase()
-    //         .replace(/[^\w\s]|(?<!_)(_)|_/g, "$1")
-    //         .replace(/\s/g, '_')
-    //         this.formData["Add New Item"].permission.value = permission_label;
-    //       }
-    //     }
-    //     // this.formData["Add New Item"].permission_label
-    //   },
-    // },
     columns: {
       immediate: true,
       handler(newValue) {
@@ -546,17 +500,6 @@ export default defineComponent({
 
     handleOptionSelected(event) {
       // console.log("Option ===> ", event);
-      // let data = []
-      // for (let i = 0; i < event.length; i++) {
-      //   console.log(event[i].label, event[i].value, event[i].value.related_model);
-      //   if (event[i].value.related_model) {
-      //     data.push(event[i].value.related_model);
-      //   }
-      // }
-      // APIService.get_field_options(event).then((res) => {
-      //   console.log(res.data);
-      // //   this.fieldOptionSettings = res.data;
-      // });
     },
 
     delete_item() {
@@ -590,21 +533,6 @@ export default defineComponent({
     submit(event) {
       try {
         let submitData = JSON.parse(JSON.stringify(this.formData));
-        // let func = ''
-        // let app = ''
-        // for (let key in submitData) {
-        //   if (submitData[key].hasOwnProperty('options')) {
-        //     delete submitData[key]['options'];
-        //   }
-        //   // if (submitData[key].hasOwnProperty('function')) {
-        //   //   // console.log(submitData[key]['function']);
-        //   //   func = submitData[key]['function'];
-        //   // }
-        //   // if (submitData[key].hasOwnProperty('app')) {
-        //   //   // console.log(submitData[key]['app']);
-        //   //   app = submitData[key]['app'];
-        //   // }
-        // }
         console.log(submitData);
         this.verifySubmit = true;
         submitData.forEach((form) => {
@@ -671,17 +599,10 @@ export default defineComponent({
       await api.post(this.getForm, body).then(async (results) => {
         console.log(results.data);
         this.formData = results.data.forms;
-
-        // this.options = results.data.options ? results.data.options : null;
-        // this.model = results.data.forms["Build Form"].model ? results.data.forms["Build Form"].model : null;
-        // console.log(this.formData["Add New Item"].permission_label)
         console.log(this.formData, this.model);
         if (this.add_to_form_date) {
           this.add_date(this.add_to_form_date)
         }
-        // if ("login" in this.api_call || "register" in this.api_call) {
-        //   add_verify_watcher("#verify_password");
-        // }
       });
     },
 
@@ -708,8 +629,6 @@ export default defineComponent({
       await APIService.get_csrf().then((results) => {
         console.log(results);
         this.csrf_token = results.data;
-        // document.head.querySelector('meta[name="csrf-token"]');
-        // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
       });
     },
   },
