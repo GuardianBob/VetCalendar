@@ -65,35 +65,35 @@ class APIService {
     return 
   }
 
-  get_form() {
-    return api.get('/login/');
-  }
+  // get_form() {
+  //   return api.get('/login/');
+  // }
 
-  create_user(data) {
-    this.setTokenHeader();
-    if (!data) {
-      return api.get('/login/create_user');
-    } else {
-      return api.post('/login/create_user', data);
-    }
-  }
+  // create_user(data) {
+  //   this.setTokenHeader();
+  //   if (!data) {
+  //     return api.get('/login/create_user');
+  //   } else {
+  //     return api.post('/login/create_user', data);
+  //   }
+  // }
 
-  admin_settings(data) {
-    this.setTokenHeader();
-    if (!data) {
-      return api.get('/login/admin_settings');
-    } else {
-      return api.post('/login/admin_settings', data);
-    }
-  }
+  // admin_settings(data) {
+  //   this.setTokenHeader();
+  //   if (!data) {
+  //     return api.get('/login/admin_settings');
+  //   } else {
+  //     return api.post('/login/admin_settings', data);
+  //   }
+  // }
 
-  get_login_csrf() {
-    return api.get('/login/get_csrf');
-  }
+  // get_login_csrf() {
+  //   return api.get('/login/get_csrf');
+  // }
 
-  get_csrf() {
-    return api.get('/get_csrf');
-  }
+  // get_csrf() {
+  //   return api.get('/get_csrf');
+  // }
 
   login(data) {
     return api.post("/login/", data)
@@ -129,20 +129,21 @@ class APIService {
     })
   }
 
-  return_shifts_old(date) {
-    return api.post('/return_shifts_old', {date})
-  }
+  // return_shifts_old(date) {
+  //   return api.post('/return_shifts_old', {date})
+  // }
 
   return_shifts(date) {
     this.setTokenHeader();
     return api.post('/return_shifts', {date})
   }
 
-  save_schedule_updates(data) {
-    this.setTokenHeader();
-    return api.post('/save_schedule_updates', data)
-  }
+  // save_schedule_updates(data) {
+  //   this.setTokenHeader();
+  //   return api.post('/save_schedule_updates', data)
+  // }
 
+  // This saves events that are dragged and dropped
   edit_event(data = null, update=false) {
     this.setTokenHeader();
     if (update) {
@@ -157,27 +158,27 @@ class APIService {
     return api.post('/delete_event', data)
   }
 
-  schedule_settings(data) {
-    this.setTokenHeader();
-    if (!data) {
-      return api.get('/schedule_settings');
-    } else {
-      return api.post('/schedule_settings', data);
-    }
-  }
+  // schedule_settings(data) {
+  //   this.setTokenHeader();
+  //   if (!data) {
+  //     return api.get('/schedule_settings');
+  //   } else {
+  //     return api.post('/schedule_settings', data);
+  //   }
+  // }
 
   get_model_form(model) {
     this.setTokenHeader();
     return api.get(`/get_model_form/${model}`);
   }
 
-  test_calendar() {
-    return api.post('/calendar/test');
-  }
+  // test_calendar() {
+  //   return api.post('/calendar/test');
+  // }
 
-  test_event() {
-    return api.post('/calendar/test_event');
-  }
+  // test_event() {
+  //   return api.post('/calendar/test_event');
+  // }
 
   // get_user_list(formData) {
   //   let upload_url = ''
@@ -196,57 +197,57 @@ class APIService {
   //   })
   // }
 
-  add_edit_form(data) {
-    this.setTokenHeader();
-    if (!data) {
-      return api.get('/add_edit_form');
-    }
-    return api.post('/add_edit_form', data)
-  }
+  // add_edit_form(data) {
+  //   this.setTokenHeader();
+  //   if (!data) {
+  //     return api.get('/add_edit_form');
+  //   }
+  //   return api.post('/add_edit_form', data)
+  // }
 
   get_table_fields(data) {
     this.setTokenHeader();
     return api.post('/get_table_fields', data)
   }
 
-  get_field_options(data) {
-    this.setTokenHeader();
-    return api.post('/get_field_options', data)
-  }
+  // get_field_options(data) {
+  //   this.setTokenHeader();
+  //   return api.post('/get_field_options', data)
+  // }
 
-  get_formbuilder_form(form) {
-    return api.get(`/get_formbuilder_form/${form}`)
-  }
+  // get_formbuilder_form(form) {
+  //   return api.get(`/get_formbuilder_form/${form}`)
+  // }
 
-  submit_formbuilder_form(data) {
-    return api.post(`/get_formbuilder_form/${data}`)
-  }
+  // submit_formbuilder_form(data) {
+  //   return api.post(`/get_formbuilder_form/${data}`)
+  // }
 
-  add_json_form(data) {
-    this.setTokenHeader();
-    return api.post('/add_json_form', data)
-  }
+  // add_json_form(data) {
+  //   this.setTokenHeader();
+  //   return api.post('/add_json_form', data)
+  // }
 
   get_user_list() {
     this.setTokenHeader();
     return api.get('/login/get_user_list');
   }
 
-  get_user_profile_old(req) {
-    this.setTokenHeader();
-    return api.post('/login/get_user_profile', req);
-  }
+  // get_user_profile_old(req) {
+  //   this.setTokenHeader();
+  //   return api.post('/login/get_user_profile', req);
+  // }
 
-  get_user_profile_admin(id) {
-    this.setTokenHeader();
-    return api.post('/login/get_user_profile_admin', id);
-  }
+  // get_user_profile_admin(id) {
+  //   this.setTokenHeader();
+  //   return api.post('/login/get_user_profile_admin', id);
+  // }
 
-  add_user(data) {
-    this.setTokenHeader();
-    // console.log(JSON.stringify(data))
-    return api.post('/login/add_user', data)
-  }
+  // add_user(data) {
+  //   this.setTokenHeader();
+  //   // console.log(JSON.stringify(data))
+  //   return api.post('/login/add_user', data)
+  // }
 
   delete_user(data) {
     this.setTokenHeader();
@@ -254,20 +255,15 @@ class APIService {
     return api.post('/login/delete_user', data)
   }
 
-  get_user_profile(id) {
-    this.setTokenHeader();
-    return api.get(`/login/user_profile/${id}`)
-  }
+  // get_user_profile(id) {
+  //   this.setTokenHeader();
+  //   return api.get(`/login/user_profile/${id}`)
+  // }
 
-  get_test_form(id) {
-    this.setTokenHeader();
-    return api.get(`/login/user_profile/${id}`)
-  }
-
-  update_user_profile(data) {
-    this.setTokenHeader();
-    return api.post('/login/user_profile', data)
-  }
+  // update_user_profile(data) {
+  //   this.setTokenHeader();
+  //   return api.post('/login/user_profile', data)
+  // }
 
   
 }

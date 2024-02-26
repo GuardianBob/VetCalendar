@@ -119,7 +119,7 @@ export default defineComponent({
   },
   mounted() {
     this.get_form()
-    this.get_csrf()
+    // this.get_csrf()
   }
 })
 </script>

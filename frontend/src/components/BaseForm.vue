@@ -625,12 +625,12 @@ export default defineComponent({
       }
     },
 
-    async get_csrf() {
-      await APIService.get_csrf().then((results) => {
-        console.log(results);
-        this.csrf_token = results.data;
-      });
-    },
+    // async get_csrf() {
+    //   await APIService.get_csrf().then((results) => {
+    //     console.log(results);
+    //     this.csrf_token = results.data;
+    //   });
+    // },
   },
   created() {
     this.get_form()

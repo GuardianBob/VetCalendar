@@ -941,59 +941,59 @@ export default defineComponent({
       // this.submit_button = false
     },
 
-    async test_backend() {
-      APIService.test_calendar().then(res => {
-        console.log("res: ", res.data)
-        Notify.create({
-          message: "Calendar test successful",
-          color: "green",
-        })
-      })
-    },
+    // async test_backend() {
+    //   APIService.test_calendar().then(res => {
+    //     console.log("res: ", res.data)
+    //     Notify.create({
+    //       message: "Calendar test successful",
+    //       color: "green",
+    //     })
+    //   })
+    // },
 
-    async test_event() {
-      APIService.test_event().then(res => {
-        console.log("res: ", res.data)
-        Notify.create({
-          message: "Event test successful",
-          color: "green",
-        })
-      })
-    },
+    // async test_event() {
+    //   APIService.test_event().then(res => {
+    //     console.log("res: ", res.data)
+    //     Notify.create({
+    //       message: "Event test successful",
+    //       color: "green",
+    //     })
+    //   })
+    // },
 
-    async test_API() {
-      // var requestOptions = {
-      //   method: 'POST',
-      //   redirect: 'follow'
-      // };
+    // async test_API() {
+    //   // var requestOptions = {
+    //   //   method: 'POST',
+    //   //   redirect: 'follow'
+    //   // };
 
-      // fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events/quickAdd?calendarId=primary&text=Day Shift on June 21 7am-7pm", requestOptions)
-      //   .then(response => response.text())
-      //   .then(result => console.log(result))
-      //   .catch(error => console.log('error', error));
-      let event = {
-        "summary": "Day Shift on June 21 7am-7pm",
-        "location": "World Wide Web",
-        "description": "Testing",
-        "start": {
-          "dateTime": "2023-06-21T07:00:00-07:00",
-          "timeZone": "America/Los_Angeles"
-        },
-        "end": {
-          "dateTime": "2023-06-21T19:00:00-07:00",
-          "timeZone": "America/Los_Angeles"
-        },
-      }
+    //   // fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events/quickAdd?calendarId=primary&text=Day Shift on June 21 7am-7pm", requestOptions)
+    //   //   .then(response => response.text())
+    //   //   .then(result => console.log(result))
+    //   //   .catch(error => console.log('error', error));
+    //   let event = {
+    //     "summary": "Day Shift on June 21 7am-7pm",
+    //     "location": "World Wide Web",
+    //     "description": "Testing",
+    //     "start": {
+    //       "dateTime": "2023-06-21T07:00:00-07:00",
+    //       "timeZone": "America/Los_Angeles"
+    //     },
+    //     "end": {
+    //       "dateTime": "2023-06-21T19:00:00-07:00",
+    //       "timeZone": "America/Los_Angeles"
+    //     },
+    //   }
 
-      const request = gapi.client.calendar.events.insert({
-        'calendarId': 'primary',
-        'resource': event
-      });
+    //   const request = gapi.client.calendar.events.insert({
+    //     'calendarId': 'primary',
+    //     'resource': event
+    //   });
 
-      request.execute(function (event) {
-        appendPre('Event created: ' + event.htmlLink);
-      });
-    },
+    //   request.execute(function (event) {
+    //     appendPre('Event created: ' + event.htmlLink);
+    //   });
+    // },
 
     gapiLoaded() {
       gapi.load('client', this.initializeGapiClient);

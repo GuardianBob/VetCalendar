@@ -291,36 +291,6 @@ def user_login(request):
   except Exception as e:
     return trace_error(e, True)
 
-@csrf_exempt
-def login2(request, login_form = Login_Form()):
-  if request.method == 'POST':
-    print(request.POST)
-    form = Login_Form(request.POST)
-    if form.is_valid():
-      print("it worked!")
-      # email = form.cleaned_data['email']
-      # password = form.cleaned_data['password']
-      # print(email, password )
-      # user = validate_login(email, password)
-      user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
-      # print('auth worked')
-      # print(user)
-      login(request, user)
-      # if user is not None:
-      #   # login(request, user)
-      #   return HttpResponseRedirect('/users/')
-      # else:
-      #   # Show an error message
-      pass
-
-  else:
-      login_form = Login_Form()
-  context = {
-    'login_form': login_form,
-    'page_title': 'Login Form'   
-  }
-  return render(request, 'login_copy.html', context)
-  # return JsonResponse({'form': login_form.as_table()})
 
 def validate_login(email, password):
     # Check if the user exists
@@ -338,133 +308,7 @@ def validate_login(email, password):
         return user
     return None
 
-@csrf_exempt 
-@api_view(['GET', 'POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-def create_user(request):
-  if request.method == 'POST':
-    try:
-      # data = request.POST.copy()
-      data = json.loads(request.body.decode("utf-8"))
-      # data = data[0]['Basic Info']
-      data = list(data[0].values())[0]
-      print(data)
-      if not User.objects.filter(email__icontains=data['email']):
-        phone_number = data['phone_number']
-        if isinstance(phone_number, str):
-          phone_number = re.sub('\D', '', phone_number)
-        user, created = User.objects.update_or_create(
-          username=data['email'],
-          initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
-          defaults={
-            'first_name': data['first_name'],
-            'middle_name': data['middle_name'],
-            'last_name': data['last_name'],
-            'email': data['email'],
-            'phone_number': phone_number,
-            'phone_type': data['phone_type'],
-            'nickname': data['nickname'],
-          }
-        )
-        if created:
-          generate_password(user)
-  #   # print(request.POST)
-  #   form = UserCreationForm(request.POST)
-  #   if form.is_valid():
-  #     # print('valid')
-  #     # print(form.cleaned_data)
-  #     if not verify_new_user(form.cleaned_data["email"]):
-  #       # print('verified new')
-  #       new_user = save_new_user(form.cleaned_data)
-  #       return JsonResponse({'message':'New User Being Added'}, status=200)
-  #     else:
-  #       print('user exists')
-  #       return JsonResponse({'message':'E-Mail already exists'}, status=500)
-  #   print('guess not valid')
-  #   return JsonResponse({'message':'Something went wrong'}, status=500)
-  # else:
-    # post_data['initials'] = get_unique_initials(post_data['first_name'], post_data['middle_name'], post_data['last_name'])
-    # post_data['username'] = post_data['email']
-    # user_form = UserInfoForm(post_data)
-    # phone_form = PhoneForm(post_data)
-    # # email_form = EmailForm(request.POST)
-    # # address_form = AddressForm(request.POST)
-    # # city_state_form = CityStateForm(request.POST)
-    # print(user_form.is_valid(), phone_form.is_valid())
-    # print(post_data['initials'], phone_form['phone_number'])
-    # if user_form.is_valid() and phone_form.is_valid(): #and address_form.is_valid() and city_state_form.is_valid() 
-    #   if not User.objects.filter(email__icontains=user_form.cleaned_data["email"]):
-    #     user = user_form.save()
-    #     user.initials = post_data['initials']  # Set initials
-    #     user.username = post_data['email']  # Set username
-    #     user.save()  # Now save to DB
-    #     print("user: ", user.initials)
-    #     phone = phone_form.save()
-    #     phone.users.add(user)
-    #     phone.save()
-    #     # email = email_form.save(commit=False)
-    #     # email.user = user
-    #     # email.save()
-    #     # address = address_form.save(commit=False)
-    #     # address.user = user
-    #     # address.save()
-    #     # city_state = city_state_form.save(commit=False)
-    #     # city_state.user = user
-    #     # city_state.save()
-    #     # login(request, user)
-        return JsonResponse({'message':'New User Successfully Added'}, status=200)
-      print("Email already exists")
-      return JsonResponse({'message':'Email already exists'}, status=500)
-    except Exception as e:
-      return trace_error(e, True)
-  else:
-    user_form = UserInfoForm()
-    form = set_form_fields(user_form)
-    context = {
-      'forms': {
-        'Basic Info': form, 
-      },
-      'options': get_form_options(),
-    }
-    # return render(request, 'multiForm.html', context)
-    return JsonResponse(context)
-  print("something went wrong")
-  return JsonResponse({'message':'Something went wrong'}, status=500)
 
-def create_user_new(content):
-  try:
-    # data = request.POST.copy()
-    data = content
-    # data = data[0]['Basic Info']
-    # data = list(data[0].values())[0]
-    print(data)
-    data['middle_name'] = data.get('middle_name', '')
-    if not User.objects.filter(email__icontains=data['email']):
-      phone_number = data['phone_number']
-      if isinstance(phone_number, str):
-        phone_number = re.sub('\D', '', phone_number)
-      user, created = User.objects.update_or_create(
-        username=data['email'],
-        initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
-        defaults={
-          'first_name': data['first_name'],
-          'middle_name': data['middle_name'],
-          'last_name': data['last_name'],
-          'email': data['email'],
-          'phone_number': phone_number,
-          'phone_type': data['phone_type'],
-          # 'nickname': data['nickname'],
-        }
-      )
-      if created:
-        generate_password(user)
-
-      return JsonResponse({'message':'New User Successfully Added'}, status=200)
-    print("Email already exists")
-    return JsonResponse({'message':'Email already exists'}, status=500)
-  except Exception as e:
-    return trace_error(e, True)
 
 def verify_new_user(email):
   print(email)
@@ -556,27 +400,9 @@ def get_unique_initials_old(user_first_name='', user_middle_name='', user_last_n
 #   }
 #   return user_info
 
-@csrf_exempt
-def validate(request):
-  print("made it to validate")
-  if request.method != "POST":
-    return redirect("login")
-  # print(request.method)
-  body = json.loads(request.body)
-  # print(bcrypt.hashpw(body['password'].encode(), bcrypt.gensalt()).decode())
-  # print(body['email'], User.objects.filter(email=body['email']))
-  if not len(User.objects.filter(email=body['email'])) > 0:
-    return HttpResponseBadRequest('Invalid Email')
-  else:
-    stored_data = User.objects.get(email=body['email'])
-    if not bcrypt.checkpw(body['password'].encode(), stored_data.password.encode()):
-      return HttpResponseBadRequest('Invalid Email or Password')
-  return JsonResponse({ 'response' : "All good!"})
 
-@ensure_csrf_cookie
-def get_csrf(request):
-  token = csrf.get_token(request)
-  return JsonResponse({'token' : token})
+
+# 
 
 @csrf_exempt 
 @api_view(['GET', 'POST'])
@@ -953,36 +779,7 @@ def get_user_occupation(user):
 def get_user_model_data(user_id, admin=False):
   pass
 
-def get_user_data(request, user_id, admin=False):
-  # print(user_id)
-  # if req["admin"] == "true":
-  # Fetch the user
-  user = get_object_or_404(User, pk=user_id)
-  data = {
-    'first_name': { 'type': 'input', 'value': user.first_name},
-    'middle_name': { 'type': 'input', 'value': user.middle_name},
-    'last_name': { 'type': 'input', 'value': user.last_name},
-    'email': { 'type': 'input', 'value': user.email},
-    'phone_number': { 'type': 'tel', 'value': user.phone_number},
-    'phone_type': { 'type': 'select', 'value': user.phone_type},
-    'nickname': { 'type': 'input', 'value': user.nickname},
-  }
-  for key in data:
-    if key in FORM_FIELD_LABELS:
-      data[key]['label'] = FORM_FIELD_LABELS[key]
-  
-  options = get_form_options()
-  context = {
-    'forms': {
-      'Basic Info': data,
-      'Address': get_user_address(user),
-      # 'Phone': get_user_phone(user),
-      'Occupation': get_user_occupation(user),
-    },
-    'options': options,
-  }
-  # Return the data as JSON
-  return JsonResponse(context)
+
     
 @csrf_exempt
 @api_view(['GET', 'POST'])
@@ -1317,3 +1114,174 @@ def save_user_profile(data, model=None, id=None):
         except Occupation.DoesNotExist:
           occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
   return
+
+# ==================== NOTE: MAY NOT BE USED ========================
+# @csrf_exempt
+# def login2(request, login_form = Login_Form()):
+#   if request.method == 'POST':
+#     print(request.POST)
+#     form = Login_Form(request.POST)
+#     if form.is_valid():
+#       print("it worked!")
+#       # email = form.cleaned_data['email']
+#       # password = form.cleaned_data['password']
+#       # print(email, password )
+#       # user = validate_login(email, password)
+#       user = authenticate(request, username=form.cleaned_data['email'], password=form.cleaned_data['password'])
+#       # print('auth worked')
+#       # print(user)
+#       login(request, user)
+#       # if user is not None:
+#       #   # login(request, user)
+#       #   return HttpResponseRedirect('/users/')
+#       # else:
+#       #   # Show an error message
+#       pass
+
+#   else:
+#       login_form = Login_Form()
+#   context = {
+#     'login_form': login_form,
+#     'page_title': 'Login Form'   
+#   }
+#   return render(request, 'login_copy.html', context)
+#   # return JsonResponse({'form': login_form.as_table()})
+
+
+# @csrf_exempt
+# def validate(request):
+#   print("made it to validate")
+#   if request.method != "POST":
+#     return redirect("login")
+#   # print(request.method)
+#   body = json.loads(request.body)
+#   # print(bcrypt.hashpw(body['password'].encode(), bcrypt.gensalt()).decode())
+#   # print(body['email'], User.objects.filter(email=body['email']))
+#   if not len(User.objects.filter(email=body['email'])) > 0:
+#     return HttpResponseBadRequest('Invalid Email')
+#   else:
+#     stored_data = User.objects.get(email=body['email'])
+#     if not bcrypt.checkpw(body['password'].encode(), stored_data.password.encode()):
+#       return HttpResponseBadRequest('Invalid Email or Password')
+#   return JsonResponse({ 'response' : "All good!"})
+
+
+# @ensure_csrf_cookie
+# def get_csrf(request):
+#   token = csrf.get_token(request)
+#   return JsonResponse({'token' : token})
+
+# def get_user_data(request, user_id, admin=False):
+#   # print(user_id)
+#   # if req["admin"] == "true":
+#   # Fetch the user
+#   user = get_object_or_404(User, pk=user_id)
+#   data = {
+#     'first_name': { 'type': 'input', 'value': user.first_name},
+#     'middle_name': { 'type': 'input', 'value': user.middle_name},
+#     'last_name': { 'type': 'input', 'value': user.last_name},
+#     'email': { 'type': 'input', 'value': user.email},
+#     'phone_number': { 'type': 'tel', 'value': user.phone_number},
+#     'phone_type': { 'type': 'select', 'value': user.phone_type},
+#     'nickname': { 'type': 'input', 'value': user.nickname},
+#   }
+#   for key in data:
+#     if key in FORM_FIELD_LABELS:
+#       data[key]['label'] = FORM_FIELD_LABELS[key]
+  
+#   options = get_form_options()
+#   context = {
+#     'forms': {
+#       'Basic Info': data,
+#       'Address': get_user_address(user),
+#       # 'Phone': get_user_phone(user),
+#       'Occupation': get_user_occupation(user),
+#     },
+#     'options': options,
+#   }
+#   # Return the data as JSON
+#   return JsonResponse(context)
+
+# @csrf_exempt 
+# @api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def create_user(request):
+#   if request.method == 'POST':
+#     try:
+#       # data = request.POST.copy()
+#       data = json.loads(request.body.decode("utf-8"))
+#       # data = data[0]['Basic Info']
+#       data = list(data[0].values())[0]
+#       print(data)
+#       if not User.objects.filter(email__icontains=data['email']):
+#         phone_number = data['phone_number']
+#         if isinstance(phone_number, str):
+#           phone_number = re.sub('\D', '', phone_number)
+#         user, created = User.objects.update_or_create(
+#           username=data['email'],
+#           initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
+#           defaults={
+#             'first_name': data['first_name'],
+#             'middle_name': data['middle_name'],
+#             'last_name': data['last_name'],
+#             'email': data['email'],
+#             'phone_number': phone_number,
+#             'phone_type': data['phone_type'],
+#             'nickname': data['nickname'],
+#           }
+#         )
+#         if created:
+#           generate_password(user)
+#         return JsonResponse({'message':'New User Successfully Added'}, status=200)
+#       print("Email already exists")
+#       return JsonResponse({'message':'Email already exists'}, status=500)
+#     except Exception as e:
+#       return trace_error(e, True)
+#   else:
+#     user_form = UserInfoForm()
+#     form = set_form_fields(user_form)
+#     context = {
+#       'forms': {
+#         'Basic Info': form, 
+#       },
+#       'options': get_form_options(),
+#     }
+#     # return render(request, 'multiForm.html', context)
+#     return JsonResponse(context)
+#   print("something went wrong")
+#   return JsonResponse({'message':'Something went wrong'}, status=500)
+
+# def create_user_new(content):
+#   try:
+#     # data = request.POST.copy()
+#     data = content
+#     # data = data[0]['Basic Info']
+#     # data = list(data[0].values())[0]
+#     print(data)
+#     data['middle_name'] = data.get('middle_name', '')
+#     if not User.objects.filter(email__icontains=data['email']):
+#       phone_number = data['phone_number']
+#       if isinstance(phone_number, str):
+#         phone_number = re.sub('\D', '', phone_number)
+#       user, created = User.objects.update_or_create(
+#         username=data['email'],
+#         initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
+#         defaults={
+#           'first_name': data['first_name'],
+#           'middle_name': data['middle_name'],
+#           'last_name': data['last_name'],
+#           'email': data['email'],
+#           'phone_number': phone_number,
+#           'phone_type': data['phone_type'],
+#           # 'nickname': data['nickname'],
+#         }
+#       )
+#       if created:
+#         generate_password(user)
+
+#       return JsonResponse({'message':'New User Successfully Added'}, status=200)
+#     print("Email already exists")
+#     return JsonResponse({'message':'Email already exists'}, status=500)
+#   except Exception as e:
+#     return trace_error(e, True)
