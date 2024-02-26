@@ -97,22 +97,22 @@ export default {
 
     deny_choice() {
       this.$emit("confirmed", false)
-      Notify.create({
-        message: "Action cancelled.",
-        color: "primary",
-        position: "top",
-        timeout: 2000,
-      });
+      // Notify.create({
+      //   message: "Action cancelled.",
+      //   color: "primary",
+      //   position: "top",
+      //   timeout: 2000,
+      // });
     },
 
     confirm_choice() {
       this.$emit("confirmed", true)
-      Notify.create({
-        message: "Action confirmed.",
-        color: "negative",
-        position: "top",
-        timeout: 2000,
-      });
+      // Notify.create({
+      //   message: "Action confirmed.",
+      //   color: "negative",
+      //   position: "top",
+      //   timeout: 2000,
+      // });
     }
   },
 

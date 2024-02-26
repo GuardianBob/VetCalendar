@@ -2,35 +2,34 @@ from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db.models import ForeignKey, ManyToManyField, Q
 from backend.utils import trace_error, process_forms_test
 from django.http import JsonResponse
-from .serializers import CalendarSerializer
-from django.core import serializers
+# from .serializers import CalendarSerializer
+# from django.core import serializers
 from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts, FormBuilder, FormBuilderNew
 from django.forms.models import model_to_dict
-from .forms import QuickAddForm, ShiftNameForm
+# from .forms import QuickAddForm, ShiftNameForm
 from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
-from login.forms import AccessLevelForm, PermissionForm
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+# from login.forms import AccessLevelForm, PermissionForm
+from django.views.decorators.csrf import csrf_exempt
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone, convert_label
 from login.scripts import get_settings_columns
-from login.views import create_user_new
 import json, traceback, sys, re, pytz, os
 from datetime import date, timedelta
 import dateutil.parser as parser
 # import numpy as np
 from django.utils import timezone
-from django.middleware.csrf import get_token
+# from django.middleware.csrf import get_token
 from dateutil.parser import parse as parse_date
 from django.apps import apps
 from importlib import import_module
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework.authentication import TokenAuthentication
+# from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+# from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from rest_framework import exceptions, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.backends import TokenBackend
+# from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+# from rest_framework import exceptions, status
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 import logging.handlers
@@ -52,11 +51,7 @@ handler.setFormatter(formatter)
 # Add the handler to the logger
 logger.addHandler(handler)
 
-@ensure_csrf_cookie
-def get_csrf(request):
-  token = get_token(request)
-  print('token: ', token)
-  return JsonResponse({'token' : token})
+
 
 month_list = {
   "Jan": "01",
@@ -122,31 +117,6 @@ FORM_OPTION_MODEL = {
 
 FORM_OPTION_LABELS = {
   'Permission': 'permission',
-}
-
-JSON_FORM = {
-  "form_name": "Add User", 
-  "app": "login", 
-  "table": "User", 
-  "fields": {
-    "first_name": { "label": "First Name", "type": "text", "value": None, "required": True, "model_edit_field": "first_name"},
-    "last_name": {"label": "Last Name", "type": "text", "value": None, "required": True, "model_edit_field": "last_name"},
-    "email": {"label": "E-Mail", "type": "text", "value": None, "required": True, "model_edit_field": "email"},
-    "phone_number": {"label": "Phone Number", "type": "phone", "value": None, "required": False,"model_edit_field": "phone_number"},
-    "phone_type": {"label": "Phone Type", "type": "select", "value": None, "required": False,"model_edit_field": "phone_type"}
-  },
-  "field_options": {
-    "shift": {"field": "shift", "related_model": "ShiftName", "option_label": "shift_label", "option_value": "id", "type": "select"},
-    "shift_type": {"field": "shift_type", "related_model": "ShiftType", "option_label": "type_label", "option_value": "id", "type": "select"},
-    "user": {"field": "user", "related_model": "User", "option_label": "last_name", "option_value": "id", "type": "select"}
-  },
-  "custom_options": [
-    {"field": "phone_type", "option": "Mobile", "label": "Mobile"},
-    {"field": "phone_type", "option": "Home", "label": "Home"},
-    {"field": "phone_type", "option": "Office", "label": "Office"},
-    {"field": "phone_type", "option": "Other", "label": "Other"}
-  ],
-  "save_function": "add_user"
 }
 
 # ======== NOTE: Need to update this so Office Manager can set Hospital Timezone in Admin Settings =========
@@ -265,98 +235,10 @@ def return_shifts(request):
   else:
     return HttpResponse("No Shifts")
   
-@csrf_exempt 
-def return_shifts_old(request):
-  # print(request.body)
-  content = json.loads(request.body)
-  # print(content["date"])
-  start = content["date"]["start"]
-  end = content["date"]["end"]
-  shifts = Calendar.objects.filter(start__gte=start, end__lte=end)
-  # print(shifts)
-  events = []
-  users = []
-  if shifts:
-    for shift in shifts:
-      # print(shift.start)
-      events.append({
-        "id": shift.id,
-        "user": shift.user_initials,
-        "start": str(shift.start),
-        "end": str(shift.end),
-      })
-      if not shift.user_initials in users: users.append(shift.user_initials)
-    results = {'shifts': events, 'users': users}
-    # print(users, events)
-    # print(timezone.now())
-    return JsonResponse(results)
-  else:
-    return HttpResponse("No Shifts")
 
-@api_view(['GET', 'POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-@csrf_exempt
-def quick_add(request):
-  try:
-    if request.method == 'POST':
-      content = json.loads(request.body)
-      # content = list(content[0].values())[0]
-      # print(content)
-      user = User.objects.get(id=content['user'])
-      shift_name = ShiftName.objects.get(id=content['shift'])
-      shift_type = ShiftType.objects.get(id=content['shift_type'])
-      # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
-      for date in content['shift_date']:
-        item = content
-        item['shift_date'] = date
-        # print(item)
-        shift_date = parse_date(date).date()
-        shift_start = convert_to_shift_datetime(date, shift_name.start_time)
-        shift_end = convert_to_shift_datetime(date, shift_name.end_time)
-        if shift_end < shift_start:
-          shift_end = shift_end + timedelta(hours=24)
-        print(f'start: {shift_start}, end: {shift_end}')
-        existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
-        if existing_shift:
-          item['id'] = existing_shift.id
-          print(item)
-        shift = create_update_shift(item)
-        #   print(existing_shift.shift_start)
-        #   existing_shift.shift = shift
-        #   existing_shift.shift_type = shift_type
-        #   existing_shift.shift_start = shift_start
-        #   existing_shift.shift_end = shift_end
-        #   existing_shift.save()
-        #   # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
-        # else:
-        #   # If there's no existing shift, create a new one
-        #   new_shift = Shifts.objects.create(
-        #     user=user, 
-        #     shift_start=shift_start, 
-        #     shift=shift, 
-        #     shift_type=shift_type, 
-        #     shift_end=shift_end
-        #   )
-      return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
-    else:
-      form = QuickAddForm()
-      form = set_form_fields(form)
-      # print(form)
-      options = get_shift_options()
-      options = options + get_shift_type_options() + get_user_options()
-      # print(options)
-      context = {
-        'forms': {
-          '': form,
-        },
-        'options': options
-      }
-      print(context)
-      return JsonResponse(context)
-  except Exception as e:
-    return trace_error(e, True)
 
+
+# ========== NOTE: May be able to replace with Table Builder Script ==========
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -530,25 +412,6 @@ def switch_api_key(value):
   except Exception as e:
     return trace_error(e, True)
 
-# ============================ NOTE: MAy not be used ============================
-@api_view(['GET', 'POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-@csrf_exempt
-def save_schedule_updates(request):
-  try:
-    if request.method == 'POST':
-      content = json.loads(request.body)
-      for item in content:
-        print(item)
-        # shift = Shifts.objects.get(id=item['id'])
-        # shift.shift_start = item['start']
-        # shift.shift_end = item['end']
-        # shift.save()
-      return JsonResponse({'message': 'Shifts Updated'}, status=200)
-  except Exception as e:
-    return trace_error(e, True)
-#================================================================================  
 
 def create_update_shift(data):
   shift_details = ShiftName.objects.get(id=data['shift'])
@@ -588,27 +451,27 @@ def edit_event(request, id=None):
       create_update_shift(content)
 
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
-    else:
-      # shift = Shifts.objects.values('id', 'shift', 'shift_type', 'shift_start', 'shift_end', 'user').filter(id=id)
-      event = get_object_or_404(Shifts, pk=id)
-      print(event.shift_start.date())
-      data = {
-        'user': { 'type': 'select', 'value': event.user.id, 'label': 'User', 'required': True},
-        'shift': { 'type': 'select', 'value': event.shift_name.id, 'label': 'Shift', 'required': True},
-        'shift_type': { 'type': 'select', 'value': event.shift_type.id, 'label': 'Shift Type', 'required': True},
-        'shift_date': { 'type': 'date', 'value': event.shift_start.date(), 'label': 'Shift Date', 'required': True},
-        'id': { 'type': 'hidden', 'value': event.id},
-      }
-      print(data)
-      options = get_shift_options()
-      options = options + get_shift_type_options() + get_user_options()
-      context = {
-        'forms': {
-          '': data,
-        },
-        'options': options
-      }
-      return JsonResponse(context)
+    # else:
+    #   # shift = Shifts.objects.values('id', 'shift', 'shift_type', 'shift_start', 'shift_end', 'user').filter(id=id)
+    #   event = get_object_or_404(Shifts, pk=id)
+    #   print(event.shift_start.date())
+    #   data = {
+    #     'user': { 'type': 'select', 'value': event.user.id, 'label': 'User', 'required': True},
+    #     'shift': { 'type': 'select', 'value': event.shift_name.id, 'label': 'Shift', 'required': True},
+    #     'shift_type': { 'type': 'select', 'value': event.shift_type.id, 'label': 'Shift Type', 'required': True},
+    #     'shift_date': { 'type': 'date', 'value': event.shift_start.date(), 'label': 'Shift Date', 'required': True},
+    #     'id': { 'type': 'hidden', 'value': event.id},
+    #   }
+    #   print(data)
+    #   options = get_shift_options()
+    #   options = options + get_shift_type_options() + get_user_options()
+    #   context = {
+    #     'forms': {
+    #       '': data,
+    #     },
+    #     'options': options
+    #   }
+    #   return JsonResponse(context)
   except Exception as e:
     return trace_error(e, True)
   
@@ -627,22 +490,6 @@ def delete_event(request):
       return JsonResponse({'message': 'Shift Deleted'}, status=200)
   except Exception as e:
     return trace_error(e, True)
-  
-def add_edit_form(request, id=None):
-  try:
-    if request.method == 'POST':
-      content = json.loads(request.body)
-      print(content)
-      # shift = Shifts.objects.get(id=content['id'])
-      # print(shift)
-      # shift.delete()
-      return JsonResponse({'message': 'Testing Backend'}, status=500)
-    else:
-
-      return JsonResponse({'message': 'Testing Backend'}, status=500)
-  except Exception as e:
-    return trace_error(e, True)
-    
   
 def get_form_new(form_name):
   try:
@@ -692,65 +539,6 @@ def process_form_data(json_data):
     obj, created = ModelClass.objects.update_or_create(defaults=data, shift_date=date, user=data['user'], shift=data['shift'], shift_type=data['shift_type'])
 
   return {"message": "Records created or updated successfully"}
-
-@api_view(['GET', 'POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-@csrf_exempt
-def form_builder(request):
-  try:
-    if request.method == 'GET':
-      # get all fields from VetCalendar.FormBuilder model
-      # fields = get_field_names(FormBuilder)
-      # print(fields)
-      fields = {
-        "form_name": { "field": "form_name", "label": "Form Name", "type": "text", "required": True },
-        "app":  { "field": "app", "label": "Module", "type": "select", "required": False },
-        "table":  { "field": "table", "label": "Table", "type": "select", "required": True },
-        "fields":  { "field": "fields", "label": "Fields", "type": "multi-select", "required": True },
-        "field_options":  { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": False },
-        "custom_options":  { "field": "custom_options", "label": "Custom Options", "type": "multi-text", "required": False },
-      }
-      print("\n \n Updated fields: ====> ", fields)
-      # build_form['fields'] = fields
-      models_names = get_all_model_names_with_apps()
-      print("Model Names: ====> ", models_names)
-      table_options = []
-      apps = []
-      for model in models_names:
-        table_options.append({
-          "field": "table",
-          "app": model['app'],
-          "model": model['model'],
-        })
-        if not model['app'] in apps:
-          apps.append(model['app'])
-          table_options.append({
-            "field": "app",
-            "label": model['app'],
-            "option": model['app'],
-          })
-      print("Table Options: ===> ", table_options)
-      # build_form['options'] = table_options
-
-      context = {
-        "forms": {
-          "Build Form": {
-            "fields": fields,
-            "options": table_options,
-            "model": {"VetCalendar": "FormBuilder"}
-          },
-        },
-      }
-      return JsonResponse(context)
-    else:
-      return create_update_form(request)
-  except Exception as e:
-    return trace_error(e, True)
-
-@csrf_exempt
-def add_json_form(request):
-  return JsonResponse({'message':'Testing...'}, status=200)
   
 def get_field_names(app_name, model_name):
     model = apps.get_model(app_name, model_name)
@@ -819,73 +607,6 @@ def get_field_names_and_related_fields(app_name, model_name):
           # "related_fields": None,
         })
   return data
-
-@api_view(['POST'])
-@authentication_classes([JWTAuthentication])
-@permission_classes([IsAuthenticated])
-@csrf_exempt
-def get_field_options(request):
-  try:
-    print(request.body)
-    content = json.loads(request.body)
-    print(content)
-    
-    return JsonResponse({'message':'Testing...'}, status=200)
-  except Exception as e:
-    return trace_error(e, True)
-
-def create_update_form(request):
-  try:
-    # print(request.body)
-    content = json.loads(request.body)
-    print(content)
-    for form_name, form_data in content.items():
-      fields = form_data.get('fields', {})
-      options = form_data.get('field_options', None)
-      custom = form_data.get('custom_options', None)
-      model_data = form_data.get('table', None)
-      app = list(model_data.keys())[0] if model_data else ''
-      table = model_data.get(app, '')
-      form_id = form_data.get('id') if form_data.get('id') else None
-      field_options = {option['field']: option for option in options} if options else {}
-      custom_options = {option['field']: option for option in custom if 'field' in option} if custom else {}
-      save_function = form_data.get('save_function', None)
-      print("Name: ", form_name, "\n Fields: ", fields, "\n Options", field_options, "\n Module: ", app, "Table: ", table)
-      if form_id:
-        try:
-          form_builder = FormBuilder.objects.get(id=form_id)
-          form_builder.form_name = form_name
-          form_builder.app = app
-          form_builder.table = table
-          form_builder.fields = fields
-          form_builder.field_options = field_options
-          form_builder.custom_options = custom_options
-          form_builder.save_function = save_function
-          form_builder.save()
-        except FormBuilder.DoesNotExist:
-          form_builder = FormBuilder.objects.create(
-              form_name=form_name,
-              app=app,
-              table=table,
-              fields=fields,
-              field_options=field_options,
-              custom_options=custom_options,
-              save_function=save_function,
-            )
-      else:
-        form_builder = FormBuilder.objects.create(
-          form_name=form_name,
-          app=app,
-          table=table,
-          fields=fields,
-          field_options=field_options,
-          custom_options=custom_options,
-          save_function=save_function,
-        )
-
-    return JsonResponse({'message':'Testing...'}, status=200)
-  except Exception as e:
-    return trace_error(e, True)
   
 @api_view(['GET', 'POST'])
 # @authentication_classes([JWTAuthentication])
@@ -978,6 +699,302 @@ def handle_forms(request):
   except Exception as e:
     return trace_error(e, True)
   
+
+def pull_model_options(field_options):
+  options = []
+  for item in field_options:
+    print(item)
+    related_model_name = item.get('related_model')
+    option_label = item.get('option_label')
+    if related_model_name and option_label:
+      app_name, model_name = related_model_name.split('.')
+      related_model = apps.get_model(app_name, model_name)
+      model_objects = related_model.objects.all()
+      for obj in model_objects:
+        option = {
+          'field': item['field'],
+          'option': obj.id,
+          'label': getattr(obj, option_label)
+        }
+        options.append(option)
+  return options
+
+def get_model_instance(app_name, model_name, id):
+  Model = apps.get_model(app_name, model_name)
+  instance = Model.objects.values().get(id=id)
+  return instance
+
+def strip_form_content(content):
+  fields = {}
+  for field in content['fields']:
+    # print(field)
+    # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
+    if isinstance(field['value'], dict):
+      fields[field['field_name']] = field['value']['value']
+    # elif isinstance(field['value'], list):
+    #   fields[key] = value['value']
+    else:
+      fields[field['field_name']] = field['value']
+    # print(fields)
+  return fields
+
+def add_event(content, event_id=None):
+  try:
+    fields = content
+    # for key, value in content['fields'].items():
+    #   fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
+    print(fields, '\n', event_id)
+    user = User.objects.get(id=fields['user'])
+    shift_name = ShiftName.objects.get(id=fields['shift'])
+    shift_type = ShiftType.objects.get(id=fields['shift_type'])
+    # dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
+    # shift_date = parse_date(date).date()
+    if event_id != None:
+      fields['id'] = event_id
+      shift = create_update_shift(fields)
+      return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+    if not isinstance(fields['shift_date'], list):
+      fields['shift_date'] = [fields['shift_date']]
+    # if isinstance(fields['shift_date'], list):
+    dates = [parse_date(date) for date in fields['shift_date']]
+    # else:
+    #   dates = [parse_date(fields['shift_date'])]
+    # print("======== DATES =========>  ", dates)
+    # Get the earliest and latest dates
+    earliest_date, latest_date = min(dates), max(dates)
+    if earliest_date == latest_date:
+      latest_date = earliest_date + timedelta(days=1)
+    # print('date filter ====>: ', earliest_date, latest_date)
+    # Filter the shifts
+    existing_shifts = Shifts.objects.filter(
+      Q(user=user),
+      Q(shift_start__date__gte=earliest_date),
+      Q(shift_start__date__lte=latest_date)
+    ).values_list('shift_start__date', 'id')
+    # print('Existing shifts===> :', existing_shifts)
+    existing_shifts_dict = {date.strftime('%b-%d-%Y'): id for date, id in existing_shifts}
+    # print(fields)
+    for date in fields['shift_date']:
+      item = fields.copy()
+      item['shift_date'] = date
+      # print(existing_shifts_dict)
+      if date in existing_shifts_dict:
+        item['id'] = existing_shifts_dict[date]
+      shift = create_update_shift(item)
+    return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+  
+# ============================ NOTE: MAy not be used ============================
+  
+@csrf_exempt
+def test_json_form(request):
+  test_form = FormBuilderNew.objects.values().first()
+  print(test_form)
+  return JsonResponse(test_form, status=200)
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def get_field_options(request):
+  try:
+    print(request.body)
+    content = json.loads(request.body)
+    print(content)
+    
+    return JsonResponse({'message':'Testing...'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+
+
+def add_edit_form(request, id=None):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      print(content)
+      # shift = Shifts.objects.get(id=content['id'])
+      # print(shift)
+      # shift.delete()
+      return JsonResponse({'message': 'Testing Backend'}, status=500)
+    else:
+
+      return JsonResponse({'message': 'Testing Backend'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+    
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def save_schedule_updates(request):
+  try:
+    if request.method == 'POST':
+      content = json.loads(request.body)
+      for item in content:
+        print(item)
+        # shift = Shifts.objects.get(id=item['id'])
+        # shift.shift_start = item['start']
+        # shift.shift_end = item['end']
+        # shift.save()
+      return JsonResponse({'message': 'Shifts Updated'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+
+
+# @api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# @csrf_exempt
+# def form_builder(request):
+#   try:
+#     if request.method == 'GET':
+#       # get all fields from VetCalendar.FormBuilder model
+#       # fields = get_field_names(FormBuilder)
+#       # print(fields)
+#       fields = {
+#         "form_name": { "field": "form_name", "label": "Form Name", "type": "text", "required": True },
+#         "app":  { "field": "app", "label": "Module", "type": "select", "required": False },
+#         "table":  { "field": "table", "label": "Table", "type": "select", "required": True },
+#         "fields":  { "field": "fields", "label": "Fields", "type": "multi-select", "required": True },
+#         "field_options":  { "field": "field_options", "label": "Field Options", "type": "multi-select", "required": False },
+#         "custom_options":  { "field": "custom_options", "label": "Custom Options", "type": "multi-text", "required": False },
+#       }
+#       print("\n \n Updated fields: ====> ", fields)
+#       # build_form['fields'] = fields
+#       models_names = get_all_model_names_with_apps()
+#       print("Model Names: ====> ", models_names)
+#       table_options = []
+#       apps = []
+#       for model in models_names:
+#         table_options.append({
+#           "field": "table",
+#           "app": model['app'],
+#           "model": model['model'],
+#         })
+#         if not model['app'] in apps:
+#           apps.append(model['app'])
+#           table_options.append({
+#             "field": "app",
+#             "label": model['app'],
+#             "option": model['app'],
+#           })
+#       print("Table Options: ===> ", table_options)
+#       # build_form['options'] = table_options
+
+#       context = {
+#         "forms": {
+#           "Build Form": {
+#             "fields": fields,
+#             "options": table_options,
+#             "model": {"VetCalendar": "FormBuilder"}
+#           },
+#         },
+#       }
+#       return JsonResponse(context)
+#     else:
+#       return create_update_form(request)
+#   except Exception as e:
+#     return trace_error(e, True)
+
+# @api_view(['GET', 'POST'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# @csrf_exempt
+# def quick_add(request):
+#   try:
+#     if request.method == 'POST':
+#       content = json.loads(request.body)
+#       # content = list(content[0].values())[0]
+#       # print(content)
+#       user = User.objects.get(id=content['user'])
+#       shift_name = ShiftName.objects.get(id=content['shift'])
+#       shift_type = ShiftType.objects.get(id=content['shift_type'])
+#       # shift_date = datetime.strptime(content['shift_date'], "%Y-%m-%d").date()
+#       for date in content['shift_date']:
+#         item = content
+#         item['shift_date'] = date
+#         # print(item)
+#         shift_date = parse_date(date).date()
+#         shift_start = convert_to_shift_datetime(date, shift_name.start_time)
+#         shift_end = convert_to_shift_datetime(date, shift_name.end_time)
+#         if shift_end < shift_start:
+#           shift_end = shift_end + timedelta(hours=24)
+#         print(f'start: {shift_start}, end: {shift_end}')
+#         existing_shift = Shifts.objects.filter(user=user, shift_start__date=shift_start.date()).first()
+#         if existing_shift:
+#           item['id'] = existing_shift.id
+#           print(item)
+#         shift = create_update_shift(item)
+#         #   print(existing_shift.shift_start)
+#         #   existing_shift.shift = shift
+#         #   existing_shift.shift_type = shift_type
+#         #   existing_shift.shift_start = shift_start
+#         #   existing_shift.shift_end = shift_end
+#         #   existing_shift.save()
+#         #   # return JsonResponse({'message':f'Shift(s) Updated'}, status=200)
+#         # else:
+#         #   # If there's no existing shift, create a new one
+#         #   new_shift = Shifts.objects.create(
+#         #     user=user, 
+#         #     shift_start=shift_start, 
+#         #     shift=shift, 
+#         #     shift_type=shift_type, 
+#         #     shift_end=shift_end
+#         #   )
+#       return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
+#     else:
+#       form = QuickAddForm()
+#       form = set_form_fields(form)
+#       # print(form)
+#       options = get_shift_options()
+#       options = options + get_shift_type_options() + get_user_options()
+#       # print(options)
+#       context = {
+#         'forms': {
+#           '': form,
+#         },
+#         'options': options
+#       }
+#       print(context)
+#       return JsonResponse(context)
+#   except Exception as e:
+#     return trace_error(e, True)
+  
+# @csrf_exempt 
+# def return_shifts_old(request):
+#   # print(request.body)
+#   content = json.loads(request.body)
+#   # print(content["date"])
+#   start = content["date"]["start"]
+#   end = content["date"]["end"]
+#   shifts = Calendar.objects.filter(start__gte=start, end__lte=end)
+#   # print(shifts)
+#   events = []
+#   users = []
+#   if shifts:
+#     for shift in shifts:
+#       # print(shift.start)
+#       events.append({
+#         "id": shift.id,
+#         "user": shift.user_initials,
+#         "start": str(shift.start),
+#         "end": str(shift.end),
+#       })
+#       if not shift.user_initials in users: users.append(shift.user_initials)
+#     results = {'shifts': events, 'users': users}
+#     # print(users, events)
+#     # print(timezone.now())
+#     return JsonResponse(results)
+#   else:
+#     return HttpResponse("No Shifts")
+
+# @ensure_csrf_cookie
+# def get_csrf(request):
+#   token = get_token(request)
+#   print('token: ', token)
+#   return JsonResponse({'token' : token})
+  
 # @api_view(['GET', 'POST'])
 # # @authentication_classes([JWTAuthentication])
 # # @permission_classes([IsAuthenticated])
@@ -1067,123 +1084,3 @@ def handle_forms(request):
 #   except Exception as e:
 #     return trace_error(e, True)
   
-def pull_model_options(field_options):
-  options = []
-  for item in field_options:
-    print(item)
-    related_model_name = item.get('related_model')
-    option_label = item.get('option_label')
-    if related_model_name and option_label:
-      app_name, model_name = related_model_name.split('.')
-      related_model = apps.get_model(app_name, model_name)
-      model_objects = related_model.objects.all()
-      for obj in model_objects:
-        option = {
-          'field': item['field'],
-          'option': obj.id,
-          'label': getattr(obj, option_label)
-        }
-        options.append(option)
-  return options
-
-def get_model_instance(app_name, model_name, id):
-  Model = apps.get_model(app_name, model_name)
-  instance = Model.objects.values().get(id=id)
-  return instance
-
-def strip_form_content(content):
-  fields = {}
-  for field in content['fields']:
-    # print(field)
-    # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
-    if isinstance(field['value'], dict):
-      fields[field['field_name']] = field['value']['value']
-    # elif isinstance(field['value'], list):
-    #   fields[key] = value['value']
-    else:
-      fields[field['field_name']] = field['value']
-    # print(fields)
-  return fields
-
-def add_event(content, event_id=None):
-  try:
-    # if event_id != None:
-    #   print("\n====LOADING====\n", content, "\n")
-    #   event = Shifts.objects.get(id=event_id)
-    #   event.user = content['user']
-    #   event.shift = content['shift']
-    #   event.shift_type = content['shift_type']
-    #   event.shift_date = content['shift_date']
-    #   for field in content['form']['fields']:
-    #   # for key, item in content['form']['fields'].items():
-    #     if field['type'] == 'date':
-    #       field['value'] = content['values'][field['model_edit_field']].strftime('%b-%d-%Y')
-    #     # if field['type'] == 'select':
-    #     else:
-    #       field['value'] = content['values'][field['model_edit_field']]
-    #   # content['form']['fields']['user']['value'] = content['values']['user_id']
-    #   # content['form']['fields']['shift']['value'] = content['values']['shift_name_id']
-    #   # content['form']['fields']['shift_type']['value'] = content['values']['shift_type_id']
-    #   # content['form']['fields']['shift_date']['value'] = content['values']['shift_start'].strftime('%b-%d-%Y')
-    #   print("\n =====END LOADING====\n")
-    #   return content['form']
-    # else:
-    # content = {
-    #   'fields': {
-    #     'user': {'label': 'User', 'type': 'select', 'value': {'label': 'Meyer', 'value': 1}, 'required': True},
-    #     'shift': {'label': 'Shift', 'type': 'select', 'value': {'label': 'Day', 'value': 1}, 'required': True},
-    #     'shift_type': {'label': 'Shift Type', 'type': 'select', 'value': {'label': 'Switch', 'value': 6}, 'required': True},
-    #     'shift_date': {'label': 'Shift Date', 'type': 'date', 'value': ['Feb-15-2024', 'Feb-16-2024'], 'required': True}},
-    #   model': {
-    #   'app': 'VetCalendar', 'model': 'Shifts'
-    # }}
-    fields = content
-    # for key, value in content['fields'].items():
-    #   fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
-    print(fields, '\n', event_id)
-    user = User.objects.get(id=fields['user'])
-    shift_name = ShiftName.objects.get(id=fields['shift'])
-    shift_type = ShiftType.objects.get(id=fields['shift_type'])
-    # dates = [datetime.datetime.strptime(date, '%b-%d-%Y') for date in fields['shift_date']]
-    # shift_date = parse_date(date).date()
-    if event_id != None:
-      fields['id'] = event_id
-      shift = create_update_shift(fields)
-      return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
-    if not isinstance(fields['shift_date'], list):
-      fields['shift_date'] = [fields['shift_date']]
-    # if isinstance(fields['shift_date'], list):
-    dates = [parse_date(date) for date in fields['shift_date']]
-    # else:
-    #   dates = [parse_date(fields['shift_date'])]
-    # print("======== DATES =========>  ", dates)
-    # Get the earliest and latest dates
-    earliest_date, latest_date = min(dates), max(dates)
-    if earliest_date == latest_date:
-      latest_date = earliest_date + timedelta(days=1)
-    # print('date filter ====>: ', earliest_date, latest_date)
-    # Filter the shifts
-    existing_shifts = Shifts.objects.filter(
-      Q(user=user),
-      Q(shift_start__date__gte=earliest_date),
-      Q(shift_start__date__lte=latest_date)
-    ).values_list('shift_start__date', 'id')
-    # print('Existing shifts===> :', existing_shifts)
-    existing_shifts_dict = {date.strftime('%b-%d-%Y'): id for date, id in existing_shifts}
-    # print(fields)
-    for date in fields['shift_date']:
-      item = fields.copy()
-      item['shift_date'] = date
-      # print(existing_shifts_dict)
-      if date in existing_shifts_dict:
-        item['id'] = existing_shifts_dict[date]
-      shift = create_update_shift(item)
-    return JsonResponse({'message':f'Shift(s) Added/Updated'}, status=200)
-  except Exception as e:
-    return trace_error(e, True)
-  
-@csrf_exempt
-def test_json_form(request):
-  test_form = FormBuilderNew.objects.values().first()
-  print(test_form)
-  return JsonResponse(test_form, status=200)
