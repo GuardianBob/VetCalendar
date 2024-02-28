@@ -28,3 +28,15 @@ location / {
   root /path/to/your/app;  # replace with the actual path to your Quasar app
   try_files $uri $uri/ /index.html;
 }
+
+# Current available features:
+- Login:
+  - User login
+  - User access request
+  - "Remember Me" function to keep user logged in for multipple days
+- Manage Users
+  - New user creation (admin)
+  - Edit User Details
+  - Delete User
+- Manage Schedule
+  - 
