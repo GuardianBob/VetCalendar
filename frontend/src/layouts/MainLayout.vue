@@ -80,45 +80,45 @@ const linksList = [
     title: 'Login',
     caption: '',
     icon: 'lock',
-    link: '/login',
-    sublinks : [
-      {
-        title: 'Login',
-        caption: '',
-        icon: 'lock',
-        link: '/login'
-      },
-      {
-        title: 'Register',
-        caption: '',
-        icon: 'lock',
-        link: '/register'
-      },
-    ]
+    link: '/login'
   },
+  // {
+  //   title: 'Login',
+  //   caption: '',
+  //   icon: 'lock',
+  //   link: '/login',
+  //   sublinks : [
+  //     {
+  //       title: 'Login',
+  //       caption: '',
+  //       icon: 'lock',
+  //       link: '/login'
+  //     },
+  //     {
+  //       title: 'Register',
+  //       caption: '',
+  //       icon: 'lock',
+  //       link: '/register'
+  //     },
+  //   ]
+  // },
   {
     title: 'Admin',
     caption: '',
     icon: 'admin_panel_settings',
     sublinks : [
       {
-        title: 'Schedule Import',
+        title: 'Manage Schedule',
         caption: '',
-        icon: 'upload_file',
-        link: '/schedule_import'
+        icon: 'calendar_month',
+        link: '/manage_schedule'
       },
       {
         title: 'Manage Users',
         caption: '',
         icon: 'people',
         link: '/users'
-      },
-      {
-        title: 'Manage Schedule',
-        caption: '',
-        icon: 'calendar_month',
-        link: '/manage_schedule'
-      },
+      },      
       {
         title: 'Schedule Settings',
         caption: '',
@@ -131,39 +131,45 @@ const linksList = [
         icon: 'construction',
         link: '/master_settings'
       },
-    ]
-  },
-  {
-    title: 'Testing',
-    caption: '',
-    icon: 'construction',
-    sublinks : [
-      {
-        title: 'Page Test',
-        caption: '',
-        icon: 'upload_file',
-        link: '/blank'
-      },
-      {
-        title: 'Forms Page Test',
-        caption: '',
-        icon: 'upload_file',
-        link: '/forms_page'
-      },
-      {
-        title: 'Form Test',
-        caption: '',
-        icon: 'feed',
-        link: '/form'
-      },
       // {
-      //   title: 'Add JSON Form',
+      //   title: 'Schedule Import',
       //   caption: '',
-      //   icon: 'feed',
-      //   link: '/add_json_form'
+      //   icon: 'upload_file',
+      //   link: '/schedule_import'
       // },
     ]
   },
+  // {
+  //   title: 'Testing',
+  //   caption: '',
+  //   icon: 'construction',
+  //   sublinks : [
+  //     {
+  //       title: 'Page Test',
+  //       caption: '',
+  //       icon: 'upload_file',
+  //       link: '/blank'
+  //     },
+  //     {
+  //       title: 'Forms Page Test',
+  //       caption: '',
+  //       icon: 'upload_file',
+  //       link: '/forms_page'
+  //     },
+  //     {
+  //       title: 'Form Test',
+  //       caption: '',
+  //       icon: 'feed',
+  //       link: '/form'
+  //     },
+  //     // {
+  //     //   title: 'Add JSON Form',
+  //     //   caption: '',
+  //     //   icon: 'feed',
+  //     //   link: '/add_json_form'
+  //     // },
+  //   ]
+  // },
 ]
 
 export default defineComponent({

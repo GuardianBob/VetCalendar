@@ -33,7 +33,7 @@ const routes = [
       // ============================= MAIN USER PAGES =============================
       {
         path: "",
-        component: () => import("pages/IndexPage.vue"),
+        component: () => import("pages/IndexPageNew.vue"),
         alias: ["/:year*", "/:year*/:month*", "/:year*/:month*/:user*"],
       },
       
@@ -153,11 +153,6 @@ const routes = [
         //   get_form_api: '/handle_forms',
         //   save_form_api: '/handle_forms',
         // }
-      },
-      {
-        path: "/add_json_form",
-        component: () => import("pages/AddJSONForm.vue"),
-        // beforeEnter: requireAuth,
       },
     ],
 
