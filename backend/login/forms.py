@@ -4,6 +4,7 @@ from django import forms
 from VetCalendar.scripts import convert_label
 import datetime
 import bcrypt, re
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
 
 
 STATE_SELECT = (
@@ -121,11 +122,14 @@ def field_options(field):
   return form_options
 
 class CustomUserChangeForm(UserChangeForm):
-  password = forms.CharField(required=False)
   initials = forms.CharField(required=False)
 
   class Meta(UserChangeForm.Meta):
-    pass
+    model = User  # or your custom user model
+    fields = '__all__'
+
+  def clean_password(self):
+    return self.initial["password"]
 
 class Register_Form(forms.Form):
   first_name = forms.CharField(max_length=200, widget=forms.TextInput, required=True)
