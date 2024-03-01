@@ -14,7 +14,7 @@
           <div class="col-12 col-md-12 col-lg-12">
             <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ form.title }}</h4>
           </div>
-          {{ form.fields }}
+          <!-- {{ form.fields }} -->
           <div v-for="(field, key) in form.fields" :key="key" :class="cols">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
