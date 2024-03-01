@@ -76,28 +76,26 @@ def set_form_fields(form):
 def password_expires_at():
   return timezone.now() + timezone.timedelta(hours=24)
 
-def generate_password(user, password_length=20):
+def generate_password(user, password_length=15):
   password = secrets.token_urlsafe(password_length)
   reset_link = secrets.token_urlsafe(50)
   reset_code = random.randint(100000, 999999)
-  # print(password)
-  hashed_pass = make_password(password)
-  # print(hashed_pass)
+  print(password)
+  user.set_password(password)
+  user.save()
   new_user_password, created = PasswordReset.objects.update_or_create(
       user=user,
       defaults={
-        'temp_password': hashed_pass,
+        'temp_password': password,
         'reset_requested': True,
         'reset_code': reset_code,
         'reset_link': reset_link,
         'expires_at': password_expires_at(),
       }
   )  
-  user.password = hashed_pass
-  user.save()
   new_password = {
     "decrypted" : password,
-    "encrypted" : hashed_pass,
+    "encrypted" : user.password,
     "reset_code": reset_code,
     "reset_link": reset_link,
     'expires_at': password_expires_at(),

@@ -7,7 +7,7 @@ from importlib import import_module
 import logging
 import logging.handlers
 from django.db import models
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 
 # Create a logger
 logger = logging.getLogger(__name__)
@@ -302,8 +302,11 @@ def save_form(content):
   except Exception as e:
     return trace_error(e, True)
   
-def send_email(subject, message, recipient_list):
+def send_text_email(subject, message, recipient_list):
   from_email = EMAIL_HOST_USER
+  if os.getenv('DEVELOPMENT_MODE') == 'True':
+    recipient_list = [os.getenv('DEBUG_EMAIL')]
+  print(f'sending email to: {recipient_list}')
   send_mail(
       subject,
       message,
@@ -311,4 +314,14 @@ def send_email(subject, message, recipient_list):
       recipient_list,
       fail_silently=False,
   )
+  return
+
+def send_html_email(subject, message, recipient_list, text_content=None):
+  from_email = EMAIL_HOST_USER
+  if os.getenv('DEVELOPMENT_MODE') == 'True':
+    recipient_list = [os.getenv('DEBUG_EMAIL')]
+  print(f'sending email to: {recipient_list}')
+  msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
+  msg.attach_alternative(message, "text/html")
+  msg.send()
   return

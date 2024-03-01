@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db.models import ForeignKey, ManyToManyField, Q
-from backend.utils import trace_error, process_forms_test, send_email
+from backend.utils import trace_error, process_forms_test, send_text_email, send_html_email
 from django.http import JsonResponse
 # from .serializers import CalendarSerializer
 # from django.core import serializers

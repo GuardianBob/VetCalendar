@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
-from backend.utils import trace_error, process_forms_test, strip_form_content, send_email
+from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -810,8 +810,14 @@ def create_user_model(data):
     }
   )
   if created:
+    print("User created")
     user_password = generate_password(user)
-
+    print(user_password)
+    message = f'''
+      <p>Thank you for registering with us. Your account has been created.</p>
+      <p>Your temporary password is: <strong>{user_password['decrypted']}</strong></p>
+    '''
+    send_html_email("New User Account", message, [user.email])
   return user
 
 def update_user_model(user, data):
