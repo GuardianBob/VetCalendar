@@ -7,6 +7,7 @@ from importlib import import_module
 import logging
 import logging.handlers
 from django.db import models
+from django.core.mail import send_mail
 
 # Create a logger
 logger = logging.getLogger(__name__)
@@ -23,6 +24,8 @@ handler.setFormatter(formatter)
 
 # Add the handler to the logger
 logger.addHandler(handler)
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 
 def trace_error(e, isForm=False):
   exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -298,3 +301,14 @@ def save_form(content):
     return JsonResponse({'message': main_form['title'] + f' Added/Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+def send_email(subject, message, recipient_list):
+  from_email = EMAIL_HOST_USER
+  send_mail(
+      subject,
+      message,
+      from_email,
+      recipient_list,
+      fail_silently=False,
+  )
+  return

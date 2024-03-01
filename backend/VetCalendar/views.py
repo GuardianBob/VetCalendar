@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db.models import ForeignKey, ManyToManyField, Q
-from backend.utils import trace_error, process_forms_test
+from backend.utils import trace_error, process_forms_test, send_email
 from django.http import JsonResponse
 # from .serializers import CalendarSerializer
 # from django.core import serializers
@@ -33,7 +33,6 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 import logging.handlers
-from django.core.mail import send_mail
 
 # Create your views here.
 # Create a logger
@@ -51,8 +50,6 @@ handler.setFormatter(formatter)
 
 # Add the handler to the logger
 logger.addHandler(handler)
-
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 
 month_list = {
   "Jan": "01",
@@ -857,17 +854,6 @@ def test_email(request):
     print(form_values['subject'], form_values['message'], form_values['recipient_list'])
     send_email(form_values['subject'], form_values['message'], form_values['recipient_list'])
     return JsonResponse({'message': 'Email Sent'}, status=500)
-      
-def send_email(subject, message, recipient_list):
-    from_email = EMAIL_HOST_USER
-    send_mail(
-        subject,
-        message,
-        from_email,
-        recipient_list,
-        fail_silently=False,
-    )
-    return
 
 
 # @api_view(['GET', 'POST'])
