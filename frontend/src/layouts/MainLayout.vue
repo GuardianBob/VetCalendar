@@ -139,37 +139,37 @@ const linksList = [
       // },
     ]
   },
-  // {
-  //   title: 'Testing',
-  //   caption: '',
-  //   icon: 'construction',
-  //   sublinks : [
-  //     {
-  //       title: 'Page Test',
-  //       caption: '',
-  //       icon: 'upload_file',
-  //       link: '/blank'
-  //     },
-  //     {
-  //       title: 'Forms Page Test',
-  //       caption: '',
-  //       icon: 'upload_file',
-  //       link: '/forms_page'
-  //     },
-  //     {
-  //       title: 'Form Test',
-  //       caption: '',
-  //       icon: 'feed',
-  //       link: '/form'
-  //     },
-  //     // {
-  //     //   title: 'Add JSON Form',
-  //     //   caption: '',
-  //     //   icon: 'feed',
-  //     //   link: '/add_json_form'
-  //     // },
-  //   ]
-  // },
+  {
+    title: 'Testing',
+    caption: '',
+    icon: 'construction',
+    sublinks : [
+      {
+        title: 'Page Test',
+        caption: '',
+        icon: 'upload_file',
+        link: '/blank'
+      },
+      // {
+      //   title: 'Forms Page Test',
+      //   caption: '',
+      //   icon: 'upload_file',
+      //   link: '/forms_page'
+      // },
+      {
+        title: 'Form Test',
+        caption: '',
+        icon: 'feed',
+        link: '/form'
+      },
+      // {
+      //   title: 'Add JSON Form',
+      //   caption: '',
+      //   icon: 'feed',
+      //   link: '/add_json_form'
+      // },
+    ]
+  },
 ]
 
 export default defineComponent({

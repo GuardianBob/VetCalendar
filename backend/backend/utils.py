@@ -217,7 +217,7 @@ def build_form(content):
         for value in form['fields']:
           if value['type'] == 'date':
             value['value'] = None if value['value'] == '' else value['value']
-          if value['type'] == 'multi-select':
+          if value['type'] == 'multi-select' or value['type'] == 'multi-text':
             value['value'] = [] if value['value'] == '' else value['value']
             # print(value)
         # print(form['app'], form['model'], form['save_function'])

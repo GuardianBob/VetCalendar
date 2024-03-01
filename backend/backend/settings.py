@@ -264,6 +264,15 @@ REST_FRAMEWORK = {
     )
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('SMTP_HOSTNAME')  # replace with your SMTP server address
+EMAIL_PORT = os.getenv('SMTP_PORT')  # replace with your SMTP server port
+# EMAIL_USE_SSL = True
+EMAIL_USE_TLS = True  # or False if your server doesn't use TLS
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # replace with your SMTP server username
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # replace with your SMTP server password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=15),

@@ -14,11 +14,11 @@
           <div class="col-12 col-md-12 col-lg-12">
             <h4 class="text-h5 q-mt-md q-mb-none text-bold">{{ form.title }}</h4>
           </div>
-          <!-- {{ form.fields }} -->
+          {{ form.fields }}
           <div v-for="(field, key) in form.fields" :key="key" :class="cols">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
-              <!-- {{ field }} -->
+              <!-- {{ key }} -->
             
             <q-input 
               v-if="field.type === 'input' || field.type === 'text' || field.type === 'number' || field.type === 'url' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
@@ -295,6 +295,31 @@
               </template>
             </q-select>
             <q-select
+              v-else-if="field.type == 'multi-text' && field.field_name == 'recipient_list'"
+              ref="recipient_list"
+              v-model="field.value"
+              :label="field.label"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              use-chips
+              use-input
+              new-value-mode="add-unique"
+              stack-label
+              hide-dropdown-icon
+              placeholder='Add email'
+              input-debounce="0"
+              @new-value="addItem"
+              @keydown.space="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.tab="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.,="[addChips($event.target.value, field.value), $event.target.value = '']"
+              :rules="field.required ? [rules.required] : []"
+              >
+              <template v-if="field.value.length > 0" v-slot:append>
+                <q-icon name="cancel" color="red" @click.stop.prevent="field.value = []" class="cursor-pointer" />
+              </template>
+            </q-select>
+            <q-select
               v-else-if="field.type == 'multi-text'"
               v-model="field.value"
               :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
@@ -399,6 +424,7 @@ export default defineComponent({
       cols: ref(''),
       add_to_form_date: ref(),
       confirm: ref(false),
+      inputVal: ref(''),
     };
 
     
@@ -489,6 +515,39 @@ export default defineComponent({
       if (choice) {
         this.delete_item();
       }
+    },
+
+    addItem(val, done) {
+      if(done) {
+        done(val, "add-unique")
+      } 
+    },
+
+    addChips(val, fieldVal) {
+      // console.log(val, fieldVal)
+      // console.log(this.$refs.recipient_list)
+      console.log("triggered addChips")
+      while (val.slice(-1) === ' ' || val.slice(-1) === ',') {
+        val = val.slice(0, -1);
+      }
+
+      if (!fieldVal.includes(val) && val !== "" && val !== " ") {
+        fieldVal.push(val);
+      }
+    },
+    // this.$refs.recipient_list(val)
+    //   // event.preventDefault(); // prevent the space or comma from being added to the input
+    //   // this.addItem(event.target.value, this.$refs.recipient_list.add);
+    //   // this.$refs.recipient_list.add(event.target.value)
+    //   // if(done) {
+    //     // console.log('triggerd "done"')
+    //     done(val, "add-unique")
+    //   // } 
+    //   // event.target.value = ''; // clear the input
+    // }
+
+    removeItem(index) {
+      this.field.value.splice(index, 1);
     },
 
     createValue (val, done) {
