@@ -21,4 +21,5 @@ urlpatterns = [
     # path('add_json_form', views.add_json_form, name='add_json_form'),
     # path('test_json_form', views.test_json_form, name='test_json_form'),
     path('handle_forms', views.handle_forms, name='handle_forms'),
+    path('test_email', views.test_email, name='test_email'),
 ]

@@ -33,6 +33,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 import logging.handlers
+from django.core.mail import send_mail
 
 # Create your views here.
 # Create a logger
@@ -51,7 +52,7 @@ handler.setFormatter(formatter)
 # Add the handler to the logger
 logger.addHandler(handler)
 
-
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 
 month_list = {
   "Jan": "01",
@@ -840,6 +841,33 @@ def save_schedule_updates(request):
       return JsonResponse({'message': 'Shifts Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def test_email(request):
+  if request.method == 'POST':
+    content = json.loads(request.body)
+    # print(content)
+    # for form in content['forms']:
+    form = content['forms'][0]
+    form_values = strip_form_content(form)
+    # print(form_values)
+    print(form_values['subject'], form_values['message'], form_values['recipient_list'])
+    send_email(form_values['subject'], form_values['message'], form_values['recipient_list'])
+    return JsonResponse({'message': 'Email Sent'}, status=500)
+      
+def send_email(subject, message, recipient_list):
+    from_email = EMAIL_HOST_USER
+    send_mail(
+        subject,
+        message,
+        from_email,
+        recipient_list,
+        fail_silently=False,
+    )
+    return
 
 
 # @api_view(['GET', 'POST'])

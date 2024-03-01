@@ -18,7 +18,8 @@
           <div v-for="(field, key) in form.fields" :key="key" :class="cols">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
-              <!-- {{ field }} -->
+              <!-- {{ key }} -->
+            
             <q-input 
               v-if="field.type === 'input' || field.type === 'text' || field.type === 'number' || field.type === 'url' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
               v-model="field.value" 
@@ -122,7 +123,24 @@
               label-color="primary"
               map-options
               :rules="field.required ? [rules.required] : []"
-            />            
+            />
+            <!-- :options="states.map(option => ({label: option.model, value: option}))" -->
+            <!-- :options="states.map(state => ({label: Object.values(state)[0], value: Object.keys(state)[0]}))" -->
+            <!-- :options="options.filter(option => option.field === key).map(option => ({label: option.label, value: option.option}))" -->
+            <!-- <q-select
+              v-else-if="field.type === 'multi-select' && key === 'fields'"
+              :options="fieldChoices ? fieldChoices.map(option => ({label: option.label, value: option.option})) : []"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              user-chips
+              map-options
+              label-color="primary"
+              :rules="field.required ? [rules.required] : []"
+            />             -->
             <q-select        
               v-else-if="field.type === 'select' && key == 'model'"        
               :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.model, value: option}))"
@@ -277,6 +295,30 @@
               </template>
             </q-select>
             <q-select
+              v-else-if="field.type == 'multi-text' && field.field_name == 'recipient_list'"
+              ref="recipient_list"
+              v-model="field.value"
+              :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
+              :label="field.label"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              use-chips
+              use-input
+              new-value-mode="add-unique"
+              hide-dropdown-icon
+              input-debounce="0"
+              @new-value="addItem"
+              @keydown.space="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.tab="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.,="[addChips($event.target.value, field.value), $event.target.value = '']"
+              :rules="field.required ? [rules.required] : []"
+              >
+              <template v-if="field.value.length > 0" v-slot:append>
+                <q-icon name="cancel" color="red" @click.stop.prevent="field.value = []" class="cursor-pointer" />
+              </template>
+            </q-select>
+            <q-select
               v-else-if="field.type == 'multi-text'"
               v-model="field.value"
               :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
@@ -299,7 +341,7 @@
           </div>
         </div>
       <div class="row justify-around q-my-md">
-        <q-btn @click="submit" color="primary" class="q-ma-sm">Save</q-btn>
+        <q-btn @click="submit" color="primary" class="q-ma-sm">{{ okBtnName }}</q-btn>
         <q-btn v-show="cancel_button" id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
         <q-btn v-show="delete_button" @click="confirm_delete" color="negative" class="q-ma-sm">Delete</q-btn>
       </div>
@@ -332,11 +374,12 @@ export default defineComponent({
     "submitForm",
     "item_id",
     "forms",
-    'linked_forms',
+    "linked_forms",
     "form_data",
     "form_options",
     "closeButton",
     "editButton",
+    "okButtonName",
     "columns",
     'add_to_date',
     'delete_button',
@@ -381,12 +424,49 @@ export default defineComponent({
       cols: ref(''),
       add_to_form_date: ref(),
       confirm: ref(false),
+      okBtnName: ref('OK'),
     };
 
     
   },
 
   watch: {
+    okButtonName: {
+      immediate: true,
+      handler(newValue) {
+        if (newValue != undefined && newValue != "" && newValue != null)
+        this.okBtnName = newValue;
+      }
+    },
+    // formData: {
+    //   deep: true,
+    //   handler(newVal) {
+    //     console.log(newVal);
+    //     // if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
+    //     //   const dateRanges = newVal[''].shift_date.value;
+    //     //   // console.log(dateRanges);
+    //     // }
+    //   },
+    // },
+    // formData: {
+    //   deep: true,
+    //   handler(newVal) {
+    //     // console.log(newVal);
+    //     if (newVal["Add New Item"] != undefined && newVal["Add New Item"].permission) {
+    //       let permission_label = newVal["Add New Item"].permission.value;
+    //       // console.log(permission_label)
+    //       // Replace spaces with underscores
+    //       if (permission_label) {
+    //         permission_label = permission_label
+    //         .toLowerCase()
+    //         .replace(/[^\w\s]|(?<!_)(_)|_/g, "$1")
+    //         .replace(/\s/g, '_')
+    //         this.formData["Add New Item"].permission.value = permission_label;
+    //       }
+    //     }
+    //     // this.formData["Add New Item"].permission_label
+    //   },
+    // },
     columns: {
       immediate: true,
       handler(newValue) {
@@ -442,6 +522,39 @@ export default defineComponent({
       if (choice) {
         this.delete_item();
       }
+    },
+
+    addItem(val, done) {
+      if(done) {
+        done(val, "add-unique")
+      } 
+    },
+
+    addChips(val, fieldVal) {
+      // console.log(val, fieldVal)
+      // console.log(this.$refs.recipient_list)
+      console.log("triggered addChips")
+      while (val.slice(-1) === ' ' || val.slice(-1) === ',') {
+        val = val.slice(0, -1);
+      }
+
+      if (!fieldVal.includes(val) && val !== "" && val !== " ") {
+        fieldVal.push(val);
+      }
+    },
+    // this.$refs.recipient_list(val)
+    //   // event.preventDefault(); // prevent the space or comma from being added to the input
+    //   // this.addItem(event.target.value, this.$refs.recipient_list.add);
+    //   // this.$refs.recipient_list.add(event.target.value)
+    //   // if(done) {
+    //     // console.log('triggerd "done"')
+    //     done(val, "add-unique")
+    //   // } 
+    //   // event.target.value = ''; // clear the input
+    // }
+
+    removeItem(index) {
+      this.field.value.splice(index, 1);
     },
 
     createValue (val, done) {
@@ -500,6 +613,17 @@ export default defineComponent({
 
     handleOptionSelected(event) {
       // console.log("Option ===> ", event);
+      // let data = []
+      // for (let i = 0; i < event.length; i++) {
+      //   console.log(event[i].label, event[i].value, event[i].value.related_model);
+      //   if (event[i].value.related_model) {
+      //     data.push(event[i].value.related_model);
+      //   }
+      // }
+      // APIService.get_field_options(event).then((res) => {
+      //   console.log(res.data);
+      // //   this.fieldOptionSettings = res.data;
+      // });
     },
 
     delete_item() {
@@ -533,6 +657,21 @@ export default defineComponent({
     submit(event) {
       try {
         let submitData = JSON.parse(JSON.stringify(this.formData));
+        // let func = ''
+        // let app = ''
+        // for (let key in submitData) {
+        //   if (submitData[key].hasOwnProperty('options')) {
+        //     delete submitData[key]['options'];
+        //   }
+        //   // if (submitData[key].hasOwnProperty('function')) {
+        //   //   // console.log(submitData[key]['function']);
+        //   //   func = submitData[key]['function'];
+        //   // }
+        //   // if (submitData[key].hasOwnProperty('app')) {
+        //   //   // console.log(submitData[key]['app']);
+        //   //   app = submitData[key]['app'];
+        //   // }
+        // }
         console.log(submitData);
         this.verifySubmit = true;
         submitData.forEach((form) => {
@@ -558,7 +697,7 @@ export default defineComponent({
         let body = {
           "forms": submitData,
           "save": true,
-          'linked': this.linked_forms
+          "linked": this.linked_forms
         }
         if (this.verifySubmit) {
         api.post(this.submitForm, body).then((res) => {
@@ -594,15 +733,22 @@ export default defineComponent({
         "forms": this.forms,
         "save": false,
         "id": this.item_id,
-        'linked': this.linked_forms
+        "linked": this.linked_forms
       }
       await api.post(this.getForm, body).then(async (results) => {
         console.log(results.data);
         this.formData = results.data.forms;
+
+        // this.options = results.data.options ? results.data.options : null;
+        // this.model = results.data.forms["Build Form"].model ? results.data.forms["Build Form"].model : null;
+        // console.log(this.formData["Add New Item"].permission_label)
         console.log(this.formData, this.model);
         if (this.add_to_form_date) {
           this.add_date(this.add_to_form_date)
         }
+        // if ("login" in this.api_call || "register" in this.api_call) {
+        //   add_verify_watcher("#verify_password");
+        // }
       });
     },
 
@@ -625,12 +771,14 @@ export default defineComponent({
       }
     },
 
-    // async get_csrf() {
-    //   await APIService.get_csrf().then((results) => {
-    //     console.log(results);
-    //     this.csrf_token = results.data;
-    //   });
-    // },
+    async get_csrf() {
+      await APIService.get_csrf().then((results) => {
+        console.log(results);
+        this.csrf_token = results.data;
+        // document.head.querySelector('meta[name="csrf-token"]');
+        // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
+      });
+    },
   },
   created() {
     this.get_form()

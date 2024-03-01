@@ -123,13 +123,13 @@ const routes = [
       // },
       {
         path: "/blank",
-        component: () => import("pages/FormsPage.vue"),
+        component: () => import("pages/EmailTest.vue"),
         // beforeEnter: requireAuth,
         props: { 
-          page_title: 'Forms Page Test',
-          forms: ['add_user'],
+          page_title: 'Page Test',
+          forms: ['test_email'],
           get_form_api: '/handle_forms',
-          save_form_api: '/handle_forms',
+          save_form_api: '/test_email',
         }
       },
       {

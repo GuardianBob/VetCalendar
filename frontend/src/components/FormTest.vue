@@ -18,7 +18,7 @@
           <div v-for="(field, key) in form.fields" :key="key" :class="cols">
               <!-- {{ data.options }} -->
               <!-- {{ field.label }} -->
-              <!-- {{ field }} -->
+              <!-- {{ key }} -->
             
             <q-input 
               v-if="field.type === 'input' || field.type === 'text' || field.type === 'number' || field.type === 'url' || field.type === 'datetime-local' || field.type === 'search' || field.type === 'file' || field.type === 'month' || field.type === 'week' || field.type === 'range' || field.type === 'textarea'"
@@ -295,6 +295,30 @@
               </template>
             </q-select>
             <q-select
+              v-else-if="field.type == 'multi-text' && field.field_name == 'recipient_list'"
+              ref="recipient_list"
+              v-model="field.value"
+              :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
+              :label="field.label"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              use-chips
+              use-input
+              new-value-mode="add-unique"
+              hide-dropdown-icon
+              input-debounce="0"
+              @new-value="addItem"
+              @keydown.space="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.tab="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.,="[addChips($event.target.value, field.value), $event.target.value = '']"
+              :rules="field.required ? [rules.required] : []"
+              >
+              <template v-if="field.value.length > 0" v-slot:append>
+                <q-icon name="cancel" color="red" @click.stop.prevent="field.value = []" class="cursor-pointer" />
+              </template>
+            </q-select>
+            <q-select
               v-else-if="field.type == 'multi-text'"
               v-model="field.value"
               :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
@@ -317,7 +341,7 @@
           </div>
         </div>
       <div class="row justify-around q-my-md">
-        <q-btn @click="submit" color="primary" class="q-ma-sm">Save</q-btn>
+        <q-btn @click="submit" color="primary" class="q-ma-sm">{{ okBtnName }}</q-btn>
         <q-btn v-show="cancel_button" id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
         <q-btn v-show="delete_button" @click="confirm_delete" color="negative" class="q-ma-sm">Delete</q-btn>
       </div>
@@ -355,6 +379,7 @@ export default defineComponent({
     "form_options",
     "closeButton",
     "editButton",
+    "okButtonName",
     "columns",
     'add_to_date',
     'delete_button',
@@ -399,12 +424,20 @@ export default defineComponent({
       cols: ref(''),
       add_to_form_date: ref(),
       confirm: ref(false),
+      okBtnName: ref('OK'),
     };
 
     
   },
 
   watch: {
+    okButtonName: {
+      immediate: true,
+      handler(newValue) {
+        if (newValue != undefined && newValue != "" && newValue != null)
+        this.okBtnName = newValue;
+      }
+    },
     // formData: {
     //   deep: true,
     //   handler(newVal) {
@@ -489,6 +522,39 @@ export default defineComponent({
       if (choice) {
         this.delete_item();
       }
+    },
+
+    addItem(val, done) {
+      if(done) {
+        done(val, "add-unique")
+      } 
+    },
+
+    addChips(val, fieldVal) {
+      // console.log(val, fieldVal)
+      // console.log(this.$refs.recipient_list)
+      console.log("triggered addChips")
+      while (val.slice(-1) === ' ' || val.slice(-1) === ',') {
+        val = val.slice(0, -1);
+      }
+
+      if (!fieldVal.includes(val) && val !== "" && val !== " ") {
+        fieldVal.push(val);
+      }
+    },
+    // this.$refs.recipient_list(val)
+    //   // event.preventDefault(); // prevent the space or comma from being added to the input
+    //   // this.addItem(event.target.value, this.$refs.recipient_list.add);
+    //   // this.$refs.recipient_list.add(event.target.value)
+    //   // if(done) {
+    //     // console.log('triggerd "done"')
+    //     done(val, "add-unique")
+    //   // } 
+    //   // event.target.value = ''; // clear the input
+    // }
+
+    removeItem(index) {
+      this.field.value.splice(index, 1);
     },
 
     createValue (val, done) {
