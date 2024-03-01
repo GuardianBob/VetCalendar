@@ -298,6 +298,7 @@
               v-else-if="field.type == 'multi-text' && field.field_name == 'recipient_list'"
               ref="recipient_list"
               v-model="field.value"
+              :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
               :label="field.label"
               class="q-my-xs q-py-none"
               outlined
@@ -305,9 +306,7 @@
               use-chips
               use-input
               new-value-mode="add-unique"
-              stack-label
               hide-dropdown-icon
-              placeholder='Add email'
               input-debounce="0"
               @new-value="addItem"
               @keydown.space="[addChips($event.target.value, field.value), $event.target.value = '']"
@@ -342,7 +341,7 @@
           </div>
         </div>
       <div class="row justify-around q-my-md">
-        <q-btn @click="submit" color="primary" class="q-ma-sm">Save</q-btn>
+        <q-btn @click="submit" color="primary" class="q-ma-sm">{{ okBtnName }}</q-btn>
         <q-btn v-show="cancel_button" id="cancel_btn" label="Cancel" class="bg-grey-8 text-white q-ma-sm" v-close-popup/>
         <q-btn v-show="delete_button" @click="confirm_delete" color="negative" class="q-ma-sm">Delete</q-btn>
       </div>
@@ -380,6 +379,7 @@ export default defineComponent({
     "form_options",
     "closeButton",
     "editButton",
+    "okButtonName",
     "columns",
     'add_to_date',
     'delete_button',
@@ -424,13 +424,20 @@ export default defineComponent({
       cols: ref(''),
       add_to_form_date: ref(),
       confirm: ref(false),
-      inputVal: ref(''),
+      okBtnName: ref('OK'),
     };
 
     
   },
 
   watch: {
+    okButtonName: {
+      immediate: true,
+      handler(newValue) {
+        if (newValue != undefined && newValue != "" && newValue != null)
+        this.okBtnName = newValue;
+      }
+    },
     // formData: {
     //   deep: true,
     //   handler(newVal) {
