@@ -17,6 +17,7 @@
             :page_title="page_title" 
             :cancel_button="true"
             :delete_button="true"
+            okButtonName="Send"
             @done="submitted" 
             columns="one"/>
         </div>
