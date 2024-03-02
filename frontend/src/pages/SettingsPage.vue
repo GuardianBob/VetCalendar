@@ -153,31 +153,33 @@ export default defineComponent({
       this.confirm = true
     },
 
-    confirm_delete() {
+    confirm_delete(event) {
       this.confirm = false
-      console.log(this.item_data)
-      api.delete(this.api_route, {data: this.item_data})
-      .then((response) => {
-        console.log(response.data)
-        this.get_settings()
-        Notify.create({
-          message: response.data.message,
-          color: "green",
-          textColor: "white",
-          position: "center",
-          timeout: 3000,
+      console.log(event, '\n', this.item_data)
+      if (event) {
+        api.delete(this.api_route, {data: this.item_data})
+        .then((response) => {
+          console.log(response.data)
+          this.get_settings()
+          Notify.create({
+            message: response.data.message,
+            color: "green",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+          Notify.create({
+            message: error.response.data.error,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000,
+          });
         });
-      })
-      .catch((error) => {
-        console.log(error.response.data);
-        Notify.create({
-          message: error.response.data.error,
-          color: "red",
-          textColor: "white",
-          position: "center",
-          timeout: 3000,
-        });
-      });
+      }
     },
 
     save() {
