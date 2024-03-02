@@ -61,6 +61,11 @@
               {{ props.row[col.name] }}
             </div>
           </q-td>
+          <q-td v-if="delete_item">
+            <q-btn dense flat class="q-px-sm q-mx-xs" color="negative" size="sm" icon="highlight_off" @click="deleteItem(props.row)">
+              <q-tooltip class="bg-negative" anchor="bottom middle">Delete Item</q-tooltip>
+            </q-btn>
+          </q-td>
         </q-tr>
       </template>
       <template v-slot:no-data="{ icon, message, filter }">
@@ -93,6 +98,7 @@ export default {
     "model",
     "separator",
     "add_item",
+    "delete_item",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -109,7 +115,12 @@ export default {
   },
 
   watch: {
-    
+    delete_item: {
+      immediate: true,
+      handler() {
+        console.log(this.columns)
+      }
+    }
   },
 
   computed: {
@@ -124,6 +135,11 @@ export default {
     addItem() {
       this.$emit('add_item', this.model)
       // this.newItem = {};
+    },
+
+    deleteItem(event) {
+      console.log("clicked on delete \n", `model: ${this.model} \n`, event['id'])
+      this.$emit('delete_item', { id: event['id'], model: this.model})
     },
 
     getBrightness(color) {

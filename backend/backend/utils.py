@@ -51,6 +51,15 @@ def convert_to_shift_datetime(date, time):
   # shift_datetime = fix_timezone(shift_datetime)
   return shift_datetime
 
+def get_app_from_model(app_names, model_name):
+  for app_name in app_names:
+    try:
+      apps.get_model(app_name, model_name)
+      return app_name
+    except LookupError:
+      continue
+  return None
+
 def strip_form_content(content):
   fields = {}
   for field in content['fields']:
@@ -138,6 +147,21 @@ def save_model(model, values, id=None):
   else:
     instance = Model(**values)
     instance.save()  
+  # except Exception as e:
+  #   return trace_error(e, True)  
+    
+def delete_model(model, id):
+  print(f'delete_model: \n{model} \n{id}')
+  # try:
+  app_name = get_app_from_model(['VetCalendar', 'login'], model)
+  Model = apps.get_model(app_name, model)
+  if id != None:
+    print(' \n deleting instance')
+    # instance = Model.objects.values().get(id=id)
+    # print(instance)
+    instance = Model.objects.get(id=id)
+    instance.delete()
+  return
   # except Exception as e:
   #   return trace_error(e, True)  
     

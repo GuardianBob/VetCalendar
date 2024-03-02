@@ -6,7 +6,18 @@
       </div>
       <div class="col-8 col-xs-12 col-lg-8 col-md-8 col-sm-10">
         <div v-for='(data, title) in settings' :key="title" class="col-12 q-pa-md text-left">
-          <DataTablePopEdit :rowData="data.data" :columns="data.columns" :model="data.model" :parentFunc01="save" :title="title" separator="vertical" :add_item="true" @add_item="addNewItem"/>
+          <DataTablePopEdit 
+            :rowData="data.data" 
+            :columns="data.columns" 
+            :model="data.model" 
+            :parentFunc01="save" 
+            :title="title" 
+            separator="vertical" 
+            :add_item="true" 
+            @add_item="addNewItem" 
+            :delete_item="true" 
+            @delete_item="deleteItem"
+          />
         </div>
       </div>
       <div class="col-8 col-xs-10 col-lg-8 col-md-8 col-sm-10 q-my-md">
@@ -17,6 +28,13 @@
       <div class="dialog-60">
         <component :is="dynamicComponent" :getForm="get_form_api" :submitForm="save_form_api" :forms="forms" :closeButton="true" page_title="Add New Item" @done="item_created" columns="one"/>
       </div>    
+    </q-dialog>
+    <q-dialog v-model="confirm" persistent>
+      <ConfirmDialog 
+        :doubleVerify="false"
+        :text="confirm_text"
+        @confirmed="confirm_delete"
+      />
     </q-dialog>
   </q-page>
 </template>
@@ -31,6 +49,7 @@ import FormTest from 'components/FormTest.vue';
 import BaseForm from 'components/BaseForm.vue';
 import APIService from "../../services/api"
 import { api } from "boot/axios";
+import ConfirmDialog from "components/ConfirmDialog.vue";
 
 export default defineComponent({
   name: "ScheduleSettings",
@@ -44,6 +63,7 @@ export default defineComponent({
   components: {
     // Forms,
     DataTablePopEdit,
+    ConfirmDialog,
     // BaseForm,
   },
   data() {
@@ -65,6 +85,9 @@ export default defineComponent({
       settings: ref(),
       forms: ref([]),
       new_item: ref(false),
+      confirm: ref(false),
+      confirm_text: ref('Are you sure you want to delete this item?'),
+      item_data: ref(),      
     };
   },
   watch: {
@@ -122,6 +145,39 @@ export default defineComponent({
       // APIService.get_model_form(model).then((response) => {
       //   console.log(response.data)
       // })
+    },
+
+    deleteItem(event){
+      console.log(event["model"], '\n', event['id'], '\n', this.api_route)
+      this.item_data = event
+      this.confirm = true
+    },
+
+    confirm_delete() {
+      this.confirm = false
+      console.log(this.item_data)
+      api.delete(this.api_route, {data: this.item_data})
+      .then((response) => {
+        console.log(response.data)
+        this.get_settings()
+        Notify.create({
+          message: response.data.message,
+          color: "green",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+        });
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+        Notify.create({
+          message: error.response.data.error,
+          color: "red",
+          textColor: "white",
+          position: "center",
+          timeout: 3000,
+        });
+      });
     },
 
     save() {
