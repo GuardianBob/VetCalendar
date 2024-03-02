@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
-from backend.utils import trace_error, process_forms_test, strip_form_content
+from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -654,6 +654,24 @@ def update_user(request):
     return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+def reset_user_password(data, id):
+  try:
+    print(data, id)
+    if data['verify'] == True:
+      user = User.objects.get(id=id)
+      password = generate_password(user)
+      message = f'''
+        <p>Your password has been reset.</p>
+        <p>Your temporary password is: <strong>{password['decrypted']}</strong></p>
+      '''
+      send_html_email("VSS Password Reset", message, [user.email])
+      return JsonResponse({'message': 'User password has been reset'}, status=200)
+    else:
+      return JsonResponse({'message': 'Form was not validated'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+  pass
 
 # @csrf_exempt 
 # def get_user_profile2(request):
@@ -798,19 +816,26 @@ def create_user_model(data):
   # Create or update User
   user, created = User.objects.update_or_create(
     username=data['email'],
-    initials = get_unique_initials(data['first_name'], data['middle_name'], data['last_name']),
+    initials = get_unique_initials(data['first_name'], None , data['last_name']),
     defaults={
       'first_name': data['first_name'],
-      'middle_name': data['middle_name'],
+      'middle_name': data['middle_name'] if 'middle_name' in data else '',
       'last_name': data['last_name'],
       'email': data['email'],
-      'phone_number': data['phone_number'],
-      'phone_type': data['phone_type'],
-      'nickname': data['nickname'],
+      'phone_number': data['phone_number'] if 'phone_number' in data else '',
+      'phone_type': data['phone_type'] if 'phone_type' in data else '',
+      # 'nickname': data['nickname'],
     }
   )
   if created:
-    generate_password(user)
+    print("User created")
+    user_password = generate_password(user)
+    print(user_password)
+    message = f'''
+      <p>Thank you for registering with us. Your account has been created.</p>
+      <p>Your temporary password is: <strong>{user_password['decrypted']}</strong></p>
+    '''
+    send_html_email("New User Account", message, [user.email])
   return user
 
 def update_user_model(user, data):
@@ -993,6 +1018,7 @@ def update_user_profile(request):
 
   else:
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 def create_update_settings(settings):
   for setting in settings.values():

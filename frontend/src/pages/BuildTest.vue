@@ -60,7 +60,7 @@ export default defineComponent({
       page_title: ref("Form Test"),
       item_id: ref(9),
       // forms: ref(['access_settings']),
-      forms: ref(['user_basic_info', 'user_address', 'user_city', 'user_occupation']),
+      forms: ref(['password_reset']),
       // forms: ref(['user_basic_info', 'user_address']),     
       // forms: ref(['add_user']),
       // forms: ref(['add_shift']),
@@ -68,7 +68,7 @@ export default defineComponent({
       get_form_api: ref("/handle_forms"),
       // get_form_api: ref("/login/request_access"),
       save_form_api: ref("/handle_forms"),
-      linked_forms: ref(true),
+      linked_forms: ref(false),
     };
   },
   watch: {
@@ -87,7 +87,7 @@ export default defineComponent({
   
   mounted() {
     // const componentName = process.env.VUE_APP_FORM_PAGE;
-    this.dynamicComponent = this.components['BaseForm'];
+    this.dynamicComponent = this.components['FormTest'];
     // APIService.get_formbuilder_form().then((response) => {
     //   console.log(response);
     // });

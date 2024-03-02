@@ -5,7 +5,7 @@
         <q-btn color="accent" dense class="q-px-sm" size="xs" label="Add" icon="add" @click="add_user()"/>
       </div>
     </div>
-    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :title="pageTitle"/>
+    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :parentFunc02="reset_password" :title="pageTitle"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
       <div class="dialog-60">
         <component 
@@ -20,7 +20,8 @@
           :delete_button="true"
           :cancel_button="true"
           :doubleVerify="true"
-          page_title="User Details" 
+          okButtonName="Update"
+          :page_title="form_title" 
           @done="user_updated" 
           columns="two"
         />
@@ -34,7 +35,9 @@
         :submitForm="save_form_api" 
         :forms="forms" 
         :closeButton="true" 
-        page_title="Add New User" 
+        :item_id="user_id"
+        :okButtonName="okBtnName"
+        :page_title="form_title" 
         @done="user_created" 
         columns="one"
       />
@@ -79,6 +82,8 @@ export default defineComponent({
       get_form_api: ref('/handle_forms'),
       save_form_api: ref('/handle_forms'),
       linked_forms: ref(false),
+      form_title: ref(""),
+      okBtnName: ref("Add"),
     }
   },
   data() {
@@ -103,12 +108,26 @@ export default defineComponent({
       this.linked_forms = true
       this.user_id = userInfo.id
       this.admin = "true"
+      this.form_title = "User Details"
       this.view_user = true
     },
 
     add_user() {
       this.forms = ["add_user"]
       this.linked_forms = false
+      this.user_id = null
+      this.form_title = "Add New User"
+      this.okBtnName = "Add"
+      this.new_user = true
+    },
+
+    reset_password(userInfo) {
+      this.forms = ["password_reset"]
+      this.linked_forms = false
+      this.admin = true
+      this.user_id = userInfo.id
+      this.form_title = "Reset User Password"
+      this.okBtnName = "Reset"
       this.new_user = true
     },
 

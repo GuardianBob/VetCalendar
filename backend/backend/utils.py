@@ -7,6 +7,7 @@ from importlib import import_module
 import logging
 import logging.handlers
 from django.db import models
+from django.core.mail import send_mail, EmailMultiAlternatives
 
 # Create a logger
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
 
 # Create a rotating file handler
-handler = logging.handlers.RotatingFileHandler('error.log', maxBytes=20000, backupCount=5)
+handler = logging.handlers.RotatingFileHandler('logs/error.log', maxBytes=20000, backupCount=5)
 
 # Create a logging format
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -23,6 +24,8 @@ handler.setFormatter(formatter)
 
 # Add the handler to the logger
 logger.addHandler(handler)
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 
 def trace_error(e, isForm=False):
   exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -217,8 +220,13 @@ def build_form(content):
         for value in form['fields']:
           if value['type'] == 'date':
             value['value'] = None if value['value'] == '' else value['value']
-          if value['type'] == 'multi-select' or value['type'] == 'multi-text':
+          if value['type'] == 'multi-select' or value['type'] == 'multi-text' or value['type'] == 'multi-select-text':
             value['value'] = [] if value['value'] == '' else value['value']
+          if value['type'] == 'checkbox':
+            if value['value'] == 'True' or value['value'] == 'true':
+              value['value'] = True
+            else:
+              value['value'] = False
             # print(value)
         # print(form['app'], form['model'], form['save_function'])
         if "id" in content:
@@ -286,9 +294,9 @@ def save_form(content):
           save_function = get_function(form['model']['app'], form['function'])
           print('form ID =====> : ', form['id'])
           if form['id'] != None and form['id'] != '':
-            save_function(form_values, form['id'])
+            return save_function(form_values, form['id'])
           else:
-            save_function(form_values)
+            return save_function(form_values)
         # function = globals()[form['function']]
         else:  
           if form['id'] != None or form['id'] != '':
@@ -298,3 +306,27 @@ def save_form(content):
     return JsonResponse({'message': main_form['title'] + f' Added/Updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+def send_text_email(subject, message, recipient_list):
+  from_email = EMAIL_HOST_USER
+  if os.getenv('DEVELOPMENT_MODE') == 'True':
+    recipient_list = [os.getenv('DEBUG_EMAIL')]
+  print(f'sending email to: {recipient_list}')
+  send_mail(
+      subject,
+      message,
+      from_email,
+      recipient_list,
+      fail_silently=False,
+  )
+  return
+
+def send_html_email(subject, message, recipient_list, text_content=None):
+  from_email = EMAIL_HOST_USER
+  if os.getenv('DEVELOPMENT_MODE') == 'True':
+    recipient_list = [os.getenv('DEBUG_EMAIL')]
+  print(f'sending email to: {recipient_list}')
+  msg = EmailMultiAlternatives(subject, text_content, from_email, recipient_list)
+  msg.attach_alternative(message, "text/html")
+  msg.send()
+  return

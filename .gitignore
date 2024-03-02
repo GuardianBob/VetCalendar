@@ -164,4 +164,5 @@ exports/
 backend/db_new.sqlite3
 backend/db - Copy.sqlite3
 backups/
-
+backend/logs/
+backend/error.log*
