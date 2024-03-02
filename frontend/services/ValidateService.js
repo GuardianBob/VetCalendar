@@ -38,6 +38,11 @@ class ValidateService {
         const pattern = /^\S+@\S+\.\S+$/;
         return !value || pattern.test(value) || 'Invalid e-mail.';
       },
+
+      checkbox_required: value => {
+        console.log(value)
+        return value == false || 'Required.'
+      },
       
       // Phone validator
       // Works with international numbers as well

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
 
 # Create a rotating file handler
-handler = logging.handlers.RotatingFileHandler('error.log', maxBytes=20000, backupCount=5)
+handler = logging.handlers.RotatingFileHandler('logs/error.log', maxBytes=20000, backupCount=5)
 
 # Create a logging format
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -222,6 +222,11 @@ def build_form(content):
             value['value'] = None if value['value'] == '' else value['value']
           if value['type'] == 'multi-select' or value['type'] == 'multi-text':
             value['value'] = [] if value['value'] == '' else value['value']
+          if value['type'] == 'checkbox':
+            if value['value'] == 'True' or value['value'] == 'true':
+              value['value'] = True
+            else:
+              value['value'] = False
             # print(value)
         # print(form['app'], form['model'], form['save_function'])
         if "id" in content:
@@ -289,9 +294,9 @@ def save_form(content):
           save_function = get_function(form['model']['app'], form['function'])
           print('form ID =====> : ', form['id'])
           if form['id'] != None and form['id'] != '':
-            save_function(form_values, form['id'])
+            return save_function(form_values, form['id'])
           else:
-            save_function(form_values)
+            return save_function(form_values)
         # function = globals()[form['function']]
         else:  
           if form['id'] != None or form['id'] != '':

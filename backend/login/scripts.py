@@ -76,8 +76,8 @@ def set_form_fields(form):
 def password_expires_at():
   return timezone.now() + timezone.timedelta(hours=24)
 
-def generate_password(user, password_length=15):
-  password = secrets.token_urlsafe(password_length)
+def generate_password(user):
+  password = secrets.token_urlsafe(15)
   reset_link = secrets.token_urlsafe(50)
   reset_code = random.randint(100000, 999999)
   print(password)

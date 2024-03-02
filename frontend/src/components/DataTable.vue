@@ -19,7 +19,14 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div>
-            <q-btn color="positive" dense class="q-px-sm" size="xs" label="Edit" icon="edit" @click="editBtn(props.row)"/>
+            <q-btn color="positive" dense class="q-px-sm q-mx-xs" size="xs" label="" icon="edit" @click="editBtn(props.row)">
+              <q-tooltip class="bg-accent" anchor="bottom middle">Edit User Info</q-tooltip>
+            </q-btn>
+            <q-btn color="warning" dense class="q-px-sm q-mx-xs" size="xs" label="" icon="lock_reset" @click="reset_button(props.row)">
+              <q-tooltip class="bg-accent" anchor="bottom middle">Reset User Password</q-tooltip>
+            </q-btn>
+          </div>
+          <div>
           </div>
         </q-td>
       </template>
@@ -57,7 +64,11 @@ export default {
   methods: {
     editBtn(data) {
       this.parentFunc01(data)
-    }
+    },
+    reset_button(data) {
+      console.log(data)
+      this.parentFunc02(data)
+    },    
   },
 
   mounted() {

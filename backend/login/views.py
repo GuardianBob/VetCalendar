@@ -654,6 +654,24 @@ def update_user(request):
     return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
+  
+def reset_user_password(data, id):
+  try:
+    print(data, id)
+    if data['verify'] == True:
+      user = User.objects.get(id=id)
+      password = generate_password(user)
+      message = f'''
+        <p>Your password has been reset.</p>
+        <p>Your temporary password is: <strong>{password['decrypted']}</strong></p>
+      '''
+      send_html_email("VSS Password Reset", message, [user.email])
+      return JsonResponse({'message': 'User password has been reset'}, status=200)
+    else:
+      return JsonResponse({'message': 'Form was not validated'}, status=500)
+  except Exception as e:
+    return trace_error(e, True)
+  pass
 
 # @csrf_exempt 
 # def get_user_profile2(request):
@@ -1000,6 +1018,7 @@ def update_user_profile(request):
 
   else:
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
 
 def create_update_settings(settings):
   for setting in settings.values():

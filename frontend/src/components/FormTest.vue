@@ -336,6 +336,14 @@
                 <q-icon name="cancel" color="red" @click.stop.prevent="customOptions = []" class="cursor-pointer" />
               </template>
             </q-select>
+            <q-checkbox
+              v-else-if="field.type == 'checkbox' && field.field_name == 'verify'"
+              v-model=field.value
+              :label="field.label"
+              checked-icon="task_alt"
+              unchecked-icon="highlight_off"
+              :rules="field.required ? [rules.required, value == false || 'Required.'] : []"
+            />
             <span v-else></span>
           </div>
           </div>
@@ -395,7 +403,8 @@ export default defineComponent({
   ],
 
   setup() {
-    return {};
+    return {
+    };
   },
   data() {
     return {
@@ -679,7 +688,8 @@ export default defineComponent({
             delete form.options;
           }
           form.fields.forEach((field) => {
-            if (field.required && field.value === "" || field.value === null || field.value === undefined) {
+            if ((field.required && (field.value === "" || field.value === null || field.value === undefined)) ||
+            (field.field_name == 'verify' && field.type == 'checkbox' && field.value === false)) {
               event.preventDefault();
               this.verifySubmit = false;
               Notify.create({
