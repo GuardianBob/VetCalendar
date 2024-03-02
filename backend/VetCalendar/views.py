@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db.models import ForeignKey, ManyToManyField, Q
-from backend.utils import trace_error, process_forms_test, send_text_email, send_html_email
+from backend.utils import trace_error, process_forms_test, send_text_email, send_html_email, save_model
 from django.http import JsonResponse
 # from .serializers import CalendarSerializer
 # from django.core import serializers
@@ -309,6 +309,21 @@ def create_update_settings(settings):
             defaults={key: value for key, value in item.items() if key in [f.name for f in Model._meta.get_fields()]}
           )
   return 
+
+def add_shift_type(settings):
+  print("Settings to create ====> \n", settings)
+  settings['shift_type'] = settings['type_label'].lower().replace(" ", "_")
+  save_model({'app': 'VetCalendar', 'model': 'ShiftType'}, settings, None)
+  return JsonResponse({'message': 'Shift Type Created'}, status=200)
+
+def add_shift_info(settings):
+  print("Settings to create ====> \n", settings)
+  settings['shift_name'] = settings['shift_label'].lower().replace(" ", "_")
+  for time_key in ['start_time', 'end_time']:
+    if settings[time_key] == '24:00':
+      settings[time_key] = '00:00'
+  save_model({'app': 'VetCalendar', 'model': 'ShiftName'}, settings, None)
+  return JsonResponse({'message': 'Shift Info Created'}, status=200)
 
 def get_app_from_model(app_names, model_name):
   for app_name in app_names:

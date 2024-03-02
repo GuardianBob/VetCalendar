@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponse
 from VetCalendar.models import FormBuilderNew
 import datetime, json, traceback, sys, re, pytz, os
-from dateutil.parser import parse as parse_date
+from dateutil.parser import parse
 from django.apps import apps
 from importlib import import_module
 import logging
@@ -46,7 +46,7 @@ def convert_label(name):
 
 def convert_to_shift_datetime(date, time):
   print(date, time)
-  shift_date = parse_date(date).date()
+  shift_date = parse(date).date()
   shift_datetime = datetime.datetime.combine(shift_date, time)
   # shift_datetime = fix_timezone(shift_datetime)
   return shift_datetime
@@ -56,6 +56,9 @@ def strip_form_content(content):
   for field in content['fields']:
     # print(field)
     # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
+    # if field['type'] == 'time':
+    #   print(field['value'], '=====>', parse(field['value']).time())
+    #   field['value'] = datetime.strptime(field['value'], "%H%M").time()
     if isinstance(field['value'], dict):
       fields[field['field_name']] = field['value']['value']
     # elif isinstance(field['value'], list):

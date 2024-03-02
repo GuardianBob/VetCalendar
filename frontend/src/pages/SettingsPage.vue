@@ -15,7 +15,7 @@
     </div>
     <q-dialog v-model="new_item" transition-show="slide-down" transition-hide="slide-up">  
       <div class="dialog-60">
-        <component :is="dynamicComponent" :getForm="get_form_api" :submitForm="save_form_api" :forms="forms" :closeButton="true" page_title="Add New Item" @done="user_created" columns="one"/>
+        <component :is="dynamicComponent" :getForm="get_form_api" :submitForm="save_form_api" :forms="forms" :closeButton="true" page_title="Add New Item" @done="item_created" columns="one"/>
       </div>    
     </q-dialog>
   </q-page>
@@ -96,6 +96,11 @@ export default defineComponent({
       }
     },
 
+    item_created() {
+      this.new_item = false
+      this.get_settings()
+    },
+
     addNewItem(model) {
       console.log(model)
       console.log(this.forms_input)
@@ -124,6 +129,7 @@ export default defineComponent({
       api.post(this.api_route, this.settings)
       .then((response) => {
         console.log(response.data)
+        this.get_settings()
         Notify.create({
           message: response.data.message,
           color: "green",

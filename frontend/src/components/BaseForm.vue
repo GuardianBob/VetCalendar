@@ -61,7 +61,6 @@
             :label="field.label" 
             class="q-my-xs q-py-none" 
             :id="key"
-            unmasked-value
             fill-mask
             outlined
             label-color="primary"
