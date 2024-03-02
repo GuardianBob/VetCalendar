@@ -220,7 +220,7 @@ def build_form(content):
         for value in form['fields']:
           if value['type'] == 'date':
             value['value'] = None if value['value'] == '' else value['value']
-          if value['type'] == 'multi-select' or value['type'] == 'multi-text':
+          if value['type'] == 'multi-select' or value['type'] == 'multi-text' or value['type'] == 'multi-select-text':
             value['value'] = [] if value['value'] == '' else value['value']
           if value['type'] == 'checkbox':
             if value['value'] == 'True' or value['value'] == 'true':

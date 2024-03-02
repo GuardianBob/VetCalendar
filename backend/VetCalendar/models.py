@@ -147,7 +147,7 @@ class FormBuilderNew(models.Model):
           'label': {'type': 'string'},
           'type': {
             'type': 'string',
-            'choices': ['text', 'select', 'date', 'phone', 'email', 'number', 'checkbox', 'time', 'textarea', 'multi-text', 'multi-select', 'hidden', 'password', 'color'],
+            'choices': ['text', 'select', 'date', 'phone', 'email', 'number', 'checkbox', 'time', 'textarea', 'multi-text', 'multi-select', 'multi-select-text', 'hidden', 'password', 'color'],
             },
           'value': {'type': 'string', 'default': ''},
           'required': {'type': 'boolean', 'default': False},

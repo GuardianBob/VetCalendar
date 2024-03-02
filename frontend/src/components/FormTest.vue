@@ -319,6 +319,31 @@
               </template>
             </q-select>
             <q-select
+              v-else-if="field.type == 'multi-select-text'"
+              :options="form.options.filter(option => option.field === field.field_name).map(option => ({label: option.related_model ? '(' + option.related_model + '): ' + option.label : option.label, value: option}))"
+              v-model="field.value"
+              :label="field.label"
+              :id="key"
+              class="q-my-xs q-py-none"
+              outlined
+              multiple
+              use-chips
+              map-options
+              use-input
+              new-value-mode="add-unique"
+              input-debounce="0"
+              label-color="primary"
+              @new-value="addItem"
+              @keydown.space="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.tab="[addChips($event.target.value, field.value), $event.target.value = '']"
+              @keydown.,="[addChips($event.target.value, field.value), $event.target.value = '']"
+              :rules="field.required ? [rules.required] : []"
+              >
+              <template v-if="field.value.length > 0" v-slot:append>
+                <q-icon name="cancel" color="red" @click.stop.prevent="field.value = []" class="cursor-pointer" />
+              </template>
+            </q-select>
+            <q-select
               v-else-if="field.type == 'multi-text'"
               v-model="field.value"
               :options="form.options.filter(option => option.field === field.field).map(option => ({label: option.label, value: option}))"
