@@ -148,18 +148,18 @@ export default defineComponent({
     },
 
     deleteItem(event){
-      console.log(event["model"], '\n', event['id'], '\n', this.api_route)
+      // console.log(event["model"], '\n', event['id'], '\n', this.api_route)
       this.item_data = event
       this.confirm = true
     },
 
     confirm_delete(event) {
       this.confirm = false
-      console.log(event, '\n', this.item_data)
+      // console.log(event, '\n', this.item_data)
       if (event) {
         api.delete(this.api_route, {data: this.item_data})
         .then((response) => {
-          console.log(response.data)
+          // console.log(response.data)
           this.get_settings()
           Notify.create({
             message: response.data.message,

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
-from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email
+from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email, save_model, delete_model, get_app_from_model
 from django.db.models import Prefetch, Q
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -1037,7 +1037,7 @@ def create_update_settings(settings):
   return 
 
 @csrf_exempt
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def master_settings(request):
@@ -1046,12 +1046,33 @@ def master_settings(request):
       settings = json.loads(request.body)
       create_update_settings(settings)
       return JsonResponse({'message': 'Settings Updated!'}, status=200)
+    elif request.method == 'DELETE':
+      content = json.loads(request.body)
+      model = content['model']
+      id = content['id']
+      print("Deleting ==========> : \n", f'Model : {model} \n', id)
+      delete_model(model, id)
+      return JsonResponse({'message': 'Setting Deleted'}, status=200)
     else:
       permissions = Permission.objects.all().values('id', 'permission', 'description')
       permission_dict = [permission for permission in permissions] # Convert QuerySet into List of Dictionaries
       print(permissions)
-      accessLevels = AccessLevel.objects.all().values()
-      access_dict = [access for access in accessLevels] # Convert QuerySet into List of Dictionaries
+      # accessLevels = AccessLevel.objects.all().values()
+      accessLevels = AccessLevel.objects.all().prefetch_related('permissions')
+      print("access levels ====> : \n", accessLevels.values())
+      accessLevels_json = json.loads(serializers.serialize('json', accessLevels))
+      print("Access Levels JSON ====> : \n", accessLevels_json)
+      accessLvls = [] 
+      for al in accessLevels:
+        new_lvl = {
+          'id': al.id,
+          'access': al.access,
+          'permissions': [perm.permission for perm in al.permissions.all()], # al['fields']['permissions'],
+          'users': list(al.users.values_list('last_name', flat=True)),
+        }
+        accessLvls.append(new_lvl)
+      print("access levels ====> : \n", accessLvls)
+      # access_dict = [access for access in accessLvls] # Convert QuerySet into List of Dictionaries
       context = {
         'Edit Permissions': {
           'columns': get_settings_columns(permissions[0]),
@@ -1059,8 +1080,8 @@ def master_settings(request):
           'model': 'Permission'
         },
         'Edit Access Levels': {
-          'columns': get_settings_columns(accessLevels[0]),
-          'data': access_dict,
+          'columns': get_settings_columns(accessLvls[0]),
+          'data': accessLvls,
           'model': 'AccessLevel',
           'options': get_access_options(),
         },

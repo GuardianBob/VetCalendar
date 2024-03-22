@@ -63,18 +63,25 @@ def get_app_from_model(app_names, model_name):
 def strip_form_content(content):
   fields = {}
   for field in content['fields']:
-    # print(field)
+    print('field =====> : \n', field)
     # fields[key] = value['value'] if isinstance(value['value'], list) else value['value']['value']
     # if field['type'] == 'time':
-    #   print(field['value'], '=====>', parse(field['value']).time())
+    # print(field['value'], '=====>', parse(field['value']).time())
     #   field['value'] = datetime.strptime(field['value'], "%H%M").time()
+    if isinstance(field['value'], list):
+      field['value'] = [item['value']['option'] for item in field['value'] if 'option' in item['value']]
+      # for item in field['value']:
+      #   print("List_item: ===>: ", item['value'])
+      #   if 'option' in item['value']:
+      #     print("Option: ===>: ", item['value']['option'])
+      #     item = item['value']['option']
     if isinstance(field['value'], dict):
       fields[field['field_name']] = field['value']['value']
     # elif isinstance(field['value'], list):
     #   fields[key] = value['value']
     else:
       fields[field['field_name']] = field['value']
-    # print(fields)
+    print('\n New Fields =====>: \n', fields)
   return fields
 
 def pull_model_options(field_options):
@@ -132,6 +139,7 @@ def save_model(model, values, id=None):
   print(f'save_model: \n{model} \n{values} \n{id}')
   # try:
   Model = apps.get_model(model['app'], model['model'])
+  permissions = values.pop('permissions', [])
   for key, value in values.items():
     if is_foreign_key(Model, key):
       print(f"{key} is a ForeignKey.")
@@ -140,13 +148,21 @@ def save_model(model, values, id=None):
   if id != None:
     print(' \n updating instance')
     instance = Model.objects.get(id=id)
-    for key, value in values.items():
-      setattr(instance, key, value)
-    print(instance)
+    if permissions:
+      instance.permissions.clear()
+      instance.permissions.set(permissions)
+    else:
+      # for permission in permissions:
+      #   instance.permissions.add(permission)
+      for key, value in values.items():
+        setattr(instance, key, value)
+      print(instance)
     instance.save()
   else:
     instance = Model(**values)
     instance.save()  
+  if permissions:
+    instance.permissions.set(permissions)
   # except Exception as e:
   #   return trace_error(e, True)  
     

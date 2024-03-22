@@ -166,3 +166,5 @@ backend/db - Copy.sqlite3
 backups/
 backend/logs/
 backend/error.log*
+Layout Ideas/
+temp/Data_Object_Examples.json
