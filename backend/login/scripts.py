@@ -127,5 +127,5 @@ def get_settings_columns(data):
         "align": 'left',
         "type": type
       })
-  # print(headers)
+  print(headers)
   return headers

@@ -8,16 +8,17 @@
       class="col-12"
       flat
       dense
+      wrap-cells
       :separator="separator"
       :rows-per-page-options="[0]"
       hide-pagination
     >
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td v-for="col in columns" :key="col.name" :props="props">
-            <div v-if="col.type == 'text'">
-              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
-              <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
+          <q-td v-for="row in columns" :key="row.name" :props="props">
+            <div v-if="row.type == 'text'">
+              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
+              <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
                 <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" />
                 <div class="text-center">
                   <q-btn v-close-popup label="OK" color="grey-8" size="sm" flat @click="scope.set"/>
@@ -25,9 +26,9 @@
                 </div>
               </q-popup-edit>
             </div>
-            <div v-else-if="col.type == 'textarea'">
-              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
-              <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
+            <div v-else-if="row.type == 'textarea'">
+              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
+              <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
                 <q-input type="textarea" v-model="scope.value" dense autofocus/>
                 <div class="text-center">
                   <q-btn v-close-popup label="OK" color="grey-8" size="sm" flat @click="scope.set"/>
@@ -35,9 +36,9 @@
                 </div>
               </q-popup-edit>
             </div>
-            <div v-else-if="col.type == 'time'">
-              <q-btn dense flat color="primary" size="16px">{{ props.row[col.name] }}</q-btn>
-              <q-popup-edit v-model="props.row[col.name]" v-slot="scope">
+            <div v-else-if="row.type == 'time'">
+              <q-btn dense flat color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
+              <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
                 <q-time v-model="scope.value" flat autofocus @keyup.enter="scope.set" >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="OK" color="primary" flat @click="scope.set"/>
@@ -46,20 +47,25 @@
                 </q-time>
               </q-popup-edit>
             </div>
-            <div v-else-if="col.type == 'color'" class="text-center">
-              <q-btn :style="{backgroundColor: props.row[col.name], color: getTextColor(props.row[col.name])}" @click="showColorPicker = true">
+            <div v-else-if="row.type == 'color'" class="text-center">
+              <q-btn :style="{backgroundColor: props.row[row.name], color: getTextColor(props.row[row.name])}" @click="showColorPicker = true">
                 <span class="q-mx-md">
-                  {{ props.row[col.name] }}
+                  {{ props.row[row.name] }}
                   <q-icon size="xs" name="colorize" class="cursor-pointer q-ml-sm" />
                 </span>
               </q-btn>
               <q-popup-proxy ref="colorPicker" transition-show="scale" transition-hide="scale">
-                <q-color no-header-tabs default-view="palette" v-model="props.row[col.name]" @input="showColorPicker = false" />
+                <q-color no-header-tabs default-view="palette" v-model="props.row[row.name]" @input="showColorPicker = false" />
               </q-popup-proxy>
             </div>
             <div v-else>
-              {{ props.row[col.name] }}
+              {{ props.row[row.name] }}
             </div>
+          </q-td>
+          <q-td v-if="delete_item">
+            <q-btn dense flat class="q-px-sm q-mx-xs" color="negative" size="sm" icon="highlight_off" @click="deleteItem(props.row)">
+              <q-tooltip class="bg-negative" anchor="bottom middle">Delete Item</q-tooltip>
+            </q-btn>
           </q-td>
         </q-tr>
       </template>
@@ -93,6 +99,7 @@ export default {
     "model",
     "separator",
     "add_item",
+    "delete_item",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",
@@ -109,7 +116,12 @@ export default {
   },
 
   watch: {
-    
+    delete_item: {
+      immediate: true,
+      handler() {
+        console.log(this.columns)
+      }
+    }
   },
 
   computed: {
@@ -124,6 +136,11 @@ export default {
     addItem() {
       this.$emit('add_item', this.model)
       // this.newItem = {};
+    },
+
+    deleteItem(event) {
+      console.log("clicked on delete \n", `model: ${this.model} \n`, event['id'])
+      this.$emit('delete_item', { id: event['id'], model: this.model})
     },
 
     getBrightness(color) {

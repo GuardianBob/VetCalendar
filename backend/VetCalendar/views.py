@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.db.models import ForeignKey, ManyToManyField, Q
-from backend.utils import trace_error, process_forms_test, send_text_email, send_html_email
+from backend.utils import trace_error, process_forms_test, send_text_email, send_html_email, save_model, delete_model, get_app_from_model
 from django.http import JsonResponse
 # from .serializers import CalendarSerializer
 # from django.core import serializers
@@ -237,7 +237,7 @@ def return_shifts(request):
 
 
 # ========== NOTE: May be able to replace with Table Builder Script ==========
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 @csrf_exempt
@@ -265,8 +265,15 @@ def schedule_settings(request):
           'data': type_dict,
           'model': 'ShiftType'
         },
-    }
+      }
       return JsonResponse(context)
+    elif request.method == 'DELETE':
+      content = json.loads(request.body)
+      model = content['model']
+      id = content['id']
+      print("Deleting ==========> : \n", f'Model : {model} \n', id)
+      delete_model(model, id)
+      return JsonResponse({'message': 'Setting Deleted'}, status=200)
     else:
       # print(request.body)
       content = json.loads(request.body)
@@ -310,14 +317,29 @@ def create_update_settings(settings):
           )
   return 
 
-def get_app_from_model(app_names, model_name):
-  for app_name in app_names:
-    try:
-      apps.get_model(app_name, model_name)
-      return app_name
-    except LookupError:
-      continue
-  return None
+def add_shift_type(settings):
+  print("Settings to create ====> \n", settings)
+  settings['shift_type'] = settings['type_label'].lower().replace(" ", "_")
+  save_model({'app': 'VetCalendar', 'model': 'ShiftType'}, settings, None)
+  return JsonResponse({'message': 'Shift Type Created'}, status=200)
+
+def add_shift_info(settings):
+  print("Settings to create ====> \n", settings)
+  settings['shift_name'] = settings['shift_label'].lower().replace(" ", "_")
+  for time_key in ['start_time', 'end_time']:
+    if settings[time_key] == '24:00':
+      settings[time_key] = '00:00'
+  save_model({'app': 'VetCalendar', 'model': 'ShiftName'}, settings, None)
+  return JsonResponse({'message': 'Shift Info Created'}, status=200)
+
+# def get_app_from_model(app_names, model_name):
+#   for app_name in app_names:
+#     try:
+#       apps.get_model(app_name, model_name)
+#       return app_name
+#     except LookupError:
+#       continue
+#   return None
 
 def get_form(app_name, form_name):
   try:
