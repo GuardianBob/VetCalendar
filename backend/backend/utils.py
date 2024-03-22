@@ -140,6 +140,7 @@ def save_model(model, values, id=None):
   # try:
   Model = apps.get_model(model['app'], model['model'])
   permissions = values.pop('permissions', [])
+  users = values.pop('users', [])
   for key, value in values.items():
     if is_foreign_key(Model, key):
       print(f"{key} is a ForeignKey.")
@@ -151,6 +152,9 @@ def save_model(model, values, id=None):
     if permissions:
       instance.permissions.clear()
       instance.permissions.set(permissions)
+    elif users:
+      instance.users.clear()
+      instance.users.set(users)
     else:
       # for permission in permissions:
       #   instance.permissions.add(permission)
@@ -163,6 +167,8 @@ def save_model(model, values, id=None):
     instance.save()  
   if permissions:
     instance.permissions.set(permissions)
+  if users:
+    instance.users.set(users)
   # except Exception as e:
   #   return trace_error(e, True)  
     

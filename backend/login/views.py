@@ -737,9 +737,11 @@ def get_form_options():
   return options
 
 def get_access_options():
-  options = Permission.objects.all()
-  options = [{'field': 'permissions', 'option': option.id, 'label': option.permission} for option in options]
-  return options
+  permissions_obj = Permission.objects.all()
+  users_obj = User.objects.values('id', 'last_name')
+  permissions = [{'field': 'permissions', 'option': permission.id, 'label': permission.permission} for permission in permissions_obj]
+  users = [{'field': 'users', 'option': user['id'], 'label': user['last_name']} for user in users_obj]
+  return [permissions, users]
 
 def get_user_address(user):
   address = user.user_address if hasattr(user, 'user_address') else None

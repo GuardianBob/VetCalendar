@@ -8,6 +8,7 @@
       class="col-12"
       flat
       dense
+      wrap-cells
       :separator="separator"
       :rows-per-page-options="[0]"
       hide-pagination
