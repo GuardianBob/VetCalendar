@@ -338,3 +338,31 @@ Options {
 {"first_name": {"label": "First Name", "type": "text", "value": "", "required": "True", "model_edit_field": "first_name"}, "last_name": {"label": "Last Name", "type": "text", "value": "", "required": "True", "model_edit_field": "last_name"}, "email": {"label": "E-Mail", "type": "text", "value": "", "required": "True", "model_edit_field": "email"}, "phone_number": {"label": "Phone Number", "type": "phone", "value": "", "required": "False", "model_edit_field": "phone_number"}, "phone_type": {"label": "Phone Type", "type": "select", "value": "", "required": "False", "model_edit_field": "phone_type"}}
 
 {"field_name": "first_name", "settings": {"label": "First Name", "type": "text", "value": "", "required": true, "model_edit_field": "first_name"}}]
+
+{'forms': {
+  'Account Request': {
+    'fields': [
+      {'field_name': 'first_name', 'label': 'First Name', 'type': 'text', 'value': '', 'required': True, 'model_edit_field': 'first_name'},
+      {'field_name': 'last_name', 'label': 'Last Name', 'type': 'text', 'value': '', 'required': True, 'model_edit_field': 'last_name'},
+      {'field_name': 'email', 'label': 'E-Mail', 'type': 'email', 'value': '', 'required': True, 'model_edit_field': 'email'},
+      {'field_name': 'phone_number', 'label': 'Phone Number', 'type': 'phone', 'value': '', 'required': False, 'model_edit_field': 'phone_number'},
+      {'field_name': 'phone_type', 'label': 'Phone Type', 'type': 'select', 'value': '', 'required': False, 'model_edit_field': 'phone_type'}
+    ], 
+    'options': [
+      {'field': 'phone_type', 'option': 'Mobile', 'label': 'Mobile'},
+      {'field': 'phone_type', 'option': 'Home', 'label': 'Home'},
+      {'field': 'phone_type', 'option': 'Office', 'label': 'Office'},
+      {'field': 'phone_type', 'option': 'Other', 'label': 'Other'}
+    ], 
+    'model': {'app': 'login', 'model': 'AccountRequest'},
+    'function': 'account_request', 
+    'id': None
+  }
+  }
+}
+
+[{"field": "phone_type", "option": "Mobile", "label": "Mobile"}, {"field": "phone_type", "option": "Home", "label": "Home"}, {"field": "phone_type", "option": "Office", "label": "Office"}, {"field": "phone_type", "option": "Other", "label": "Other"}, {"field": "occupation", "option": "doctor", "label": "Doctor"}, {"field": "occupation", "option": "technician", "label": "Technician"}, {"field": "occupation", "option": "staff", "label": "Staff"}]
+
+[{"field_name": "first_name", "label": "First Name", "type": "text", "value": "", "required": true, "model_edit_field": "first_name"}, {"field_name": "middle_name", "label": "Middle Name", "type": "text", "value": "", "required": false, "model_edit_field": "middle_name"}, {"field_name": "last_name", "label": "Last Name", "type": "text", "value": "", "required": true, "model_edit_field": "last_name"}, {"field_name": "email", "label": "E-Mail", "type": "email", "value": "", "required": true, "model_edit_field": "email"}, {"field_name": "phone_number", "label": "Phone Number", "type": "phone", "value": "", "required": false, "model_edit_field": "phone_number"}, {"field_name": "phone_type", "label": "Phone Type", "type": "select", "value": "", "required": false, "model_edit_field": "phone_type"}, {"field_name": "nickname", "label": "Nickname", "type": "text", "value": "", "required": false, "model_edit_field": "nickname"}, {"field_name": "address", "label": "Address", "type": "text", "value": "", "required": false, "model_edit_field": "street"}, {"field_name": "address2", "label": "Address Line 2", "type": "text", "value": "", "required": false, "model_edit_field": "street2"}, {"field_name": "apt_num", "label": "Apt #", "type": "text", "value": "", "required": false, "model_edit_field": "apt_num"}, {"field_name": "city", "label": "City", "type": "text", "value": "", "required": false, "model_edit_field": "city"}, {"field_name": "state", "label": "State", "type": "select", "value": "", "required": false, "model_edit_field": "state"}, {"field_name": "zipcode", "label": "Zipcode", "type": "text", "value": "", "required": false, "model_edit_field": "zipcode"}, {"field_name": "occupation", "label": "Occupation", "type": "select", "value": "", "required": false, "model_edit_field": "occupation"}]
+
+[{"field_name": "first_name", "label": "First Name", "type": "text", "value": "", "required": true, "model_edit_field": "first_name"}, {"field_name": "middle_name", "label": "Middle Name", "type": "text", "value": "", "required": false, "model_edit_field": "middle_name"}, {"field_name": "last_name", "label": "Last Name", "type": "text", "value": "", "required": true, "model_edit_field": "last_name"}, {"field_name": "email", "label": "E-Mail", "type": "email", "value": "", "required": true, "model_edit_field": "email"}, {"field_name": "phone_number", "label": "Phone Number", "type": "phone", "value": "", "required": false, "model_edit_field": "phone_number"}, {"field_name": "phone_type", "label": "Phone Type", "type": "select", "value": "", "required": false, "model_edit_field": "phone_type"}, {"field_name": "nickname", "label": "Nickname", "type": "text", "value": "", "required": false, "model_edit_field": "nickname"}, {"field_name": "address", "label": "Address", "type": "text", "value": "", "required": false, "model_edit_field": ""}, {"field_name": "address2", "label": "Address Line 2", "type": "text", "value": "", "required": false, "model_edit_field": ""}, {"field_name": "apt_num", "label": "Apt #", "type": "text", "value": "", "required": false, "model_edit_field": ""}, {"field_name": "city", "label": "City", "type": "text", "value": "", "required": false, "model_edit_field": ""}, {"field_name": "state", "label": "State", "type": "select", "value": "", "required": false, "model_edit_field": ""}, {"field_name": "zipcode", "label": "Zipcode", "type": "text", "value": "", "required": false, "model_edit_field": ""}, {"field_name": "occupation", "label": "Occupation", "type": "select", "value": "", "required": false, "model_edit_field": ""}]
