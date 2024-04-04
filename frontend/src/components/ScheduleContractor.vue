@@ -20,7 +20,7 @@
           <div class="row justify-center">
             <div class="col-5 q-pa-md"></div>
             <div class="col-7 q-mt-lg q-px-md text-center">
-              <q-btn color="negative" @click="clearAll()" label="Clear All" class="q-mx-xs"/>
+              <q-btn color="negative" @click="clearAll()" label="Reset" class="q-mx-xs"/>
               <q-btn color="primary" @click="saveClicked()" label="Save" class="q-mx-xs"/>
             </div>
           </div>
@@ -44,11 +44,12 @@
                       </span>
                     </div>                    
                     <div class="col-3 text-center">
-                      <div v-for="(times, date) in selectedTimes" :key="date">
+                      <div v-for="(times, event_date) in selectedTimes" :key="event_date">
                         <div v-if="times && times.length > 0">
-                          <div class="bg-primary text-white rounded-borders">{{ date }}</div>
+                          <!-- <div class="bg-primary text-white rounded-borders">{{ event_date }}</div> -->
+                          <q-btn size="12px" dense padding="0px lg" color="primary" @click="jump_to_date(event_date)">{{ event_date }}</q-btn>
                           <div v-for="(time, timeIndex) in times" :key="`time-${timeIndex}`">
-                            <q-chip color="primary" text-color="white" :label="time" removable @remove="removeTime(date, time)"/>
+                            <q-chip color="primary" text-color="white" :label="time" removable @remove="removeTime(event_date, time)"/>
                           </div>
                         </div>
                       </div>
@@ -150,17 +151,17 @@ export default {
   },
 
   watch: {
-    date: {
-      handler: function (newVal, oldVal) {
-        if (newVal === null) {
-          this.date = oldVal;
-        } else {
-          console.log(newVal);
-          // this.get_availability();
-        }
-      },
-      deep: true
-    }
+    // date: {
+    //   handler: function (newVal, oldVal) {
+    //     if (newVal === null) {
+    //       this.date = oldVal;
+    //     } else {
+    //       console.log(newVal);
+    //       // this.get_availability();
+    //     }
+    //   },
+    //   deep: true
+    // }
   },
 
   methods: {
@@ -169,9 +170,14 @@ export default {
       this.date = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
     },
 
+    jump_to_date(date) {
+      this.date = date;
+      this.get_availability()
+    },
+
     get_availability() {
       if (this.date != null){
-        console.log('triggerd', this.date)
+        // console.log('triggerd', this.date)
         let start_time = 8
         let times = []
         for (let i = 0; i < 9; i++) {
@@ -182,7 +188,7 @@ export default {
           times.push(new_time);
         }
         if (this.selectedTimes.hasOwnProperty(this.date)) {
-          console.log('selected times found')
+          // console.log('selected times found')
           this.clicked = new Array(times.length).fill('primary');
           this.selectedTimes[this.date].forEach(time => {
             let index = times.indexOf(time);
@@ -199,7 +205,7 @@ export default {
 
     timeClicked(index) {
       this.clicked[index] == "primary" ? this.clicked[index] = 'accent' : this.clicked[index] = 'primary';
-      console.log('clicked', this.avilableTimes[index])
+      // console.log('clicked', this.avilableTimes[index])
       if (this.date in this.selectedTimes) {
         if (this.selectedTimes[this.date].includes(this.avilableTimes[index])) {
           this.selectedTimes[this.date] = this.selectedTimes[this.date].filter(time => time !== this.avilableTimes[index])
