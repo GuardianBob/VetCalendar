@@ -3,8 +3,11 @@
     <div class="row justify-center">
       <!-- <q-dialog v-model="show"> -->
         <!-- <Forms /> -->
-        <div class="col-6">
+        <!-- <div class="col-6"> -->
           <component 
+            :is="dynamicComponent" 
+          />
+          <!-- <component 
             :is="dynamicComponent" 
             :getForm="get_form_api" 
             :submitForm="save_form_api" 
@@ -12,14 +15,14 @@
             :forms="forms" 
             :linked_forms="linked_forms"
             :multiDateSelect="true" 
-            :closeButton="true" 
+            :closeButton="false" 
             :doubleVerify="true"
             :page_title="page_title" 
             :cancel_button="true"
-            :delete_button="true"
+            :delete_button="false"
             @done="submitted" 
-            columns="one"/>
-        </div>
+            columns="one"/> -->
+        <!-- </div> -->
       <!-- </q-dialog> -->
     </div>
   </q-page>
@@ -32,6 +35,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 import APIService from "../../services/api";
 import FormTest from 'components/FormTest.vue';
 import BaseForm from 'components/BaseForm.vue';
+import ScheduleContractor from 'components/ScheduleContractor.vue';
 
 export default defineComponent({
   name: "FormsPage",
@@ -41,7 +45,7 @@ export default defineComponent({
   ],
   components: {
     // vue linter no use error bypass
-
+    
     // Forms,
     // FormTest,
   },
@@ -50,7 +54,8 @@ export default defineComponent({
       dynamicComponent: null,
       components: {
         FormTest,
-        BaseForm
+        BaseForm,
+        ScheduleContractor
       }
     }
   },
@@ -87,7 +92,8 @@ export default defineComponent({
   
   mounted() {
     // const componentName = process.env.VUE_APP_FORM_PAGE;
-    this.dynamicComponent = this.components['FormTest'];
+    // this.dynamicComponent = this.components['FormTest'];
+    this.dynamicComponent = this.components['ScheduleContractor'];
     // APIService.get_formbuilder_form().then((response) => {
     //   console.log(response);
     // });

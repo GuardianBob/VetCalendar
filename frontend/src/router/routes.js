@@ -154,6 +154,11 @@ const routes = [
         //   save_form_api: '/handle_forms',
         // }
       },
+      {
+        path: "/live",
+        component: () => import("pages/UploadSchedule.vue"),
+        beforeEnter: requireAuth,
+      },
     ],
 
   },
