@@ -235,6 +235,7 @@ export default {
           if (array.length === 0) {
             console.log(`Array at key ${key} is empty`);
             this.events = this.events.filter(event => event !== key)
+            delete this.selectedTimes[key]
           }
         }
       }
