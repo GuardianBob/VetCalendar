@@ -49,7 +49,7 @@
                           <!-- <div class="bg-primary text-white rounded-borders">{{ event_date }}</div> -->
                           <q-btn size="12px" dense padding="0px lg" color="primary" @click="jump_to_date(event_date)">{{ event_date }}</q-btn>
                           <div v-for="(time, timeIndex) in times" :key="`time-${timeIndex}`">
-                            <q-chip color="primary" text-color="white" :label="time" removable @remove="removeTime(event_date, time)"/>
+                            <q-chip color="accent" text-color="white" :label="time" removable @remove="removeTime(event_date, time)"/>
                           </div>
                         </div>
                       </div>
