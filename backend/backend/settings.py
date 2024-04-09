@@ -70,7 +70,7 @@ CORS_ORIGIN_WHITELIST = [
     'http://*.127.0.0.1',
     'http://*.127.0.0.1:9000',
     'http://*.127.0.0.1:8000',
-    'http://192.168.2.16:9000',
+    'http://192.168.13.16:9000',
     'http://localhost',
     "https://jgmeyer.dev", 
     "https://jbear-creations.com", 

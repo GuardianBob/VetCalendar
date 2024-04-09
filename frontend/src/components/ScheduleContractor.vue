@@ -14,6 +14,7 @@
                 event-color="orange"
                 :events="events"
                 @click="get_availability"
+                :options="optionsFn"
               />
             </div>
           </div>
@@ -144,8 +145,8 @@ export default {
       clicked: ref([]),
       optionsFn (date) {
         // let start, end = this.getDateOptions()
-        // console.log('start', start, 'end', end, 'date', date)
-        return date >= start && date <= end
+        // console.log('date', new Date(date).toISOString(), ' Today: ', new Date().toISOString())
+        return new Date(date).toISOString() >= new Date().toISOString()
       },
     }
   },
@@ -167,7 +168,8 @@ export default {
   methods: {
     getToday() {
       let date = new Date();
-      this.date = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
+      date = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
+      this.date = date
     },
 
     jump_to_date(date) {
