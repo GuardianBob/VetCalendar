@@ -222,7 +222,7 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
   # shift_times = {2: "07:00", 3: "10:00", 4: "14:00", 5: "18:00"}
   shift_times = {2: shift_names[0], 3: shift_names[1], 4: shift_names[2], 5: shift_names[3]}
   print(f'shift_times: {shift_times}')
-  shift_name_ids = {2: shift_names[0]['id'], 3: shift_names[0]['id'], 4: shift_names[0]['id'], 5: shift_names[0]['id']}
+  shift_name_ids = {2: shift_names[0]['id'], 3: shift_names[1]['id'], 4: shift_names[2]['id'], 5: shift_names[3]['id']}
   for table in wordDoc.tables:
       date = []
       j = 0
@@ -262,22 +262,29 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                 start = datetime.datetime.strptime(shift_times[j % 6]['start'], '%H:%M').time()
                 end = datetime.datetime.strptime(shift_times[j % 6]['end'], '%H:%M').time()
                 # print(start, end)
-                # shift_start = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start)
-                # shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
-                # shift, created = Shifts.objects.update_or_create(
-                #   shift_start = shift_start,
-                #   shift_end = shift_end,
-                #   shift_name_id = shift_name_ids[j % 6],
-                #   user_id = users[cell.text],
-                #   shift_type_id = 1,
-                # )
-                shifts.append({
-                  'shift_start': convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start),
-                  'shift_end': convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end),
-                  'shift_name_id': shift_name_ids[j % 6],
-                  'user_id': users[cell.text],
-                  'shift_type_id': 1,
-                })
+                # ========= Used to individually create/update shifts =========
+                filter_date = datetime.datetime.strptime(f'{year}-{month}-{date[i]}', '%Y-%m-%d').date()
+                shift_start = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start)
+                shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
+                shift, created = Shifts.objects.update_or_create(
+                  user_id = users[cell.text],
+                  shift_start__date=filter_date,
+                  defaults = {
+                    'shift_start': shift_start,
+                    'shift_end': shift_end,
+                    'shift_name_id': shift_name_ids[j % 6],
+                    'user_id': users[cell.text],
+                    'shift_type_id': 1,
+                  }
+                )
+                # ================= Used to bulk create shifts =================
+                # shifts.append({
+                #   'shift_start': convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start),
+                #   'shift_end': convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end),
+                #   'shift_name_id': shift_name_ids[j % 6],
+                #   'user_id': users[cell.text],
+                #   'shift_type_id': 1,
+                # })
               except ValueError:
                 print(f"Invalid date: {user_year}-{user_month}-{date[i]}", ValueError)
           i += 1
@@ -289,31 +296,17 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
         k = 0
         if j % 6 == 0: 
           date = []
-
-  # header = ['Subject', 'Start date', 'Start time']
-  # with open(f'schedule_{user_month}-{user_year}.csv', 'w', encoding='UTF8', newline='\n') as f:
-  #   writer = csv.writer(f)
-  #   writer.writerow(header)
-  #   for shift in shifts:
-  #     writer.writerow(shift)
   user_list = list(user_list)
   # print(f'users from upload: {user_list}')
-  Shifts.objects.filter(
-    Q(user_id__in=user_list),
-    Q(shift_start__date__gte=first_day), 
-    Q(shift_end__date__lte=last_day),
-  ).delete()
-  Shifts.objects.bulk_create(
-    Shifts(**shift) for shift in shifts
-  )
-  # f.close()
-  # start_time = datetime.datetime(2023,6,21,3,45,00)
-  # end_time = start_time + timedelta(hours=12)
-  # print("start: ", start_time, "end: ", end_time)
-  # print(shifts)
-  # load_database(shifts, user_month, user_year)
-  # events = add_shifts(shifts)
-  # json_shifts = json.dumps(events)
+  # ================== Used to bulk create shifts ==================
+  # Shifts.objects.filter(
+  #   Q(user_id__in=user_list),
+  #   Q(shift_start__date__gte=first_day), 
+  #   Q(shift_end__date__lte=last_day),
+  # ).delete()
+  # Shifts.objects.bulk_create(
+  #   Shifts(**shift) for shift in shifts
+  # )
   return "Success!"
 
 def load_schedule_old(schedule, month, year):
