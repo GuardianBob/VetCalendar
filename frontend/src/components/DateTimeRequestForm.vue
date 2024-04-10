@@ -143,6 +143,9 @@ export default {
       selectedTimes: ref({}),
       showTime: ref(false),
       clicked: ref([]),
+      startTime: ref('08:00'),
+      endTime: ref('17:00'),
+      timeblock: ref(30),
       optionsFn (date) {
         // let start, end = this.getDateOptions()
         // console.log('date', new Date(date).toISOString(), ' Today: ', new Date().toISOString())
@@ -182,13 +185,21 @@ export default {
         // console.log('triggerd', this.date)
         let start_time = 8
         let times = []
-        for (let i = 0; i < 9; i++) {
-          let time = start_time + i;
-          let new_time = time.toString().padStart(2, '0') + ':00';
-          times.push(new_time);
-          new_time = time.toString().padStart(2, '0') + ':30';
-          times.push(new_time);
+        let startTime = new Date(`1970-01-01T${this.startTime}:00Z`);
+        let endTime = new Date(`1970-01-01T${this.endTime}:00Z`);
+        while (startTime < endTime) {
+          startTime.setMinutes(startTime.getMinutes() + this.timeblock);
+          let hours = String(startTime.getUTCHours()).padStart(2, '0');
+          let minutes = String(startTime.getUTCMinutes()).padStart(2, '0');
+          times.push(`${hours}:${minutes}`);
         }
+        // for (let i = 0; i < 9; i++) {
+        //   let time = start_time + i;
+        //   let new_time = time.toString().padStart(2, '0') + ':00';
+        //   times.push(new_time);
+        //   new_time = time.toString().padStart(2, '0') + ':30';
+        //   times.push(new_time);
+        // }
         if (this.selectedTimes.hasOwnProperty(this.date)) {
           // console.log('selected times found')
           this.clicked = new Array(times.length).fill('primary');
