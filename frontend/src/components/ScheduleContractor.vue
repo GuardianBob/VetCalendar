@@ -168,7 +168,7 @@ export default {
   methods: {
     getToday() {
       let date = new Date();
-      date = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
+      date = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + (date.getDate() + 1)).slice(-2);
       this.date = date
     },
 
