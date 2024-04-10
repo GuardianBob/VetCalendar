@@ -171,8 +171,12 @@ def upload_file(request):
   # new_date = datetime.strptime(input_date, '%Y %b').strftime('%b')
   # print(input_date, input_date.strftime('%m'), input_date.strftime('%Y'))
   file_name = request.FILES['file']
+  user_list = list(User.objects.all().values('id', 'initials'))
+  users = {user['initials']: user['id'] for user in user_list}
+  shift_names = list(ShiftName.objects.all().values('id', 'start_time', 'end_time'))
+  shift_names = [{'id': shift['id'], 'start': shift['start_time'].strftime("%H:%M"), 'end': shift['end_time'].strftime("%H:%M")} for shift in shift_names]
   if short_month.lower() in file_name.name.lower():
-    contents = load_schedule(file_name, input_month, year) # Run upload script
+    contents = load_schedule(file_name, input_month, year, users, shift_names) # Run upload script
   else:
     file_month = "false"
     for month in month_abbrev:  # Verify that the file month matches the input month
@@ -784,7 +788,7 @@ def add_event(content, event_id=None):
     earliest_date, latest_date = min(dates), max(dates)
     if earliest_date == latest_date:
       latest_date = earliest_date + timedelta(days=1)
-    # print('date filter ====>: ', earliest_date, latest_date)
+    print('date filter ====>: ', earliest_date, latest_date)
     # Filter the shifts
     existing_shifts = Shifts.objects.filter(
       Q(user=user),

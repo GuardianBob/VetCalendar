@@ -7,7 +7,8 @@
       <div class="col-8 q-pr-sm">
         <div class="column justify-start">
             <div class="col-2">
-              <q-btn color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
+              <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
+              <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
             </div>
           <div class="row align-start justify-center">
             <Calendar 
@@ -44,9 +45,29 @@
         :add_to_date="add_to_date"/>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="upload_file" @hide="upload_file = false">
+      <div class="row justify-center items-center bg-white text-black dialog-60-nb">
+        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-9">
+          <q-file v-model="file" label="Select File" accept=".docx, .doc" class="q-my-sm" counter>
+            <!-- <q-btn class="q-ml-md q-px-sm" color="primary" size="md" flat rounded id="clear_filters_button" @click="clearFile" icon="cancel"/> -->
+            <template v-slot:prepend>
+              <q-icon name="attach_file" />
+            </template>
+            <template v-slot:append>
+              <q-icon name="cancel" color="negative" v-if="file !== null" @click="file = null" class="cursor-pointer" />
+            </template>
+          </q-file>
+        </div>
+        <div class="col-1 text-center">
+          <q-btn class="q-mx-sm" size="md" color="primary" round id="upload_button" @click="file_upload" v-show="file">
+            <q-icon name="upload"></q-icon>
+            <q-tooltip class="bg-accent">Upload File</q-tooltip>
+          </q-btn>
+        </div>
+      </div>
+    </q-dialog>
   </q-page>
 </template>
-
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
@@ -115,6 +136,8 @@ export default defineComponent({
       multiDateSelect: ref(true),
       add_to_date: ref(null),
       delete_event: ref('/delete_event'),
+      upload_file: ref(false),
+      file: ref(null),
     };
   },
   watch: {
@@ -237,6 +260,49 @@ export default defineComponent({
         this.filtered_shifts = this.filtered_shifts.filter(shift => shift.employee.includes(this.user))
       }
       // console.log(this.user_shifts)
+    },
+
+    async file_upload() {
+      console.log("and for ALL the marbles...!")
+      if (this.file) {
+        this.user_shifts = []
+        // localStorage.setItem("gmail", this.gmail)
+        let formData = new FormData()
+        let file = this.file
+        await formData.append("file", file)
+        await formData.append("date", this.date)
+        await APIService.upload_file(formData)
+          .then((res) => {
+            if (res.status == 200) {
+              Notify.create({
+                message: "Successfully uploaded shifts!",
+                color: "green",
+                position: 'center',
+                timeout: 300,
+              })
+            } else {
+              Notify.create({
+                message: "Something went wrong",
+                color: "red",
+                position: 'center',
+                timeout: 300,
+              })
+            }
+          })
+        Notify.create({
+          message: "Successfully sent the file!",
+          color: "green",
+          position: 'center',
+          timeout: 300,
+        })
+        this.clearFile()
+        this.getShiftsYear()
+      }
+    },
+
+    async clearFile() {
+      this.file = null
+      this.upload_file = false
     },
   },
 

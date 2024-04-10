@@ -114,6 +114,15 @@ ul.errorlist {
   padding: 0 50px;
 }
 
+.dialog-60-nb {
+  background-color: white;
+  // border: 4px solid #581fc2;
+  // border-radius: 10px;
+  max-width: 60vw;
+  min-width: 60vw;
+  padding: 0 50px;
+}
+
 .dialog-25 {
   background-color: white;
   border: 4px solid #581fc2;
@@ -129,6 +138,12 @@ ul.errorlist {
 
 @media (max-width: 600px) {
   .dialog-60 {
+    max-width: 80vw;
+    min-width: 80vw;
+    padding: 0 10px;
+  }
+
+  .dialog-60-nb {
     max-width: 80vw;
     min-width: 80vw;
     padding: 0 10px;
