@@ -35,7 +35,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 import APIService from "../../services/api";
 import FormTest from 'components/FormTest.vue';
 import BaseForm from 'components/BaseForm.vue';
-import ScheduleContractor from 'components/ScheduleContractor.vue';
+import DateTimeRequestForm from 'components/DateTimeRequestForm.vue';
 
 export default defineComponent({
   name: "FormsPage",
@@ -55,7 +55,7 @@ export default defineComponent({
       components: {
         FormTest,
         BaseForm,
-        ScheduleContractor
+        DateTimeRequestForm
       }
     }
   },
@@ -93,7 +93,7 @@ export default defineComponent({
   mounted() {
     // const componentName = process.env.VUE_APP_FORM_PAGE;
     // this.dynamicComponent = this.components['FormTest'];
-    this.dynamicComponent = this.components['ScheduleContractor'];
+    this.dynamicComponent = this.components['DateTimeRequestForm'];
     // APIService.get_formbuilder_form().then((response) => {
     //   console.log(response);
     // });
