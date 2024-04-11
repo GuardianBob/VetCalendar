@@ -242,14 +242,18 @@ export default defineComponent({
       // calculate on backend with data pull
       // console.log(this.events, this.users)
       let date_filter = MainFunctions.date_to_number(this.date)
-      let year = date_filter.slice(0, 4)
-      console.log(date_filter, year)
-      console.log(this.shifts)
+      // let year = date_filter.slice(0, 4)
+      let temp_filter_date = new Date(this.date + "-01")
+      let year = temp_filter_date.getFullYear()
+      let month = temp_filter_date.getMonth()
+      console.log(temp_filter_date, year, month)
       this.user_shifts = []
-      this.filtered_shifts = []
+      this.filtered_shifts = []      
+      console.log(this.shifts, this.events)
       for (let user of this.users) {
-        let new_mon_arr = this.shifts.filter(shift => shift.start.includes(date_filter) && shift.title.includes(user));
-        let new_arr = this.shifts.filter(shift => shift.start.includes(year) && shift.title.includes(user));
+        let new_mon_arr = this.shifts.filter(shift => new Date(shift.start).getMonth() == month && shift.title.includes(user));
+        let new_arr = this.shifts.filter(shift => new Date(shift.start).getFullYear() == year && shift.title.includes(user));
+        console.log(`${user}: month : ${Object.keys(new_mon_arr).length}, array: ${Object.keys(new_arr).length}`)
         // let new_arr = this.shifts.filter((shift) => { return shift.title == user })
         // this.user_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
         // this.filtered_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })

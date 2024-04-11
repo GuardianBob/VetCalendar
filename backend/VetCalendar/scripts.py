@@ -233,6 +233,7 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
         shift = ''
         time = ''
         for cell in row.cells:
+          cell.text = cell.text.replace(' ', '')
           row_text = row_text + cell.text + ","
           if cell.text in month_list:
             month = cell.text
@@ -245,27 +246,20 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                 # print(f'date {date}')
             # else:
             #   if i % 2 == 0:
-            elif i % 2 == 0:
-                shift = cell.text
-                # if j % 6 == 2:
-                #   time = "07:00"
-                # if j % 6 == 3:
-                #   time = "10:00"
-                # if j % 6 == 4:
-                #   time = "14:00"
-                # if j % 6 == 5:
-                #   time = "18:00"
-              # print(user)
             elif cell.text != "" and cell.text in users:
               try:
                 user_list.add(users[cell.text])
                 start = datetime.datetime.strptime(shift_times[j % 6]['start'], '%H:%M').time()
                 end = datetime.datetime.strptime(shift_times[j % 6]['end'], '%H:%M').time()
                 # print(start, end)
-                # ========= Used to individually create/update shifts =========
-                filter_date = datetime.datetime.strptime(f'{year}-{month}-{date[i]}', '%Y-%m-%d').date()
                 shift_start = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start)
-                shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
+                if start > end:
+                  shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end) + timedelta(days=1)
+                else:
+                  shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
+                print(f'shift_start: {shift_start} \n shift_end: {shift_end}')
+                # =============== Used to individually create/update shifts ===============
+                filter_date = datetime.datetime.strptime(f'{year}-{month}-{date[i]}', '%Y-%m-%d').date()
                 shift, created = Shifts.objects.update_or_create(
                   user_id = users[cell.text],
                   shift_start__date=filter_date,
@@ -279,8 +273,8 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                 )
                 # ================= Used to bulk create shifts =================
                 # shifts.append({
-                #   'shift_start': convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start),
-                #   'shift_end': convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end),
+                #   'shift_start': shift_start,
+                #   'shift_end': shift_end,
                 #   'shift_name_id': shift_name_ids[j % 6],
                 #   'user_id': users[cell.text],
                 #   'shift_type_id': 1,

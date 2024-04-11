@@ -218,13 +218,13 @@ def return_shifts(request):
   shifts = Shifts.objects.values('id', 'shift_name__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_name_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
-      # print(shift)
+      # print(str(shift['shift_start']))
       events.append({
         "id": shift['id'],
         "user_id": shift['user__id'],
         "user": shift['user__initials'],
-        "start": str(shift['shift_start']),
-        "end": str(shift['shift_end']),
+        "start": shift['shift_start'],
+        "end": shift['shift_end'],
         "color": shift['shift_type__shift_color'],
         "shift_name_id": shift['shift_name_id'],
         "shift_type_id": shift['shift_type_id'],
