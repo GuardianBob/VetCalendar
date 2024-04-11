@@ -2,8 +2,17 @@
     <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
       class="col-10 col-md-10 col-sm-10 col-lg-10 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
       <div class="column items-center" >
-        <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
-          @update:model-value="filterShifts()" style="max-width: 400px; min-width: 250px;">
+        <q-select 
+          class="q-mx-sm" 
+          v-model="user" 
+          :options="users" 
+          dense 
+          multiple
+          use-chips
+          options-dense
+          @update:model-value="filterShifts()" 
+          style="max-width: 400px; min-width: 250px;"
+        >
           <template v-slot:prepend>
             <q-icon name="filter_alt" round color="primary" />
           </template>
@@ -356,9 +365,13 @@ export default {
     },
 
     async filterShifts() {
+      if (this.user.length === 0) {
+        this.clearFilters()
+      } else {
       this.calendarOptions.events = []
+      console.log(this.user)
       this.shifts.map(shift => {
-        if (shift["title"] == this.user) {
+        if (this.user.includes(shift["title"])) {
           // console.log(shift)
           let new_shift = JSON.parse(JSON.stringify(shift))
           new_shift["backgroundColor"] = shift["borderColor"]
@@ -367,6 +380,7 @@ export default {
           localStorage.setItem("filtered_user", this.user)
         }        
       })
+      }
     },
 
     async clearFilters() {
