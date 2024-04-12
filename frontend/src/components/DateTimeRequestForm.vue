@@ -1,14 +1,14 @@
 <template>
   <div class="row q-mx-md full-width justify-around ">
     <!-- Blank -->
-    <div class="col-10">
+    <!-- <div class="col-10">
       <q-splitter
         v-model="splitterModel"
       >
-        <template v-slot:before>
-          <div class="row">
-            <div class="col-5"></div>
-            <div class="col-7 q-pa-md">
+        <template v-slot:before> -->
+          <div class="row justify-center"> 
+            <!-- <div class="col-5 col-xs-11 col-sm-5 col-md-5 col-lg-5"></div> -->
+            <div class="col-6 col-xs-11 col-sm-6 col-md-6 col-lg-6 q-pa-md">
               <q-date
                 v-model="date"
                 event-color="orange"
@@ -17,24 +17,24 @@
                 :options="optionsFn"
               />
             </div>
-          </div>
-          <div class="row justify-center">
-            <div class="col-5 q-pa-md"></div>
-            <div class="col-7 q-mt-lg q-px-md text-center">
+          <!-- </div> -->
+          <!-- <div class="row justify-center"> -->
+            <!-- <div class="col-5 col-xs-11 col-sm-5 col-md-5 col-lg-5 q-pa-md"></div> -->
+            <div class="col-6 col-xs-11 col-sm-6 col-md-6 col-lg-6 q-mt-lg q-px-md text-center">
               <q-btn color="negative" @click="clearAll()" label="Reset" class="q-mx-xs"/>
               <q-btn color="primary" @click="saveClicked()" label="Save" class="q-mx-xs"/>
             </div>
           </div>
-        </template>
+        <!-- </template>
 
         <template v-slot:after>
           <q-tab-panels
             v-model="date"
           >
-            <q-tab-panel :name="date">
+            <q-tab-panel :name="date"> -->
               <!-- <q-card style="width: 90%" flat> -->
                 <!-- <q-card-section> -->
-                  <div class="row">
+                  <div class="row justify-center q-my-md">
                     <!-- <div class="col-12"></div> -->
                     <div rounded class="col-5 text-center q-px-sm">
                       <div class="col-12 text-center bg-primary text-white rounded-borders">
@@ -44,11 +44,11 @@
                         <q-btn :label="time" :color="clicked[index]" @click="timeClicked(index)" class="q-mx-sm q-my-xs q-px-lg"/>
                       </span>
                     </div>                    
-                    <div class="col-3 text-center">
+                    <div class="col-5 text-center">
                       <div v-for="(times, event_date) in selectedTimes" :key="event_date">
                         <div v-if="times && times.length > 0">
                           <!-- <div class="bg-primary text-white rounded-borders">{{ event_date }}</div> -->
-                          <q-btn size="12px" dense padding="0px lg" color="primary" @click="jump_to_date(event_date)">{{ event_date }}</q-btn>
+                          <q-btn class="rounded-borders" size="12px" dense padding="0px lg" color="primary" @click="jump_to_date(event_date)">{{ event_date }}</q-btn>
                           <div v-for="(time, timeIndex) in times" :key="`time-${timeIndex}`">
                             <q-chip outline color="primary" :label="time" removable @remove="removeTime(event_date, time)"/>
                           </div>
@@ -71,11 +71,11 @@
                   </div>   -->
                 <!-- </q-card-actions> -->
               <!-- </q-card> -->
-            </q-tab-panel>
+            <!-- </q-tab-panel>
           </q-tab-panels> 
         </template>
-      </q-splitter>
-    </div>
+      </q-splitter> -->
+    <!-- </div> -->
 
     <!-- <div class="col-6 q-mt-lg">
       <q-date

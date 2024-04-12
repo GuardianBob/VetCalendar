@@ -1,14 +1,14 @@
 <template>
   <q-page class="q-pt-xl" >
     <div class="row align-start justify-center q-mx-sm ">
-      <div class="col-4 q-pl-sm">
+      <div class="col-4 col-xs-11 col-sm-4 col-md-4 col-lg-4 q-pl-sm">
         <div class="col-4 text-center q-my-sm">
           <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
           <q-btn class="q-mx-xs" color="secondary" id="add_shifts" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
         </div>
         <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/>
       </div>
-      <div class="col-8 q-pr-sm">
+      <div class="col-8 col-xs-12 col-sm-8 col-md-8 col-lg-8">
         <div class="column justify-start">
           <div class="row align-start justify-center">
             <Calendar 
