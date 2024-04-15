@@ -198,10 +198,10 @@ def convert_schedule(schedule, user, month, year):
   return json_shifts
 
 def load_schedule(schedule, month, year, users = None, shift_names = None):
-  print(f'year start: {year}')
-  print(f'users: {users} \n shift_names: {shift_names} \n')
-  print('JM: ', users['JM'])
-  print('Swing 1 start: ', shift_names[1]['start'])
+  # print(f'year start: {year}')
+  # print(f'users: {users} \n shift_names: {shift_names} \n')
+  # print('JM: ', users['JM'])
+  # print('Swing 1 start: ', shift_names[1]['start'])
   user_list = set([])
   user_month = month
   user_year = year
@@ -220,8 +220,9 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
   # year = "2022"
   shifts = []
   # shift_times = {2: "07:00", 3: "10:00", 4: "14:00", 5: "18:00"}
+  # print(f'shift_names: {shift_names}')
   shift_times = {2: shift_names[0], 3: shift_names[1], 4: shift_names[2], 5: shift_names[3]}
-  print(f'shift_times: {shift_times}')
+  # print(f'shift_times: {shift_times}')
   shift_name_ids = {2: shift_names[0]['id'], 3: shift_names[1]['id'], 4: shift_names[2]['id'], 5: shift_names[3]['id']}
   for table in wordDoc.tables:
       date = []

@@ -168,3 +168,4 @@ backend/logs/
 backend/error.log*
 Layout Ideas/
 temp/
+/node_modules

@@ -189,7 +189,7 @@ def upload_file(request):
     # print(user)
     # contents = convert_schedule(file_name, user, month, year)
     month = month_list[file_month[:3]] if file_month != "false" else input_month
-    contents = load_schedule(file_name, month, year) # Run upload script
+    contents = load_schedule(file_name, month, year, users, shift_names) # Run upload script
   # print("the contents are: ", contents) 
   return HttpResponse(contents)
 
