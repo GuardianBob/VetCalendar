@@ -12,7 +12,7 @@ from login.models import User, Address, CityState, Phone, AccessLevel, Permissio
 from django.views.decorators.csrf import csrf_exempt
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone, convert_label
 from login.scripts import get_settings_columns
-import json, traceback, sys, re, pytz, os
+import json, traceback, sys, re, pytz, os, datetime
 from datetime import date, timedelta
 import dateutil.parser as parser
 # import numpy as np
@@ -512,6 +512,23 @@ def delete_event(request):
       # print(shift)
       shift.delete()
       return JsonResponse({'message': 'Shift Deleted'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+  
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def clear_shifts(request):
+  try:
+    if request.method == 'POST':
+      date = parse_date(request.body.decode('utf-8') + ' 01').date()
+      # start_date = datetime.datetime.strptime(date, '%Y %b %d').date()
+      year = date.strftime('%Y')
+      month = date.strftime('%m')
+      print(date, year, month)
+      Shifts.objects.filter(shift_start__year=year, shift_start__month=month).delete()
+      return JsonResponse({'message': 'Shifts Deleted'}, status=200)
   except Exception as e:
     return trace_error(e, True)
   

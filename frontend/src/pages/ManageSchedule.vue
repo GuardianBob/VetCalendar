@@ -5,6 +5,7 @@
         <div class="col-4 text-center q-my-sm">
           <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
           <q-btn class="q-mx-xs" color="secondary" id="add_shifts" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
+          <q-btn class="q-mx-xs" color="negative" id="add_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
         </div>
         <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/>
       </div>
@@ -66,6 +67,12 @@
         </div>
       </div>
     </q-dialog>
+    <q-dialog v-model="confirm" persistent>
+      <ConfirmDialog 
+        :doubleVerify="true"
+        @confirmed="confirm_choice"
+      />
+    </q-dialog>
   </q-page>
 </template>
 
@@ -80,12 +87,14 @@ import MainFunctions from '../../services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
+import ConfirmDialog from "components/ConfirmDialog.vue"
 
 export default defineComponent({
   name: "ScheduleShifts",
   components: {
     Calendar,
     DataTable,
+    ConfirmDialog, 
     // BaseForm,
   },
   data() {
@@ -138,6 +147,7 @@ export default defineComponent({
       delete_event: ref('/delete_event'),
       upload_file: ref(false),
       file: ref(null),
+      confirm: ref(false),
     };
   },
   watch: {
@@ -299,14 +309,34 @@ export default defineComponent({
           position: 'center',
           timeout: 300,
         })
-        this.clearFile()
-        this.getShiftsYear()
+        // this.clearFile()
+        this.getShiftsYear().then(() => {
+          this.shift_count()
+        });
       }
     },
 
     async clearFile() {
       this.file = null
       this.upload_file = false
+    },
+
+    confirm_choice(choice) {
+      this.confirm = false;
+      console.log(choice);
+      if (choice) {
+        this.clear_shifts();
+      }
+    },
+
+    async clear_shifts() {
+      this.user_shifts = []
+      this.filtered_shifts = []
+      await APIService.clear_shifts(this.date)
+      console.log("Cleared shifts")
+      this.getShiftsYear().then(() => {
+        this.shift_count()
+      });
     },
   },
 
