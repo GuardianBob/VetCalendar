@@ -9,6 +9,7 @@ urlpatterns = [
     # path('return_shifts_old', views.return_shifts_old, name='return_shifts_old'),
     # path('quick_add', views.quick_add, name='quick_add'),
     path('delete_event', views.delete_event, name='delete_event'),
+    path('clear_shifts', views.clear_shifts, name='clear_shifts'),
     # path('save_schedule_updates', views.save_schedule_updates, name='save_schedule_updates'),
     re_path(r'^edit_event(?:/(?P<id>\d+))?$', views.edit_event, name='edit_event'),
     path('schedule_settings', views.schedule_settings, name='schedule_settings'),

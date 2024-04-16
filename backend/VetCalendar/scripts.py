@@ -1,11 +1,12 @@
 # ==== Google Calendar API reqs =====
 from __future__ import print_function
 
-import datetime, json, traceback, sys, re, pytz
+import datetime, json, traceback, sys, re, pytz, calendar
 from datetime import timedelta
 import os.path
-from .models import Calendar
+from .models import Calendar, Shifts
 from django.utils import timezone
+from django.db.models import Q
 from django.shortcuts import render, redirect, HttpResponse
 from django.http import JsonResponse
 from docx import Document
@@ -196,7 +197,155 @@ def convert_schedule(schedule, user, month, year):
   json_shifts = json.dumps(events)
   return json_shifts
 
-def load_schedule(schedule, month, year):
+def load_schedule(schedule, month, year, users = None, shift_names = None):
+  # print(f'year start: {year}')
+  # print(f'users: {users} \n shift_names: {shift_names} \n')
+  # print('JM: ', users['JM'])
+  # print('Swing 1 start: ', shift_names[1]['start'])
+  user_list = set([])
+  user_month = month
+  user_year = year
+  first_day = datetime.datetime.strptime(f'{year}-{month}-01', '%Y-%m-%d').date()
+  _, last_day_num = calendar.monthrange(first_day.year, first_day.month)
+  last_day = datetime.datetime(first_day.year, first_day.month, last_day_num).date()
+  # print(f'first day: {first_day} \n last day: {last_day}')
+  wordDoc = Document(schedule)
+  # user_tz = pytz.timezone('America/Los_Angeles')
+  while not user_month in month_variables:
+    # user_month = simpledialog.askstring(title="Month", prompt="Please enter the 2-digit month")
+    user_month = "08"
+  while not int(user_year) > 2021:
+    user_year = "2022"
+  month = user_month
+  # year = "2022"
+  shifts = []
+  remove_shifts = set([])
+  # ================= Pull Current Shifts =================
+  current_shifts = list(Shifts.objects.filter(shift_start__year=year, shift_start__month=month).values())
+  # shift_times = {2: "07:00", 3: "10:00", 4: "14:00", 5: "18:00"}
+  # print(f'shift_names: {shift_names}')
+  shift_times = {2: shift_names[0], 3: shift_names[1], 4: shift_names[2], 5: shift_names[3]}
+  # print(f'shift_times: {shift_times}')
+  shift_name_ids = {2: shift_names[0]['id'], 3: shift_names[1]['id'], 4: shift_names[2]['id'], 5: shift_names[3]['id']}
+  for table in wordDoc.tables:
+      date = []
+      j = 0
+      for row in table.rows:
+        row_text = ''
+        i = 0
+        k = 0
+        shift = ''
+        time = ''        
+        for cell in row.cells:
+          cell.text = cell.text.replace(' ', '')
+          row_text = row_text + cell.text + ","
+          if cell.text in month_list:
+            month = cell.text
+          if cell.text.lower() in day_list:
+            j = 0
+            # print('reading cells')
+          else:
+            if j % 6 == 1:
+                date.append(cell.text)
+                # print(f'date {date}')
+            # else:
+            #   if i % 2 == 0:
+            else: 
+              if "/" in cell.text:
+                user_cell = cell.text.split("/")
+              else:
+                user_cell = [cell.text]
+              for user in user_cell:
+                if user != "" and user in users:
+                  try:
+                    user_list.add(users[user])
+                    start = datetime.datetime.strptime(shift_times[j % 6]['start'], '%H:%M').time()
+                    end = datetime.datetime.strptime(shift_times[j % 6]['end'], '%H:%M').time()
+                    # print(start, end)
+                    shift_start = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start)
+                    if start > end:
+                      shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end) + timedelta(days=1)
+                    else:
+                      shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
+                    # print(f'shift_start: {shift_start} \n shift_end: {shift_end}')
+                    # user_date = start.replace(tzinfo=TIMEZONE)
+                    # filter_date = user_date.astimezone(pytz.timezone('UTC')).date()
+                    filter_date = shift_start.date()
+                    print(f'filter_date: {filter_date}')
+                    # ================= individually update pulled shifts and create new shifts =================
+                    # filtered_shift = current_shifts.filter(user_id=users[user], shift_start__date=filter_date).values()
+                    filtered_shift = list(filter(lambda x: x['user_id'] == users[user] and x['shift_start'].date() == filter_date, current_shifts))
+                    shift_type = 1
+                    if len(filtered_shift) > 0 :
+                      shift_type = filtered_shift[0]['shift_type_id']
+                      for shift in filtered_shift:
+                        remove_shifts.add(shift['id'])
+                      # new_shift = {}
+                      # print(f'filtered_shift: {filtered_shift}')
+                      # new_shift['shift_start'] = shift_start,
+                      # new_shift['shift_end'] = shift_end,
+                      # new_shift['shift_name_id'] = shift_name_ids[j % 6],
+                      # new_shift['user_id'] = users[user],
+                      # new_shift['shift_type_id'] = 1,
+                      # print("updated shift: ", new_shift)
+                    else:
+                      print(f'no filtered shift found for {users[user]} on {filter_date}')
+                    
+                    # =============== Used to individually create/update shifts ===============
+                    # shift, created = Shifts.objects.update_or_create(
+                    #   user_id = users[user],
+                    #   shift_start__date=filter_date,
+                    #   defaults = {
+                    #     'shift_start': shift_start,
+                    #     'shift_end': shift_end,
+                    #     'shift_name_id': shift_name_ids[j % 6],
+                    #     'user_id': users[user],
+                    #     'shift_type_id': 1,
+                    #   }
+                    # )
+                    # ================= Used to bulk create shifts =================
+                    shifts.append({
+                      'shift_start': shift_start,
+                      'shift_end': shift_end,
+                      'shift_name_id': shift_name_ids[j % 6],
+                      'user_id': users[user],
+                      'shift_type_id': shift_type,
+                    })               
+
+                  except ValueError:
+                    print(f"Invalid date: {user_year}-{user_month}-{date[i]}", ValueError)
+          i += 1
+
+        # print(row_text, "row", j)
+        # print("date row", date)
+        j += 1
+        i = 0
+        k = 0
+        if j % 6 == 0: 
+          date = []
+  user_list = list(user_list)
+  remove_shifts = list(remove_shifts)
+  # current_shifts = list(filter(lambda x: x['id'] not in remove_shifts, current_shifts))
+  # print(f'users from upload: {user_list}')
+  # ================== Used to bulk remove then bulk create shifts ==================
+  Shifts.objects.filter(
+    Q(id__in=remove_shifts),
+  ).delete()
+  Shifts.objects.bulk_create(
+    Shifts(**shift) for shift in shifts
+  )
+  # ================== Used to bulk create shifts ==================
+  # Shifts.objects.filter(
+  #   Q(user_id__in=user_list),
+  #   Q(shift_start__date__gte=first_day), 
+  #   Q(shift_end__date__lte=last_day),
+  # ).delete()
+  # Shifts.objects.bulk_create(
+  #   Shifts(**shift) for shift in shifts
+  # )
+  return "Success!"
+
+def load_schedule_old(schedule, month, year):
   print(f'year start: {year}')
   user_month = month
   user_year = year
@@ -409,7 +558,7 @@ def convert_label(name):
     return capitalized_name
 
 def convert_to_shift_datetime(date, time):
-  print(date, time)
+  # print(date, time)
   shift_date = parse(date).date()
   shift_datetime = datetime.datetime.combine(shift_date, time)
   # shift_datetime = fix_timezone(shift_datetime)

@@ -41,6 +41,8 @@ host_list = [
     'http://127.0.0.1:9000',
     'http://127.0.0.1:8000',
     'http://localhost',
+    'http://192.168.13.13',
+    'http://192.168.13.13:9000',
     "https://jgmeyer.dev",
     "https://vetcal.jgmeyer.dev",
     "https://vss.jgmeyer.dev",
@@ -67,10 +69,11 @@ ALLOWED_HOSTS = [
 
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:9000',
-    'http://*.127.0.0.1',
-    'http://*.127.0.0.1:9000',
-    'http://*.127.0.0.1:8000',
-    'http://192.168.13.16:9000',
+    'http://127.0.0.1',
+    'http://127.0.0.1:9000',
+    'http://127.0.0.1:8000',
+    'http://192.168.13.13:9000',
+    'http://192.168.13.*:9000',
     'http://localhost',
     "https://jgmeyer.dev", 
     "https://jbear-creations.com", 
@@ -297,7 +300,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

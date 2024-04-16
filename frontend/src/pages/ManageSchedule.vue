@@ -1,14 +1,56 @@
 <template>
   <q-page class="q-pt-xl" >
     <div class="row align-start justify-center q-mx-sm ">
-      <div class="col-4 q-pl-sm">
-        <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/>
+      <div class="col-4 col-xs-11 col-sm-4 col-md-4 col-lg-4 q-pl-sm">
+        <!-- <ScheduleTools :columns="columnLabels" title="Schedule Shifts" :rowData="filtered_shifts"/> -->
+        <!-- <div class="col-4 text-center q-my-sm">
+          <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
+          <q-btn class="q-mx-xs" color="secondary" id="add_shifts" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
+          <q-btn class="q-mx-xs" color="negative" id="add_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
+        </div> -->
+        <!-- <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/> -->
+        <q-card flat>
+          <q-tabs
+            v-model="tab"
+            dense
+            outside-arrows
+            mobile-arrows
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+          >
+            <q-tab name="totals" label="Shift Totals" />
+            <q-tab name="schedule" label="Scheduling Tools" />
+            <q-tab name="admin" label="Admin Tools" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="tab" animated>
+            <q-tab-panel name="totals">
+              <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/>
+            </q-tab-panel>
+
+            <q-tab-panel name="schedule">
+              <div class="text-h6">Scheduling Tools</div>
+              <div class="row justify-between">
+                <q-btn class="q-ma-xs btn-50" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
+                <q-btn class="q-ma-xs btn-50" color="secondary" id="upload" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
+              </div>
+            </q-tab-panel>
+
+            <q-tab-panel name="admin">
+              <div class="text-h6">Admin Tools</div>
+              <div class="row justify-between">
+                <q-btn class="q-mx-xs btn-50" color="negative" id="clear_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
+              </div>
+            </q-tab-panel>
+          </q-tab-panels>
+        </q-card>
       </div>
-      <div class="col-8 q-pr-sm">
+      <div class="col-8 col-xs-12 col-sm-8 col-md-8 col-lg-8">
         <div class="column justify-start">
-            <div class="col-2">
-              <q-btn color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
-            </div>
           <div class="row align-start justify-center">
             <Calendar 
               @send_date="set_date" 
@@ -44,9 +86,34 @@
         :add_to_date="add_to_date"/>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="upload_file" @hide="upload_file = false">
+      <div class="row justify-center items-center bg-white text-black dialog-60-nb">
+        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-9">
+          <q-file v-model="file" label="Select File" accept=".docx, .doc" class="q-my-sm" counter>
+            <template v-slot:prepend>
+              <q-icon name="attach_file" />
+            </template>
+            <template v-slot:append>
+              <q-icon name="cancel" color="negative" v-if="file !== null" @click="file = null" class="cursor-pointer" />
+            </template>
+          </q-file>
+        </div>
+        <div class="col-1 text-center">
+          <q-btn class="q-mx-sm" size="md" color="primary" round id="upload_button" @click="file_upload" v-show="file">
+            <q-icon name="upload"></q-icon>
+            <q-tooltip class="bg-accent">Upload File</q-tooltip>
+          </q-btn>
+        </div>
+      </div>
+    </q-dialog>
+    <q-dialog v-model="confirm" persistent>
+      <ConfirmDialog 
+        :doubleVerify="true"
+        @confirmed="confirm_choice"
+      />
+    </q-dialog>
   </q-page>
 </template>
-
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
@@ -59,12 +126,16 @@ import MainFunctions from '../../services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
+import ConfirmDialog from "components/ConfirmDialog.vue"
+import ScheduleTools from 'components/ScheduleTools.vue';
 
 export default defineComponent({
   name: "ScheduleShifts",
   components: {
     Calendar,
     DataTable,
+    ConfirmDialog, 
+    // ScheduleTools,
     // BaseForm,
   },
   data() {
@@ -115,6 +186,11 @@ export default defineComponent({
       multiDateSelect: ref(true),
       add_to_date: ref(null),
       delete_event: ref('/delete_event'),
+      upload_file: ref(false),
+      file: ref(null),
+      confirm: ref(false),
+      tab: ref('totals'),
+      splitterModel: ref(20),
     };
   },
   watch: {
@@ -219,14 +295,18 @@ export default defineComponent({
       // calculate on backend with data pull
       // console.log(this.events, this.users)
       let date_filter = MainFunctions.date_to_number(this.date)
-      let year = date_filter.slice(0, 4)
-      console.log(date_filter, year)
-      console.log(this.shifts)
+      // let year = date_filter.slice(0, 4)
+      let temp_filter_date = new Date(this.date + "-01")
+      let year = temp_filter_date.getFullYear()
+      let month = temp_filter_date.getMonth()
+      console.log(temp_filter_date, year, month)
       this.user_shifts = []
-      this.filtered_shifts = []
+      this.filtered_shifts = []      
+      console.log(this.shifts, this.events)
       for (let user of this.users) {
-        let new_mon_arr = this.shifts.filter(shift => shift.start.includes(date_filter) && shift.title.includes(user));
-        let new_arr = this.shifts.filter(shift => shift.start.includes(year) && shift.title.includes(user));
+        let new_mon_arr = this.shifts.filter(shift => new Date(shift.start).getMonth() == month && shift.title.includes(user));
+        let new_arr = this.shifts.filter(shift => new Date(shift.start).getFullYear() == year && shift.title.includes(user));
+        console.log(`${user}: month : ${Object.keys(new_mon_arr).length}, array: ${Object.keys(new_arr).length}`)
         // let new_arr = this.shifts.filter((shift) => { return shift.title == user })
         // this.user_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
         // this.filtered_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
@@ -237,6 +317,69 @@ export default defineComponent({
         this.filtered_shifts = this.filtered_shifts.filter(shift => shift.employee.includes(this.user))
       }
       // console.log(this.user_shifts)
+    },
+
+    async file_upload() {
+      console.log("and for ALL the marbles...!")
+      if (this.file) {
+        this.user_shifts = []
+        // localStorage.setItem("gmail", this.gmail)
+        let formData = new FormData()
+        let file = this.file
+        await formData.append("file", file)
+        await formData.append("date", this.date)
+        await APIService.upload_file(formData)
+          .then((res) => {
+            if (res.status == 200) {
+              Notify.create({
+                message: "Successfully uploaded shifts!",
+                color: "green",
+                position: 'center',
+                timeout: 300,
+              })
+            } else {
+              Notify.create({
+                message: "Something went wrong",
+                color: "red",
+                position: 'center',
+                timeout: 300,
+              })
+            }
+          })
+        Notify.create({
+          message: "Successfully sent the file!",
+          color: "green",
+          position: 'center',
+          timeout: 300,
+        })
+        this.clearFile()
+        this.getShiftsYear().then(() => {
+          this.shift_count()
+        });
+      }
+    },
+
+    async clearFile() {
+      this.file = null
+      this.upload_file = false
+    },
+
+    confirm_choice(choice) {
+      this.confirm = false;
+      console.log(choice);
+      if (choice) {
+        this.clear_shifts();
+      }
+    },
+
+    async clear_shifts() {
+      this.user_shifts = []
+      this.filtered_shifts = []
+      await APIService.clear_shifts(this.date)
+      console.log("Cleared shifts")
+      this.getShiftsYear().then(() => {
+        this.shift_count()
+      });
     },
   },
 

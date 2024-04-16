@@ -12,7 +12,7 @@ from login.models import User, Address, CityState, Phone, AccessLevel, Permissio
 from django.views.decorators.csrf import csrf_exempt
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone, convert_label
 from login.scripts import get_settings_columns
-import json, traceback, sys, re, pytz, os
+import json, traceback, sys, re, pytz, os, datetime
 from datetime import date, timedelta
 import dateutil.parser as parser
 # import numpy as np
@@ -171,8 +171,12 @@ def upload_file(request):
   # new_date = datetime.strptime(input_date, '%Y %b').strftime('%b')
   # print(input_date, input_date.strftime('%m'), input_date.strftime('%Y'))
   file_name = request.FILES['file']
+  user_list = list(User.objects.all().values('id', 'initials'))
+  users = {user['initials']: user['id'] for user in user_list}
+  shift_names = list(ShiftName.objects.all().values('id', 'start_time', 'end_time'))
+  shift_names = [{'id': shift['id'], 'start': shift['start_time'].strftime("%H:%M"), 'end': shift['end_time'].strftime("%H:%M")} for shift in shift_names]
   if short_month.lower() in file_name.name.lower():
-    contents = load_schedule(file_name, input_month, year) # Run upload script
+    contents = load_schedule(file_name, input_month, year, users, shift_names) # Run upload script
   else:
     file_month = "false"
     for month in month_abbrev:  # Verify that the file month matches the input month
@@ -185,7 +189,7 @@ def upload_file(request):
     # print(user)
     # contents = convert_schedule(file_name, user, month, year)
     month = month_list[file_month[:3]] if file_month != "false" else input_month
-    contents = load_schedule(file_name, month, year) # Run upload script
+    contents = load_schedule(file_name, month, year, users, shift_names) # Run upload script
   # print("the contents are: ", contents) 
   return HttpResponse(contents)
 
@@ -207,20 +211,23 @@ def return_shifts(request):
   # print(request.body)
   content = json.loads(request.body)
   # print(content["date"])
-  start = content["date"]["start"]
-  end = content["date"]["end"]
+  start = datetime.datetime.strptime(content["date"]["start"], "%Y-%m-%dT%H:%M:%S.%fZ")
+  start = start.strftime('%Y-%m-%d')
+  end = datetime.datetime.strptime(content["date"]["end"], "%Y-%m-%dT%H:%M:%S.%fZ")
+  end = end.strftime('%Y-%m-%d')
+  # print(f'Start: {start}, End: {end}')
   events = []
   users = []
   shifts = Shifts.objects.values('id', 'shift_name__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_name_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)
   if shifts:
     for shift in shifts:
-      # print(shift)
+      # print(str(shift['shift_start']))
       events.append({
         "id": shift['id'],
         "user_id": shift['user__id'],
         "user": shift['user__initials'],
-        "start": str(shift['shift_start']),
-        "end": str(shift['shift_end']),
+        "start": shift['shift_start'],
+        "end": shift['shift_end'],
         "color": shift['shift_type__shift_color'],
         "shift_name_id": shift['shift_name_id'],
         "shift_type_id": shift['shift_type_id'],
@@ -511,6 +518,23 @@ def delete_event(request):
   except Exception as e:
     return trace_error(e, True)
   
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+def clear_shifts(request):
+  try:
+    if request.method == 'POST':
+      date = parse_date(request.body.decode('utf-8') + ' 01').date()
+      # start_date = datetime.datetime.strptime(date, '%Y %b %d').date()
+      year = date.strftime('%Y')
+      month = date.strftime('%m')
+      print(date, year, month)
+      Shifts.objects.filter(shift_start__year=year, shift_start__month=month).delete()
+      return JsonResponse({'message': 'Shifts Deleted'}, status=200)
+  except Exception as e:
+    return trace_error(e, True)
+  
 def get_form_new(form_name):
   try:
     form = FormBuilder.objects.get(form_name=form_name)
@@ -784,7 +808,7 @@ def add_event(content, event_id=None):
     earliest_date, latest_date = min(dates), max(dates)
     if earliest_date == latest_date:
       latest_date = earliest_date + timedelta(days=1)
-    # print('date filter ====>: ', earliest_date, latest_date)
+    print('date filter ====>: ', earliest_date, latest_date)
     # Filter the shifts
     existing_shifts = Shifts.objects.filter(
       Q(user=user),

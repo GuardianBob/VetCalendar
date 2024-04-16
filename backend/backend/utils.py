@@ -69,7 +69,9 @@ def strip_form_content(content):
     # print(field['value'], '=====>', parse(field['value']).time())
     #   field['value'] = datetime.strptime(field['value'], "%H%M").time()
     if isinstance(field['value'], list):
-      field['value'] = [item['value']['option'] for item in field['value'] if 'option' in item['value']]
+      print("List: ===>: ", field['value'])
+      if field['type'] != 'date':
+        field['value'] = [item['value']['option'] for item in field['value'] if 'option' in item['value']]
       # for item in field['value']:
       #   print("List_item: ===>: ", item['value'])
       #   if 'option' in item['value']:

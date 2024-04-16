@@ -2,8 +2,17 @@
     <div v-touch-swipe.mouse.right="handleRightSwipe" v-touch-swipe.mouse.left="handleLeftSwipe"
       class="col-10 col-md-10 col-sm-10 col-lg-10 col-xs-11 q-mx-sm text-center" style="max-height: fit-content;">
       <div class="column items-center" >
-        <q-select class="q-mx-sm" v-model="user" :options="users" dense options-dense
-          @update:model-value="filterShifts()" style="max-width: 400px; min-width: 250px;">
+        <q-select 
+          class="q-mx-sm" 
+          v-model="user" 
+          :options="users" 
+          dense 
+          multiple
+          use-chips
+          options-dense
+          @update:model-value="filterShifts()" 
+          style="max-width: 400px; min-width: 250px;"
+        >
           <template v-slot:prepend>
             <q-icon name="filter_alt" round color="primary" />
           </template>
@@ -127,8 +136,16 @@ export default {
               }, 500); // Wait for 250ms before deciding if it's a single or double click
             }
           } else {
-            this.editCal ? this.handleEventClicked(info) : null;
-          }
+            // this.editCal ? this.handleEventClicked(info) : null;
+            if (this.pressTimer !== null) {
+              clearTimeout(this.pressTimer);
+              this.pressTimer = null;
+            }
+              this.pressTimer = setTimeout(() => {
+                this.pressTimer = null;
+                this.editCal ? this.handleEventClicked(info) : null; // Handle long press
+              }, 500);
+            }
         },
         dateClick: (info) => {
           // console.log('Date clicked:', info.dateStr);
@@ -174,6 +191,7 @@ export default {
         dayMaxEvents: 4,
         // eventBorderColor: 'primary',
         events: [],
+        longPressDelay: 500,
       }),
     }
   },
@@ -191,6 +209,7 @@ export default {
       editEvents: ref(false),
       event_id: ref(),
       clickTimeout: ref(null),
+      pressTimer: ref(null),
     }
   },
 
@@ -239,6 +258,20 @@ export default {
   },
 
   methods: {
+    // handleTouchStart() {
+    //   console.log("Touch start")
+    //   clearTimeout(this.pressTimer);
+    //   this.pressTimer = setTimeout(() => {
+    //     // this.editCal ? this.handleEventClicked(info) : null;
+    //     console.log(this.pressTimer)
+    //   }, 500); // Wait for 500ms before deciding it's a long press
+      
+    // },
+
+    // handleTouchEnd() {
+    //   clearTimeout(this.pressTimer);
+    // },
+
     handleDateChange(date) {
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(date);
@@ -356,9 +389,13 @@ export default {
     },
 
     async filterShifts() {
+      if (this.user.length === 0) {
+        this.clearFilters()
+      } else {
       this.calendarOptions.events = []
+      console.log(this.user)
       this.shifts.map(shift => {
-        if (shift["title"] == this.user) {
+        if (this.user.includes(shift["title"])) {
           // console.log(shift)
           let new_shift = JSON.parse(JSON.stringify(shift))
           new_shift["backgroundColor"] = shift["borderColor"]
@@ -367,6 +404,7 @@ export default {
           localStorage.setItem("filtered_user", this.user)
         }        
       })
+      }
     },
 
     async clearFilters() {
@@ -396,6 +434,10 @@ export default {
     // this.calendarOptions.events = this.calEvents
     // this.date = this.calDate
     // this.users = this.calUsers
+    if (!this.$q.platform.is.desktop) {
+      this.$el.addEventListener('touchstart', this.handleTouchStart);
+      this.$el.addEventListener('touchend', this.handleTouchEnd);
+    }
     nextTick(() => {
       const buttonEl = document.querySelector('.fc-datepicker-button')
       if (buttonEl) {
@@ -404,7 +446,13 @@ export default {
       }
     })
     
-  }
+  },
+  beforeUnmount() {
+    if (!this.$q.platform.is.desktop) {
+      this.$el.removeEventListener('touchstart', this.handleTouchStart);
+      this.$el.removeEventListener('touchend', this.handleTouchEnd);
+    }
+  },
 };
 </script>
 

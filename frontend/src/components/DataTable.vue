@@ -49,7 +49,8 @@ export default {
     "parentFunc03",
     "parentFunc04",
     "parentFunc05",
-    "title"],
+    "title"
+  ],
   setup() {
     return {
       info: ref(false),

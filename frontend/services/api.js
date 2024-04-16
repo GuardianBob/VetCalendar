@@ -158,6 +158,11 @@ class APIService {
     return api.post('/delete_event', data)
   }
 
+  clear_shifts(data) {
+    this.setTokenHeader();
+    return api.post('/clear_shifts', data)
+  }
+
   // schedule_settings(data) {
   //   this.setTokenHeader();
   //   if (!data) {
