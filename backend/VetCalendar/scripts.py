@@ -250,62 +250,68 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                 # print(f'date {date}')
             # else:
             #   if i % 2 == 0:
-            elif cell.text != "" and cell.text in users:
-              try:
-                user_list.add(users[cell.text])
-                start = datetime.datetime.strptime(shift_times[j % 6]['start'], '%H:%M').time()
-                end = datetime.datetime.strptime(shift_times[j % 6]['end'], '%H:%M').time()
-                # print(start, end)
-                shift_start = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start)
-                if start > end:
-                  shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end) + timedelta(days=1)
-                else:
-                  shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
-                # print(f'shift_start: {shift_start} \n shift_end: {shift_end}')
-                # user_date = start.replace(tzinfo=TIMEZONE)
-                # filter_date = user_date.astimezone(pytz.timezone('UTC')).date()
-                filter_date = shift_start.date()
-                print(f'filter_date: {filter_date}')
-                # ================= individually update pulled shifts and create new shifts =================
-                # filtered_shift = current_shifts.filter(user_id=users[cell.text], shift_start__date=filter_date).values()
-                filtered_shift = list(filter(lambda x: x['user_id'] == users[cell.text] and x['shift_start'].date() == filter_date, current_shifts))
-                if len(filtered_shift) > 0 :
-                  for shift in filtered_shift:
-                    remove_shifts.add(shift['id'])
-                  # new_shift = {}
-                  # print(f'filtered_shift: {filtered_shift}')
-                  # new_shift['shift_start'] = shift_start,
-                  # new_shift['shift_end'] = shift_end,
-                  # new_shift['shift_name_id'] = shift_name_ids[j % 6],
-                  # new_shift['user_id'] = users[cell.text],
-                  # new_shift['shift_type_id'] = 1,
-                  # print("updated shift: ", new_shift)
-                else:
-                  print(f'no filtered shift found for {users[cell.text]} on {filter_date}')
-                
-                # =============== Used to individually create/update shifts ===============
-                # shift, created = Shifts.objects.update_or_create(
-                #   user_id = users[cell.text],
-                #   shift_start__date=filter_date,
-                #   defaults = {
-                #     'shift_start': shift_start,
-                #     'shift_end': shift_end,
-                #     'shift_name_id': shift_name_ids[j % 6],
-                #     'user_id': users[cell.text],
-                #     'shift_type_id': 1,
-                #   }
-                # )
-                # ================= Used to bulk create shifts =================
-                shifts.append({
-                  'shift_start': shift_start,
-                  'shift_end': shift_end,
-                  'shift_name_id': shift_name_ids[j % 6],
-                  'user_id': users[cell.text],
-                  'shift_type_id': 1,
-                })               
+            else: 
+              if "/" in cell.text:
+                user_cell = cell.text.split("/")
+              else:
+                user_cell = [cell.text]
+              for user in user_cell:
+                if user != "" and user in users:
+                  try:
+                    user_list.add(users[user])
+                    start = datetime.datetime.strptime(shift_times[j % 6]['start'], '%H:%M').time()
+                    end = datetime.datetime.strptime(shift_times[j % 6]['end'], '%H:%M').time()
+                    # print(start, end)
+                    shift_start = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', start)
+                    if start > end:
+                      shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end) + timedelta(days=1)
+                    else:
+                      shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
+                    # print(f'shift_start: {shift_start} \n shift_end: {shift_end}')
+                    # user_date = start.replace(tzinfo=TIMEZONE)
+                    # filter_date = user_date.astimezone(pytz.timezone('UTC')).date()
+                    filter_date = shift_start.date()
+                    print(f'filter_date: {filter_date}')
+                    # ================= individually update pulled shifts and create new shifts =================
+                    # filtered_shift = current_shifts.filter(user_id=users[user], shift_start__date=filter_date).values()
+                    filtered_shift = list(filter(lambda x: x['user_id'] == users[user] and x['shift_start'].date() == filter_date, current_shifts))
+                    if len(filtered_shift) > 0 :
+                      for shift in filtered_shift:
+                        remove_shifts.add(shift['id'])
+                      # new_shift = {}
+                      # print(f'filtered_shift: {filtered_shift}')
+                      # new_shift['shift_start'] = shift_start,
+                      # new_shift['shift_end'] = shift_end,
+                      # new_shift['shift_name_id'] = shift_name_ids[j % 6],
+                      # new_shift['user_id'] = users[user],
+                      # new_shift['shift_type_id'] = 1,
+                      # print("updated shift: ", new_shift)
+                    else:
+                      print(f'no filtered shift found for {users[user]} on {filter_date}')
+                    
+                    # =============== Used to individually create/update shifts ===============
+                    # shift, created = Shifts.objects.update_or_create(
+                    #   user_id = users[user],
+                    #   shift_start__date=filter_date,
+                    #   defaults = {
+                    #     'shift_start': shift_start,
+                    #     'shift_end': shift_end,
+                    #     'shift_name_id': shift_name_ids[j % 6],
+                    #     'user_id': users[user],
+                    #     'shift_type_id': 1,
+                    #   }
+                    # )
+                    # ================= Used to bulk create shifts =================
+                    shifts.append({
+                      'shift_start': shift_start,
+                      'shift_end': shift_end,
+                      'shift_name_id': shift_name_ids[j % 6],
+                      'user_id': users[user],
+                      'shift_type_id': 1,
+                    })               
 
-              except ValueError:
-                print(f"Invalid date: {user_year}-{user_month}-{date[i]}", ValueError)
+                  except ValueError:
+                    print(f"Invalid date: {user_year}-{user_month}-{date[i]}", ValueError)
           i += 1
 
         # print(row_text, "row", j)

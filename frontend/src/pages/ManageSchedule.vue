@@ -352,7 +352,7 @@ export default defineComponent({
           position: 'center',
           timeout: 300,
         })
-        // this.clearFile()
+        this.clearFile()
         this.getShiftsYear().then(() => {
           this.shift_count()
         });
