@@ -216,9 +216,7 @@ export default defineComponent({
     // console.log(this.store.dummyData.shiftCountColumns)
     // this.columnLabels = this.store.dummyData.shiftCountColumns
     // this.get_user_list();
-    this.getShiftsYear().then(() => {
-      this.shift_count()
-    });
+    this.getShiftsYear()
     
   },
   

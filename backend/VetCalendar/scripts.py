@@ -275,7 +275,9 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                     # ================= individually update pulled shifts and create new shifts =================
                     # filtered_shift = current_shifts.filter(user_id=users[user], shift_start__date=filter_date).values()
                     filtered_shift = list(filter(lambda x: x['user_id'] == users[user] and x['shift_start'].date() == filter_date, current_shifts))
+                    shift_type = 1
                     if len(filtered_shift) > 0 :
+                      shift_type = filtered_shift[0]['shift_type_id']
                       for shift in filtered_shift:
                         remove_shifts.add(shift['id'])
                       # new_shift = {}
@@ -307,7 +309,7 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                       'shift_end': shift_end,
                       'shift_name_id': shift_name_ids[j % 6],
                       'user_id': users[user],
-                      'shift_type_id': 1,
+                      'shift_type_id': shift_type,
                     })               
 
                   except ValueError:
@@ -323,13 +325,11 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
           date = []
   user_list = list(user_list)
   remove_shifts = list(remove_shifts)
-  current_shifts = list(filter(lambda x: x['id'] not in remove_shifts, current_shifts))
+  # current_shifts = list(filter(lambda x: x['id'] not in remove_shifts, current_shifts))
   # print(f'users from upload: {user_list}')
   # ================== Used to bulk remove then bulk create shifts ==================
   Shifts.objects.filter(
     Q(id__in=remove_shifts),
-    # Q(shift_start__date__gte=first_day), 
-    # Q(shift_end__date__lte=last_day),
   ).delete()
   Shifts.objects.bulk_create(
     Shifts(**shift) for shift in shifts
