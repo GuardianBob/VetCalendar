@@ -262,9 +262,9 @@ def load_schedule(schedule, month, year, users = None, shift_names = None):
                 else:
                   shift_end = convert_to_shift_datetime(f'{user_year}-{user_month}-{date[i]}', end)
                 # print(f'shift_start: {shift_start} \n shift_end: {shift_end}')
-                user_date = convert_to_shift_datetime(f'{year}-{month}-{date[i]}', start)
-                user_date = user_date.replace(tzinfo=TIMEZONE)
-                filter_date = user_date.astimezone(pytz.timezone('UTC')).date()
+                # user_date = start.replace(tzinfo=TIMEZONE)
+                # filter_date = user_date.astimezone(pytz.timezone('UTC')).date()
+                filter_date = shift_start.date()
                 print(f'filter_date: {filter_date}')
                 # ================= individually update pulled shifts and create new shifts =================
                 # filtered_shift = current_shifts.filter(user_id=users[cell.text], shift_start__date=filter_date).values()

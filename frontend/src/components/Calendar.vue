@@ -136,8 +136,16 @@ export default {
               }, 500); // Wait for 250ms before deciding if it's a single or double click
             }
           } else {
-            this.editCal ? this.handleEventClicked(info) : null;
-          }
+            // this.editCal ? this.handleEventClicked(info) : null;
+            if (this.pressTimer !== null) {
+              clearTimeout(this.pressTimer);
+              this.pressTimer = null;
+            }
+              this.pressTimer = setTimeout(() => {
+                this.pressTimer = null;
+                this.editCal ? this.handleEventClicked(info) : null; // Handle long press
+              }, 500);
+            }
         },
         dateClick: (info) => {
           // console.log('Date clicked:', info.dateStr);
@@ -183,6 +191,7 @@ export default {
         dayMaxEvents: 4,
         // eventBorderColor: 'primary',
         events: [],
+        longPressDelay: 500,
       }),
     }
   },
@@ -200,6 +209,7 @@ export default {
       editEvents: ref(false),
       event_id: ref(),
       clickTimeout: ref(null),
+      pressTimer: ref(null),
     }
   },
 
@@ -248,6 +258,20 @@ export default {
   },
 
   methods: {
+    // handleTouchStart() {
+    //   console.log("Touch start")
+    //   clearTimeout(this.pressTimer);
+    //   this.pressTimer = setTimeout(() => {
+    //     // this.editCal ? this.handleEventClicked(info) : null;
+    //     console.log(this.pressTimer)
+    //   }, 500); // Wait for 500ms before deciding it's a long press
+      
+    // },
+
+    // handleTouchEnd() {
+    //   clearTimeout(this.pressTimer);
+    // },
+
     handleDateChange(date) {
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.gotoDate(date);
@@ -410,6 +434,10 @@ export default {
     // this.calendarOptions.events = this.calEvents
     // this.date = this.calDate
     // this.users = this.calUsers
+    if (!this.$q.platform.is.desktop) {
+      this.$el.addEventListener('touchstart', this.handleTouchStart);
+      this.$el.addEventListener('touchend', this.handleTouchEnd);
+    }
     nextTick(() => {
       const buttonEl = document.querySelector('.fc-datepicker-button')
       if (buttonEl) {
@@ -418,7 +446,13 @@ export default {
       }
     })
     
-  }
+  },
+  beforeUnmount() {
+    if (!this.$q.platform.is.desktop) {
+      this.$el.removeEventListener('touchstart', this.handleTouchStart);
+      this.$el.removeEventListener('touchend', this.handleTouchEnd);
+    }
+  },
 };
 </script>
 

@@ -211,8 +211,11 @@ def return_shifts(request):
   # print(request.body)
   content = json.loads(request.body)
   # print(content["date"])
-  start = content["date"]["start"]
-  end = content["date"]["end"]
+  start = datetime.datetime.strptime(content["date"]["start"], "%Y-%m-%dT%H:%M:%S.%fZ")
+  start = start.strftime('%Y-%m-%d')
+  end = datetime.datetime.strptime(content["date"]["end"], "%Y-%m-%dT%H:%M:%S.%fZ")
+  end = end.strftime('%Y-%m-%d')
+  # print(f'Start: {start}, End: {end}')
   events = []
   users = []
   shifts = Shifts.objects.values('id', 'shift_name__shift_name', 'shift_type__shift_color', 'shift_start', 'shift_end', 'user__id', 'user__initials','shift_name_id', 'shift_type_id').filter(shift_start__gte=start, shift_end__lte=end)

@@ -2,12 +2,52 @@
   <q-page class="q-pt-xl" >
     <div class="row align-start justify-center q-mx-sm ">
       <div class="col-4 col-xs-11 col-sm-4 col-md-4 col-lg-4 q-pl-sm">
-        <div class="col-4 text-center q-my-sm">
+        <!-- <ScheduleTools :columns="columnLabels" title="Schedule Shifts" :rowData="filtered_shifts"/> -->
+        <!-- <div class="col-4 text-center q-my-sm">
           <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
           <q-btn class="q-mx-xs" color="secondary" id="add_shifts" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
           <q-btn class="q-mx-xs" color="negative" id="add_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
-        </div>
-        <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/>
+        </div> -->
+        <!-- <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/> -->
+        <q-card flat>
+          <q-tabs
+            v-model="tab"
+            dense
+            outside-arrows
+            mobile-arrows
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+          >
+            <q-tab name="totals" label="Shift Totals" />
+            <q-tab name="schedule" label="Scheduling Tools" />
+            <q-tab name="admin" label="Admin Tools" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="tab" animated>
+            <q-tab-panel name="totals">
+              <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/>
+            </q-tab-panel>
+
+            <q-tab-panel name="schedule">
+              <div class="text-h6">Scheduling Tools</div>
+              <div class="row justify-between">
+                <q-btn class="q-ma-xs btn-50" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
+                <q-btn class="q-ma-xs btn-50" color="secondary" id="upload" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
+              </div>
+            </q-tab-panel>
+
+            <q-tab-panel name="admin">
+              <div class="text-h6">Admin Tools</div>
+              <div class="row justify-between">
+                <q-btn class="q-mx-xs btn-50" color="negative" id="clear_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
+              </div>
+            </q-tab-panel>
+          </q-tab-panels>
+        </q-card>
       </div>
       <div class="col-8 col-xs-12 col-sm-8 col-md-8 col-lg-8">
         <div class="column justify-start">
@@ -50,7 +90,6 @@
       <div class="row justify-center items-center bg-white text-black dialog-60-nb">
         <div class="col-lg-10 col-md-10 col-sm-10 col-xs-9">
           <q-file v-model="file" label="Select File" accept=".docx, .doc" class="q-my-sm" counter>
-            <!-- <q-btn class="q-ml-md q-px-sm" color="primary" size="md" flat rounded id="clear_filters_button" @click="clearFile" icon="cancel"/> -->
             <template v-slot:prepend>
               <q-icon name="attach_file" />
             </template>
@@ -88,6 +127,7 @@ import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
 import ConfirmDialog from "components/ConfirmDialog.vue"
+import ScheduleTools from 'components/ScheduleTools.vue';
 
 export default defineComponent({
   name: "ScheduleShifts",
@@ -95,6 +135,7 @@ export default defineComponent({
     Calendar,
     DataTable,
     ConfirmDialog, 
+    // ScheduleTools,
     // BaseForm,
   },
   data() {
@@ -148,6 +189,8 @@ export default defineComponent({
       upload_file: ref(false),
       file: ref(null),
       confirm: ref(false),
+      tab: ref('totals'),
+      splitterModel: ref(20),
     };
   },
   watch: {
