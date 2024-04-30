@@ -241,7 +241,7 @@ export default defineComponent({
       api.post(this.api_route, this.settings)
       .then((response) => {
         console.log(response.data)
-        this.get_settings()
+        // this.get_settings()
         Notify.create({
           message: response.data.message,
           color: "green",

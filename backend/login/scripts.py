@@ -103,7 +103,7 @@ def generate_password(user):
   return new_password
 
 def get_settings_columns(data):
-  print("getting Columns: \n", data)
+  # print("getting Columns: \n", data)
   headers = []
   for key, value in data.items():
     if 'id' not in key:

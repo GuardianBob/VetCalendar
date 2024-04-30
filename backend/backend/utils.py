@@ -4,7 +4,7 @@ import datetime, json, traceback, sys, re, pytz, os
 from dateutil.parser import parse
 from django.apps import apps
 from importlib import import_module
-import logging
+import logging, inspect
 import logging.handlers
 from django.db import models
 from django.core.mail import send_mail, EmailMultiAlternatives
@@ -38,6 +38,14 @@ def trace_error(e, isForm=False):
   if isForm:
       return JsonResponse({'message':'Form is invalid'}, status=500)
   return JsonResponse({'message':'Something went wrong'}, status=500)
+
+def print_line(extra_text=None):
+    frame_info = inspect.getframeinfo(inspect.currentframe().f_back)
+    file_path = os.path.abspath(frame_info.filename)
+    print("===================================== \n")
+    print(f"File: file:///{file_path}:{frame_info.lineno}")
+    print(f'\n {extra_text}')
+    print("\n===================================== ")
 
 def convert_label(name):
     name_with_spaces = re.sub('_', ' ', name)
