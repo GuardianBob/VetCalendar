@@ -137,7 +137,7 @@ def get_m2m_linked_model_values(app_name, model_name, foreign_key, id):
   try:
     print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} \n foreign_key: {foreign_key}')
     Model = apps.get_model(app_name, model_name)
-    instance = Model.objects.filter(foreign_key__id=id).values().first()
+    instance = Model.objects.filter(foreign_key__id=id).values().first()  # Double underscore in 'foreign_key__id' allows filtering the realted model by the id given
     print("Linked Instance: ====> ", instance)
     return instance
   except Model.DoesNotExist:

@@ -29,6 +29,7 @@
               <AdminSettings 
                 :rowData="data.data" 
                 :columns="data.columns" 
+                :cellOptions="data.options"
                 :model="data.model" 
                 :parentFunc01="save" 
                 :title="title" 
@@ -159,7 +160,8 @@ export default defineComponent({
       // get settings from database
       console.log(this.api_route)
       api.get(this.api_route).then(response => {
-        console.log(Object.keys(response.data)[0])   
+        console.log("Tab: ", Object.keys(response.data)[0])
+        console.log("Settings: ", response.data)   
         this.tab = Object.keys(response.data)[0]
         this.settings = response.data
       })

@@ -741,7 +741,7 @@ def get_access_options():
   users_obj = User.objects.values('id', 'last_name')
   permissions = [{'field': 'permissions', 'option': permission.id, 'label': permission.permission} for permission in permissions_obj]
   users = [{'field': 'users', 'option': user['id'], 'label': user['last_name']} for user in users_obj]
-  return [permissions, users]
+  return [permissions + users]
 
 def get_user_address(user):
   address = user.user_address if hasattr(user, 'user_address') else None
@@ -1122,6 +1122,7 @@ def master_settings(request):
 def save_user_profile(data, model=None, id=None):
   print('form data ====> : \n \n', id, '\n', model, '\n', data)
   user = User.objects.get(id=id)
+  print(user.id)
   if model['model'] == 'User':
     instance = user
     for key, value in data.items():
@@ -1165,13 +1166,22 @@ def save_user_profile(data, model=None, id=None):
       elif model['model'] == 'AccessLevel':
         print('access: ', data['access'])
         try:
-          access = AccessLevel.objects.get(user=user)
-          print('access: ', access.values())
-          # access.occupation = data['access']
-          # access.save()
-        except Occupation.DoesNotExist:
+          print('User: ', user.id, user.first_name, user.last_name)
+          check_access = AccessLevel.objects.filter(users__id=user.id).first()
+          if data['access'] != '':
+            if check_access:
+              print('check_access: ', check_access)
+              check_access.users.remove(user)
+            else:
+              print('No access found')
+            access = AccessLevel.objects.get(
+              id=data['access'],
+            )
+            print('access: ', access)
+            access.users.add(user)
+        except AccessLevel.DoesNotExist:
+          print("AccessLevel.DoesNotExist")
           # occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
-          pass
   return
 
 # ==================== NOTE: MAY NOT BE USED ========================
