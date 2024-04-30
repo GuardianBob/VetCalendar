@@ -1,6 +1,6 @@
 <template>
   <div class="row full-width justify-left">
-    <div class="col-12 text-center text-body1 text-weight-medium" style="font-size:20px">{{ title }}</div>
+    <!-- <div class="col-12 text-center text-body1 text-weight-medium" style="font-size:20px">{{ title }}</div> -->
     <q-table
       :rows="rowData"
       :columns="columns"

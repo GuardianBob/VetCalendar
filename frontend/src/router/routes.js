@@ -103,7 +103,7 @@ const routes = [
       {
         path: "/master_settings",
         name: "master settings",
-        component: () => import("pages/AdminPage.vue"),
+        component: () => import("pages/SettingsPage.vue"),
         beforeEnter: requireAuth,
         props: { 
           api_route: '/login/master_settings', 

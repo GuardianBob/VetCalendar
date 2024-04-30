@@ -1,6 +1,6 @@
 <template>
-  <div class="row full-width justify-around ">
-    <div class="col-12 text-center text-body1 text-weight-medium" style="font-size:20px">{{ title }}</div>
+  <div class="row full-width justify-left ">
+    <!-- <div class="col-12 text-center text-body1 text-weight-medium q-pt-md" style="font-size:20px">{{ title }}</div> -->
     <q-table
       :rows="rowData"
       :columns="columns"
@@ -15,9 +15,9 @@
     >
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td v-for="row in columns" :key="row.name" :props="props">
+          <q-td v-for="row in columns" :key="row.name" :props="props" class="text-left justify-start">
             <div v-if="row.type == 'text'">
-              <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
+              <q-btn align="left" dense flat no-caps color="primary" size="16px" class="full-width justify-start" :label="props.row[row.name]" />
               <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
                 <q-input v-model="scope.value" dense autofocus @keyup.enter="scope.set" />
                 <div class="text-center">
@@ -58,6 +58,35 @@
                 <q-color no-header-tabs default-view="palette" v-model="props.row[row.name]" @input="showColorPicker = false" />
               </q-popup-proxy>
             </div>
+            <div v-else-if="row.type == 'multi-select'">
+              <q-btn align="left" dense flat no-caps color="primary" size="16px" class="full-width text-left" :label="fix_cell(props.row[row.name])" />
+              <q-popup-edit v-model="props.row[row.name]" v-slot="scope" >
+                <!-- <span>{{ row.name }}</span>
+                <span>{{ cellOptions }}</span> -->
+                <q-select        
+                  :options="cellOptions.flat().filter(option => option.field == row.name).map(option => ({label: option.label, value: option.option}))"
+                  v-model="scope.value"
+                  :label="scope.label"
+                  :id="key"
+                  class="q-my-xs q-py-none"
+                  outlined
+                  multiple
+                  use-chips
+                  map-options
+                  label-color="primary"
+                  :rules="scope.required ? [rules.required] : []"
+                  @update:modelValue="handleFieldSelected(scope.value)"
+                >
+                  <!-- <template v-if="scope.value" v-slot:append>
+                    <q-icon name="cancel" color="red" @click.stop.prevent="scope.value = null" class="cursor-pointer" />
+                  </template> -->
+                </q-select>
+                <div class="text-center">
+                  <q-btn v-close-popup label="OK" color="grey-8" size="sm" flat @click="scope.set"/>
+                  <q-btn v-close-popup label="Cancel" color="deep-orange-13" size="sm" flat/>
+                </div>
+              </q-popup-edit>
+            </div>
             <div v-else>
               {{ props.row[row.name] }}
             </div>
@@ -96,6 +125,7 @@ export default {
   props: [
     "columns",
     "rowData",
+    "cellOptions",
     "model",
     "separator",
     "add_item",
@@ -141,6 +171,15 @@ export default {
     deleteItem(event) {
       console.log("clicked on delete \n", `model: ${this.model} \n`, event['id'])
       this.$emit('delete_item', { id: event['id'], model: this.model})
+    },
+
+    fix_cell(cell) {
+      console.log('cell :', cell)
+      let fixed = []
+      cell.map(item => {
+        fixed.push(item.label)
+      })
+      return fixed.join(', ')
     },
 
     getBrightness(color) {

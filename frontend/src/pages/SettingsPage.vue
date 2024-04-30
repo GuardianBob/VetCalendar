@@ -29,6 +29,7 @@
               <DataTablePopEdit 
                 :rowData="data.data" 
                 :columns="data.columns" 
+                :cellOptions="data.options"
                 :model="data.model" 
                 :parentFunc01="save" 
                 :title="title" 
