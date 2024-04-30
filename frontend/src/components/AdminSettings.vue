@@ -16,7 +16,6 @@
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td v-for="row in columns" :key="row.name" :props="props">
-            <!-- <span>{{ row.name }}</span> -->
             <div v-if="row.type == 'text'">
               <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
               <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
