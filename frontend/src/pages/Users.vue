@@ -104,7 +104,7 @@ export default defineComponent({
   methods: {
     async edit_user(userInfo) {
       console.log(userInfo.id)
-      this.forms = ["user_basic_info", "user_address", "user_city", "user_occupation"]
+      this.forms = ["user_basic_info", "user_address", "user_city", "user_occupation", "user_level"]
       this.linked_forms = true
       this.user_id = userInfo.id
       this.admin = "true"

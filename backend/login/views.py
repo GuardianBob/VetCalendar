@@ -1162,6 +1162,16 @@ def save_user_profile(data, model=None, id=None):
           occupation.save()
         except Occupation.DoesNotExist:
           occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
+      elif model['model'] == 'AccessLevel':
+        print('access: ', data['access'])
+        try:
+          access = AccessLevel.objects.get(user=user)
+          print('access: ', access.values())
+          # access.occupation = data['access']
+          # access.save()
+        except Occupation.DoesNotExist:
+          # occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
+          pass
   return
 
 # ==================== NOTE: MAY NOT BE USED ========================

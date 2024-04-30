@@ -2,13 +2,6 @@
   <q-page class="q-pt-xl" >
     <div class="row align-start justify-center q-mx-sm ">
       <div class="col-4 col-xs-11 col-sm-4 col-md-4 col-lg-4 q-pl-sm">
-        <!-- <ScheduleTools :columns="columnLabels" title="Schedule Shifts" :rowData="filtered_shifts"/> -->
-        <!-- <div class="col-4 text-center q-my-sm">
-          <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
-          <q-btn class="q-mx-xs" color="secondary" id="add_shifts" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
-          <q-btn class="q-mx-xs" color="negative" id="add_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
-        </div> -->
-        <!-- <DataTable :users="users" :columns="columnLabels" :shiftCount="shiftCount" title="Schedule Shifts" :rowData="filtered_shifts"/> -->
         <q-card flat>
           <q-tabs
             v-model="tab"
@@ -112,6 +105,9 @@
         @confirmed="confirm_choice"
       />
     </q-dialog>
+    <q-page-sticky position="bottom-right" :offset="[18, 18]">
+      <q-btn fab icon="settings" color="accent"  padding="sm" to="/schedule_settings"/>
+    </q-page-sticky>
   </q-page>
 </template>
 

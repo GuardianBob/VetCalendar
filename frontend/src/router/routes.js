@@ -103,14 +103,14 @@ const routes = [
       {
         path: "/master_settings",
         name: "master settings",
-        component: () => import("pages/SettingsPage.vue"),
+        component: () => import("pages/AdminPage.vue"),
         beforeEnter: requireAuth,
         props: { 
           api_route: '/login/master_settings', 
           page_title: 'Admin Settings',
           forms_input: [
-            { model: 'Permission', form: 'permission_settings'}, 
             { model: 'AccessLevel', form: 'access_settings' },
+            { model: 'Permission', form: 'permission_settings'}, 
           ],
           get_form_api: '/handle_forms',
           save_form_api: '/handle_forms',

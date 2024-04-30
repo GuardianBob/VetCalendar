@@ -125,9 +125,19 @@ def get_model_values(app_name, model_name, id):
   
 def get_linked_model_values(app_name, model_name, foreign_key, id):
   try:
-    print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} ')
+    print(f'Getting M2M model instance for: \n app: {app_name} \n model: {model_name} \n foreign_key: {foreign_key}')
     Model = apps.get_model(app_name, model_name)
     instance = Model.objects.values().filter(**{foreign_key: id}).first()
+    print("Linked Instance: ====> ", instance)
+    return instance
+  except Model.DoesNotExist:
+    return None
+  
+def get_m2m_linked_model_values(app_name, model_name, foreign_key, id):
+  try:
+    print(f'Getting model instance for: \n app: {app_name} \n model: {model_name} \n foreign_key: {foreign_key}')
+    Model = apps.get_model(app_name, model_name)
+    instance = Model.objects.filter(foreign_key__id=id).values().first()
     print("Linked Instance: ====> ", instance)
     return instance
   except Model.DoesNotExist:
@@ -228,6 +238,11 @@ def fill_form(form, values):
       f_key = field['model_edit_field']
       print("foreign key: ====> ", f_key)
       field['value'] = values[f'{f_key}_id']
+    elif field['field_name'] == 'many_to_many':
+      print("\n ============== \n    many to many: ====> \n =========== \n", values)
+      field['value'] = values['access']
+      print("\n field value: ====> \n", field['value'])
+    #   # field['value'] = values[field['model_edit_field']] if field['model_edit_field'] in values else ''
     else:
       field['value'] = values[field['model_edit_field']] if field['model_edit_field'] in values else ''
     
@@ -285,9 +300,12 @@ def build_form(content):
           if 'linked' in content and content['linked'] == True and form['model'] != main_model:
             print(form)
             for field in form['fields']:
-              if 'foreign_key' in field['field_name']:
+              if 'foreign_key' in field['field_name'] or 'many_to_many' in field['field_name']:
                 print("foreign key: ====> ", field['model_edit_field'])
                 values = get_linked_model_values(form['app'], form['model'], field['model_edit_field'], content["id"])
+              elif 'many_to_many' in field['field_name']:
+                print("many to many: ====> ", field['model_edit_field'])
+                values = get_m2m_linked_model_values(form['app'], form['model'], field['model_edit_field'], content["id"])
           else:
             values = get_model_values(form['app'], form['model'], content["id"])
             # print(values)
