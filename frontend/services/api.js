@@ -61,7 +61,7 @@ class APIService {
     // Clear tokens from localStorage and reload page to logout
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');  
-    window.location.replace('/login'); 
+    window.location.replace('/'); 
     return 
   }
 

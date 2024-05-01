@@ -42,7 +42,7 @@
           </q-tab-panels>
         </q-card>
       </div>
-      <div class="col-8 col-xs-12 col-sm-8 col-md-8 col-lg-8">
+      <div class="col-8 col-xs-12 col-sm-8 col-md-8 col-lg-8 q-mb-lg">
         <div class="column justify-start">
           <div class="row align-start justify-center">
             <Calendar 
@@ -79,6 +79,24 @@
         :add_to_date="add_to_date"/>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="update_settings" position="right" @hide="update_settings= false">
+      <q-card style="width: 90%" class="dialog-60">
+        <div class="col-12 text-right q-ma-none q-pa-none">
+          <q-btn class="q-pa-md" color="primary" flat v-close-popup icon="close"/>
+        </div>
+        <SettingsPage
+          api_route='/schedule_settings'
+          page_title='Schedule Settings'
+          :forms_input="[
+            { model: 'ShiftName', form: 'add_shift_info'}, 
+            { model: 'ShiftType', form: 'add_shift_type' },
+          ]"
+          get_form_api='/handle_forms'
+          save_form_api='/handle_forms'
+          @settings_updated="settings_updated"
+        />
+      </q-card>
+    </q-dialog>
     <q-dialog v-model="upload_file" @hide="upload_file = false">
       <div class="row justify-center items-center bg-white text-black dialog-60-nb">
         <div class="col-lg-10 col-md-10 col-sm-10 col-xs-9">
@@ -105,8 +123,8 @@
         @confirmed="confirm_choice"
       />
     </q-dialog>
-    <q-page-sticky position="bottom-right" :offset="[18, 18]">
-      <q-btn fab icon="settings" color="accent"  padding="sm" to="/schedule_settings"/>
+    <q-page-sticky position="bottom-right" :offset="[18, 18]" style="z-index:100;">
+      <q-btn fab icon="settings" color="accent" padding="sm" @click="update_settings =!update_settings"/>
     </q-page-sticky>
   </q-page>
 </template>
@@ -123,6 +141,7 @@ import CalendarFunctions from '../../services/CalendarFunctions'
 import { useDummyData } from "stores/dummy-data.js"
 import DataTable from "components/DataTable.vue"
 import ConfirmDialog from "components/ConfirmDialog.vue"
+import SettingsPage from './SettingsPage.vue';
 import ScheduleTools from 'components/ScheduleTools.vue';
 
 export default defineComponent({
@@ -131,6 +150,7 @@ export default defineComponent({
     Calendar,
     DataTable,
     ConfirmDialog, 
+    SettingsPage,
     // ScheduleTools,
     // BaseForm,
   },
@@ -187,6 +207,7 @@ export default defineComponent({
       confirm: ref(false),
       tab: ref('totals'),
       splitterModel: ref(20),
+      update_settings: ref(false),
     };
   },
   watch: {
@@ -277,6 +298,13 @@ export default defineComponent({
         "date": date,
       }
 
+    },
+
+    settings_updated() {
+      this.update_settings = false
+      this.getShiftsYear().then(() => {
+        this.shift_count()
+      });
     },
 
     form_complete() {

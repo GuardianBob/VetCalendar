@@ -1,35 +1,65 @@
 <template>
   <q-page class="" @keydown="checkForCtrlS">
     <div class="row justify-center">
-      <div class="col-12 q-px-md text-center">
-        <h1 class="text-h4">{{ page_title }}</h1>
-      </div>
-      <div class="col-8 col-xs-10 col-lg-8 col-md-8 col-sm-10 text-right">
-        <q-btn outline color="grey-8" class="q-px-xl q-mx-xs" size="sm" label="Save" icon="save" @click="save()"/>
-      </div>
-      <div class="col-8">
-        <q-card flat>
-          <q-tabs
-            dense
-            class="text-grey"
-            active-color="primary"
-            indicator-color="primary"
-            align="justify"
-            v-model="tab"
-          >
-            <span v-for='(data, title) in settings' :key="title">
-              <q-tab :name="title" :label="title"/>
-            </span>
-          </q-tabs>
+          <h1 class="text-h4">{{ page_title }}</h1>
+          <div class="col-8 col-xs-10 col-lg-8 col-md-10 col-sm-10 text-right">
+            <q-btn outline color="grey-8" class="q-px-xl q-mx-xs" size="sm" label="Save" icon="save" @click="save()"/>
+          </div>
+          <div class="col-8 col-xs-10 col-lg-8 col-md-10 col-sm-10 text-left justify-start">
+            <q-card flat>
+              <q-tabs
+                dense
+                class="text-grey"
+                active-color="primary"
+                indicator-color="primary"
+                align="justify"
+                v-model="tab"
+                mobile-arrows
+              >
+                <span v-for='(data, title) in settings' :key="title">
+                  <q-tab :name="title" :label="title"/>
+                </span>
+              </q-tabs>
 
-          <q-separator />
+              <q-separator />
 
-          <q-tab-panels v-model="tab" animated v-for='(data, title) in settings' :key="title">
-            <q-tab-panel :name="title" class="q-pa-none">
+              <q-tab-panels v-model="tab" animated v-for='(data, title) in settings' :key="title">
+                <q-tab-panel :name="title" class="q-pa-none">
+                  <DataTablePopEdit 
+                    :rowData="data.data" 
+                    :columns="data.columns" 
+                    :cellOptions="data.options"
+                    :model="data.model" 
+                    :parentFunc01="save" 
+                    :title="title" 
+                    separator="vertical" 
+                    :add_item="true" 
+                    @add_item="addNewItem" 
+                    :delete_item="true" 
+                    @delete_item="deleteItem"
+                  />
+                </q-tab-panel>
+
+                <!-- <q-tab-panel name="schedule">
+                  <div class="text-h6">Scheduling Tools</div>
+                  <div class="col-12 q-my-sm">
+                    <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
+                    <q-btn class="q-mx-xs" color="secondary" id="upload" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
+                  </div>
+                </q-tab-panel>
+
+                <q-tab-panel name="admin">
+                  <div class="text-h6">Admin Tools</div>
+                  <div class="col-4 q-my-sm">
+                    <q-btn class="q-mx-xs" color="negative" id="clear_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
+                  </div>
+                </q-tab-panel> -->
+              </q-tab-panels>
+            </q-card>
+            <!-- <div v-for='(data, title) in settings' :key="title" class="col-12 q-pa-md text-left">
               <DataTablePopEdit 
                 :rowData="data.data" 
                 :columns="data.columns" 
-                :cellOptions="data.options"
                 :model="data.model" 
                 :parentFunc01="save" 
                 :title="title" 
@@ -39,40 +69,8 @@
                 :delete_item="true" 
                 @delete_item="deleteItem"
               />
-            </q-tab-panel>
-
-            <!-- <q-tab-panel name="schedule">
-              <div class="text-h6">Scheduling Tools</div>
-              <div class="col-12 q-my-sm">
-                <q-btn class="q-mx-xs" color="accent" id="add_shifts" :size="button_size" @click="quick_add" icon="more_time" label="Quick Add"></q-btn>
-                <q-btn class="q-mx-xs" color="secondary" id="upload" :size="button_size" @click="upload_file = true" icon="upload_file" label="Upload"></q-btn>
-              </div>
-            </q-tab-panel>
-
-            <q-tab-panel name="admin">
-              <div class="text-h6">Admin Tools</div>
-              <div class="col-4 q-my-sm">
-                <q-btn class="q-mx-xs" color="negative" id="clear_shifts" :size="button_size" @click="confirm = true" icon="cancel" label="Clear Month"></q-btn>
-              </div>
-            </q-tab-panel> -->
-          </q-tab-panels>
-        </q-card>
-        <!-- <div v-for='(data, title) in settings' :key="title" class="col-12 q-pa-md text-left">
-          <DataTablePopEdit 
-            :rowData="data.data" 
-            :columns="data.columns" 
-            :model="data.model" 
-            :parentFunc01="save" 
-            :title="title" 
-            separator="vertical" 
-            :add_item="true" 
-            @add_item="addNewItem" 
-            :delete_item="true" 
-            @delete_item="deleteItem"
-          />
-        </div> -->
-      </div>
-      
+            </div> -->
+          </div>
     </div>
     <q-dialog v-model="new_item" transition-show="slide-down" transition-hide="slide-up">  
       <div class="dialog-60">
@@ -240,7 +238,8 @@ export default defineComponent({
       api.post(this.api_route, this.settings)
       .then((response) => {
         console.log(response.data)
-        this.get_settings()
+        // this.get_settings()
+        this.$emit('settings_updated')
         Notify.create({
           message: response.data.message,
           color: "green",

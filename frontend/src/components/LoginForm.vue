@@ -29,15 +29,18 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
+import { useMainStore } from "stores/main-store.js"
 // import APIService from "../../services/api"
 
 // const api = APIService 
 const form_email = document.getElementById("id_login_email")
 const form_pass = document.getElementById("login_password")
+const mainStore = useMainStore()
 
 export default defineComponent({
   name: "LoginPage",
   props: [ 'api' ],
+
   setup(props) {
     return {
       password: ref(''),

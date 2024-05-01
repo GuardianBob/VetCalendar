@@ -124,6 +124,8 @@ export default defineComponent({
             position: "center",
             timeout: 3000,
           });
+          mainStore.setLoggedIn(true)
+          console.log(mainStore.loggedIn)
           this.$router.push("/");
         })
         .catch((error) => {

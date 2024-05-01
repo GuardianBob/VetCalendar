@@ -29,7 +29,7 @@
             <div v-else-if="row.type == 'textarea'">
               <q-btn dense flat no-caps color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
               <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
-                <q-input type="textarea" v-model="scope.value" dense autofocus/>
+                <q-input type="textarea" v-model="scope.value" dense autofocus />
                 <div class="text-center">
                   <q-btn v-close-popup label="OK" color="grey-8" size="sm" flat @click="scope.set"/>
                   <q-btn v-close-popup label="Cancel" color="deep-orange-13" size="sm" flat/>
@@ -38,7 +38,7 @@
             </div>
             <div v-else-if="row.type == 'time'">
               <q-btn dense flat color="primary" size="16px">{{ props.row[row.name] }}</q-btn>
-              <q-popup-edit v-model="props.row[row.name]" v-slot="scope">
+              <q-popup-edit v-model="props.row[row.name]" v-slot="scope" >
                 <q-time v-model="scope.value" flat autofocus @keyup.enter="scope.set" >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="OK" color="primary" flat @click="scope.set"/>
@@ -75,7 +75,8 @@
                   map-options
                   label-color="primary"
                   :rules="scope.required ? [rules.required] : []"
-                  @update:modelValue="handleFieldSelected(scope.value)"
+                  @popup-hide="scope.set"
+                  @keyup.enter="scope.set"
                 >
                   <!-- <template v-if="scope.value" v-slot:append>
                     <q-icon name="cancel" color="red" @click.stop.prevent="scope.value = null" class="cursor-pointer" />
@@ -180,6 +181,12 @@ export default {
         fixed.push(item.label)
       })
       return fixed.join(', ')
+    },
+
+    handleFieldSelected(scope) {
+      console.log('scope :', scope)
+      scope.set()
+      return scope
     },
 
     getBrightness(color) {

@@ -2,16 +2,22 @@ import { defineStore } from 'pinia';
 import APIService from "../../services/api"
 
 export const useMainStore = defineStore('main-store', {
-  state: () => {
-    csrfToken: null
-    return {
-    }
-  },
+  state: () => ({
+    csrfToken: null,
+    loggedIn: false,
+    // return {
+    //   loggedIn,
+    // }
+  }),
   getters: {
     // doubleCount: (state) => state.counter * 2,
     getCsrfToken: (state) => state.csrfToken,
   },
   actions: {
+    setLoggedIn(value) {
+      this.loggedIn = value
+    },
+
     setCsrfToken(token) {
       this.csrfToken = token;
     },
