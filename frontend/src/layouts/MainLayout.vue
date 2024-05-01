@@ -14,11 +14,12 @@
         />
 
         <q-toolbar-title>
-          <q-btn flat size="lg" label="Shift Management" to="/" />
+          <q-btn flat size="lg" label="VSS || Vet Scheduling System" to="/" />
         </q-toolbar-title>
         <div>
-          <q-btn-dropdown color="white" dropdown-icon="account_circle" flat dense >
-            <q-list style="min-width: 100px; max-width: 200px;" class="text-center q-py-none">
+          <q-btn v-if="!loggedIn" flat label="Login" to="/login" />
+          <q-btn-dropdown v-if="loggedIn" color="white" dropdown-icon="account_circle" flat dense >
+            <q-list style="min-width: 100px; max-width: 200px;" class="text-center q-py-none">              
               <q-item v-if="loggedIn" clickable v-close-popup @click="onItemClick">
                 <q-item-section class="">
                   <q-btn icon="manage_accounts" color="black" flat dense />
@@ -44,15 +45,19 @@
                 </q-item-section>
               </q-item>
               <q-item v-if="!loggedIn" clickable v-close-popup to="/login">
-                
                 <q-item-section>
                   <q-item-label>Login</q-item-label>
                 </q-item-section>
               </q-item>
+              <!-- <q-item >
+                <q-item-section>
+                  <div class="text-accent">v: {{ version }}</div>
+                </q-item-section>
+              </q-item> -->
             </q-list>
           </q-btn-dropdown>
         </div>
-        <div class="text-secondary">v: {{ version }}</div>
+        <!-- <div class="text-secondary">v: {{ version }}</div> -->
       </q-toolbar>
     </q-header>
 
@@ -69,26 +74,25 @@
           <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="secondary" @click="drawer = !drawer" ></q-icon>
           Menu
         </q-item-label> -->
-
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
           v-bind="link"
         />
-        <!-- <q-item
-          clickable
-          @click="logout"
-        >
-          <q-item-section
-              avatar
-            >
-              <q-icon name="logout" color="negative "/>
-            </q-item-section>
-            <q-item-section>
-              Logout</q-item-section>
-          </q-item> -->
+        <q-item>
+          <q-item-section avatar>
+            <q-icon name="account_tree" color="accent"/>
+          </q-item-section>
+          <q-item-section>
+            <div class="text-accent">v: {{ version }}</div>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
+
+    <q-footer v-if="!loggedIn" elevated>
+      <div class="text-center">v: {{ version }}</div>
+    </q-footer>
 
     <q-page-container >
       <router-view @click="drawer = false"/>
@@ -239,6 +243,7 @@ export default defineComponent({
     return {
       drawer: ref(false),
       essentialLinks: linksList,
+      profile_icon: ref('no_accounts'),
       loggedIn,
       // toggleLeftDrawer () {
       //   leftDrawerOpen.value = !leftDrawerOpen.value
