@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
-from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email, save_model, delete_model, get_app_from_model
-from django.db.models import Prefetch, Q
+from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email, save_model, delete_model, get_app_from_model, print_line
+from django.db.models import Prefetch, Q, F
 from django.contrib import messages
 from django.contrib.auth import logout
 import bcrypt, json
@@ -741,7 +741,7 @@ def get_access_options():
   users_obj = User.objects.values('id', 'last_name')
   permissions = [{'field': 'permissions', 'option': permission.id, 'label': permission.permission} for permission in permissions_obj]
   users = [{'field': 'users', 'option': user['id'], 'label': user['last_name']} for user in users_obj]
-  return [permissions, users]
+  return [permissions + users]
 
 def get_user_address(user):
   address = user.user_address if hasattr(user, 'user_address') else None
@@ -1024,19 +1024,60 @@ def update_user_profile(request):
 
 def create_update_settings(settings):
   for setting in settings.values():
+    # print_line(setting)
     if 'data' in setting:
       if 'model' in setting:
-        # print(setting['model'])
-        Model = apps.get_model('login', setting['model'])  # Get the model dynamically          
+        # print_line(setting['model'])
         data = setting['data']
+        Model = apps.get_model('login', setting['model'])  # Get the model dynamically          
+        # instances = Model.objects.all()
         # print(data)
         for item in data:
-          # print(item['id'])
-          item, created = Model.objects.update_or_create(
-            id=item.get('id'),
-            defaults={key: value for key, value in item.items() if key in [f.name for f in Model._meta.get_fields()]}
-          )
+          if setting['model'] == 'AccessLevel':
+            instance = Model.objects.get(id=item['id'])
+            update_m2m_users(item, instance)
+            update_m2m_permissions(item, instance)
+          if setting['model'] == 'Permission':
+            # print("Permission : ", item)
+            instance = Model.objects.update_or_create(
+              id=item['id'],
+              defaults={key: value for key, value in item.items() if key in [f.name for f in Model._meta.get_fields()]}             
+            )
   return 
+
+def update_m2m_users(item, instance):
+  users = instance.users.all().values_list('id', flat=True)           
+  # print(users)
+  # Convert the list of user IDs from the instance and the dictionary into sets
+  user_ids_from_instance = set(users)
+  user_ids_from_dict = set(user['value'] for user in item['users'])
+
+  # Find the IDs to add and remove
+  ids_to_add = user_ids_from_dict - user_ids_from_instance
+  ids_to_remove = user_ids_from_instance - user_ids_from_dict
+
+  # print(f'Users to add: {ids_to_add} \n Users to remove: {ids_to_remove}')
+  # Add and remove the users
+  instance.users.add(*User.objects.filter(id__in=ids_to_add))
+  instance.users.remove(*User.objects.filter(id__in=ids_to_remove))
+  return (item, instance)
+
+def update_m2m_permissions(item, instance):
+  permissions = instance.permissions.all().values_list('id', flat=True)           
+  # print(permissions)
+  # Convert the list of user IDs from the instance and the dictionary into sets
+  permission_ids_from_instance = set(permissions)
+  permission_ids_from_dict = set(permission['value'] for permission in item['permissions'])
+
+  # Find the IDs to add and remove
+  ids_to_add = permission_ids_from_dict - permission_ids_from_instance
+  ids_to_remove = permission_ids_from_instance - permission_ids_from_dict
+
+  # print(f'Permissions to add: {ids_to_add} \n Permissions to remove: {ids_to_remove}')
+  # Add and remove the users
+  instance.permissions.add(*Permission.objects.filter(id__in=ids_to_add))
+  instance.permissions.remove(*Permission.objects.filter(id__in=ids_to_remove))
+  return (item, instance)
 
 @csrf_exempt
 @api_view(['GET', 'POST', 'DELETE'])
@@ -1058,7 +1099,7 @@ def master_settings(request):
     else:
       permissions = Permission.objects.all().values('id', 'permission', 'description')
       permission_dict = [permission for permission in permissions] # Convert QuerySet into List of Dictionaries
-      print(permissions)
+      print("permissions :\n", permissions)
       # accessLevels = AccessLevel.objects.all().values()
       accessLevels = AccessLevel.objects.all().prefetch_related('permissions')
       print("access levels ====> : \n", accessLevels.values())
@@ -1069,8 +1110,8 @@ def master_settings(request):
         new_lvl = {
           'id': al.id,
           'access': al.access,
-          'permissions': [perm.permission for perm in al.permissions.all()], # al['fields']['permissions'],
-          'users': list(al.users.values_list('last_name', flat=True)),
+          'permissions': [{"label": perm.permission, "value":perm.id} for perm in al.permissions.all()], # al['fields']['permissions'],
+          'users': list(al.users.annotate(label=F('last_name'), value=F('id')).values('label', 'value')),
         }
         accessLvls.append(new_lvl)
       print("access levels ====> : \n", accessLvls)
@@ -1122,6 +1163,7 @@ def master_settings(request):
 def save_user_profile(data, model=None, id=None):
   print('form data ====> : \n \n', id, '\n', model, '\n', data)
   user = User.objects.get(id=id)
+  print(user.id)
   if model['model'] == 'User':
     instance = user
     for key, value in data.items():
@@ -1162,6 +1204,25 @@ def save_user_profile(data, model=None, id=None):
           occupation.save()
         except Occupation.DoesNotExist:
           occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
+      elif model['model'] == 'AccessLevel':
+        print('access: ', data['access'])
+        try:
+          print('User: ', user.id, user.first_name, user.last_name)
+          check_access = AccessLevel.objects.filter(users__id=user.id).first()
+          if data['access'] != '':
+            if check_access:
+              print('check_access: ', check_access)
+              check_access.users.remove(user)
+            else:
+              print('No access found')
+            access = AccessLevel.objects.get(
+              id=data['access'],
+            )
+            print('access: ', access)
+            access.users.add(user)
+        except AccessLevel.DoesNotExist:
+          print("AccessLevel.DoesNotExist")
+          # occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
   return
 
 # ==================== NOTE: MAY NOT BE USED ========================

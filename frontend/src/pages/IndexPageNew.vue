@@ -97,11 +97,11 @@ export default defineComponent({
       if (newYear !== oldYear) {
         console.log("Year changed")
         this.getShiftsYear().then(() => {
-          this.shift_count()
+          // this.shift_count()
         });
       } else {
         console.log("Month changed")
-        this.shift_count()
+        // this.shift_count()
       }
     },
   },

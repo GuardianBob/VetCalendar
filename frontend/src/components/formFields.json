@@ -4,7 +4,7 @@
     { "name": "lastName", "align": "left", "label": "Last Name", "field": "last_name", "sortable": true },
     { "name": "firstName", "align": "left", "label": "First Name", "field": "first_name", "sortable": true },
     { "name": "email", "align": "center", "label": "Email", "field": "email", "sortable": true },
-    { "name": "userLevel", "align": "center", "label": "User Level", "field": "user_level__level__name", "sortable": true },
+    { "name": "userLevel", "align": "center", "label": "User Level", "field": "access_levels__access", "sortable": true },
     { "name": "actions", "label": "Actions", "field": "actions", "sortable": true } 
   ],
 
