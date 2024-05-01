@@ -14,14 +14,14 @@
         />
 
         <q-toolbar-title>
-          Shift Management
+          <q-btn flat size="lg" label="Shift Management" to="/" />
         </q-toolbar-title>
         <div>
           <q-btn-dropdown color="white" dropdown-icon="account_circle" flat dense >
             <q-list style="min-width: 100px; max-width: 200px;" class="text-center q-py-none">
               <q-item v-if="loggedIn" clickable v-close-popup @click="onItemClick">
                 <q-item-section class="">
-                  <q-btn icon="manage_accounts" color="secondary" flat dense />
+                  <q-btn icon="manage_accounts" color="black" flat dense />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Profile</q-item-label>
@@ -37,10 +37,10 @@
               </q-item> -->
               <q-item v-if="loggedIn" clickable v-close-popup @click="logout">
                 <q-item-section class="">
-                  <q-btn icon="logout" text-color="red" flat dense />
+                  <q-btn icon="logout" text-color="black" flat dense />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>Logout</q-item-label>
+                  <q-item-label class="text-orange-10">Logout</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item v-if="!loggedIn" clickable v-close-popup to="/login">
@@ -63,12 +63,12 @@
       v-if="loggedIn"
     >
       <q-list>
-        <q-item-label
+        <!-- <q-item-label
           header
         >
           <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="secondary" @click="drawer = !drawer" ></q-icon>
           Menu
-        </q-item-label>
+        </q-item-label> -->
 
         <EssentialLink
           v-for="link in essentialLinks"
@@ -113,12 +113,12 @@ const linksList = [
     icon: 'home',
     link: '/'
   },
-  {
-    title: 'Login',
-    caption: '',
-    icon: 'lock',
-    link: '/login'
-  },
+  // {
+  //   title: 'Login',
+  //   caption: '',
+  //   icon: 'lock',
+  //   link: '/login'
+  // },
   // {
   //   title: 'Login',
   //   caption: '',
@@ -139,43 +139,43 @@ const linksList = [
   //     },
   //   ]
   // },
+  // {
+  //   title: 'Admin',
+  //   caption: '',
+  //   icon: 'admin_panel_settings',
+  //   sublinks : [
   {
-    title: 'Admin',
+    title: 'Manage Schedule',
     caption: '',
-    icon: 'admin_panel_settings',
-    sublinks : [
-      {
-        title: 'Manage Schedule',
-        caption: '',
-        icon: 'calendar_month',
-        link: '/manage_schedule'
-      },
-      {
-        title: 'Manage Users',
-        caption: '',
-        icon: 'people',
-        link: '/users'
-      },      
-      // {
-      //   title: 'Schedule Settings',
-      //   caption: '',
-      //   icon: 'settings',
-      //   link: '/schedule_settings'
-      // },
-      {
-        title: 'Admin Settings',
-        caption: '',
-        icon: 'construction',
-        link: '/master_settings'
-      },
+    icon: 'calendar_month',
+    link: '/manage_schedule'
+  },
+  {
+    title: 'Manage Users',
+    caption: '',
+    icon: 'people',
+    link: '/users'
+  },      
+  // {
+  //   title: 'Schedule Settings',
+  //   caption: '',
+  //   icon: 'settings',
+  //   link: '/schedule_settings'
+  // },
+  {
+    title: 'Admin Settings',
+    caption: '',
+    icon: 'settings',
+    link: '/master_settings'
+  },
       // {
       //   title: 'Schedule Import',
       //   caption: '',
       //   icon: 'upload_file',
       //   link: '/schedule_import'
       // },
-    ]
-  },
+    // ]
+  // },
   {
     title: 'Testing',
     caption: '',
@@ -259,7 +259,7 @@ export default defineComponent({
       console.log(`Logging in...`)
       if (localStorage.getItem('access_token')) {
         console.log('Logged in')
-        // this.loggedIn = true;
+        this.loggedIn = true;
         mainStore.setLoggedIn(true)
       }
       // } else {
