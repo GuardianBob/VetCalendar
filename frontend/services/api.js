@@ -57,10 +57,16 @@ class APIService {
     }
   }
 
+  validateAccess(body) {
+    this.setTokenHeader();
+    return api.post('/login/validate', body);
+  }
+
   logout() {
     // Clear tokens from localStorage and reload page to logout
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');  
+    localStorage.removeItem('user');  
     window.location.replace('/'); 
     return 
   }

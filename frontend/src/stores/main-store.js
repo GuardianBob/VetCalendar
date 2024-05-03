@@ -3,8 +3,13 @@ import APIService from "../../services/api"
 
 export const useMainStore = defineStore('main-store', {
   state: () => ({
+    refreshToken: null,
+    accessToken: null,
     csrfToken: null,
     loggedIn: false,
+    permissions: [],
+    access: [],
+    user: null,
     // return {
     //   loggedIn,
     // }
@@ -16,6 +21,55 @@ export const useMainStore = defineStore('main-store', {
   actions: {
     setLoggedIn(value) {
       this.loggedIn = value
+    },
+
+    setUser(user) {
+      this.user = user
+    },
+
+    setToken(data) {
+      this.refreshToken = data.refreshToken
+      this.accessToken = data.accessToken
+    },
+
+    setPermissions(access, permissions) {
+      console.log('permissions \n', permissions)
+      this.access = access
+      this.permissions = permissions
+    },
+
+    updatePermissions() {
+      APIService.validateAccess().then((response) => {
+        console.log(response.data)
+        this.access = response.data.access
+        this.permissions = response.data.permissions
+      }).catch((error) => {
+        console.log(error)
+      })
+      console.log('permissions \n', this.permissions)
+      return [this.access, this.permissions]
+    },
+
+    logout() {
+      this.refreshToken = null
+      this.accessToken = null
+      this.csrfToken = null
+      this.loggedIn = false
+      this.permissions = []
+      this.access = []
+      this.user = null
+    },
+
+    show_status() {
+      console.log(
+        this.refreshToken,
+        this.accessToken,
+        this.csrfToken,
+        this.loggedIn,
+        this.permissions,
+        this.access,
+        this.user
+      )
     },
 
     setCsrfToken(token) {

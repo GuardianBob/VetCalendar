@@ -53,11 +53,15 @@ import DataTable from "components/DataTable.vue"
 import { useFormFields } from "stores/form-fields.js"
 import FormTest from 'src/components/FormTest.vue'
 import BaseForm from 'src/components/BaseForm.vue'
+import { useMainStore } from 'src/stores/main-store'
 const formStore = useFormFields();
-
+const mainStore = useMainStore();
 
 export default defineComponent({
   name: "UserInfo",
+  props: [
+    "permissions"
+  ],
   components: {
     DataTable,
     // FormTest,

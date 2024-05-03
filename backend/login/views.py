@@ -308,7 +308,24 @@ def validate_login(email, password):
         return user
     return None
 
-
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def validate(request):
+  try:
+    if request.method == 'POST':
+      if request.user.is_authenticated:
+        print(request.user)
+        user_access = AccessLevel.objects.filter(users=request.user).values('access', 'permissions__permission')
+        print(user_access)
+        access = list(map(lambda x: x['access'], user_access))
+        access = list(set(access))
+        permissions = list(map(lambda x: x['permissions__permission'], user_access))
+        return JsonResponse({'message':'User Valid', 'access': access, 'permissions': permissions}, status=200)
+    return JsonResponse({'message':'User is not validated', 'access': False}, status=400)
+  except Exception as e:
+    return trace_error(e, True)
 
 def verify_new_user(email):
   print(email)

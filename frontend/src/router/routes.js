@@ -11,18 +11,37 @@ function requireAuth(to, from, next) {
   // })
   // Check if the route requires authentication
   // if (to.matched.some(record => record.meta.requiresAuth)) {
-    // Check if no token is stored in localStorage
-    if (!localStorage.getItem('access_token')) {
-      // Redirect to the login page
-      next({ name: 'login' });
-    } else {
-      // Proceed to the route
+  // Check if no token is stored in localStorage
+  let token = localStorage.getItem('access_token');
+  APIService.validateAccess({ token: token }).then((response) => {
+    console.log(response.data)
+    if (token && validateUserAccess(to, response.data.access)) {
       next();
+      // Proceed to the route
+    } else {
+      // Redirect to the login page
+      next({ path: '/' });
     }
+  }).catch((error) => {
+    console.log(error)
+    next('/');
+  })
   // } else {
   //   // If the route doesn't require authentication, proceed
   //   next();
   // }
+}
+
+function validateUserAccess(to, user_access) {
+  const allowedGroups = to.meta.allowedGroups ? to.meta.allowedGroups : ['none'];
+  if (allowedGroups.includes('all') || user_access.includes('Admin')) {
+      return true
+  }
+  if (allowedGroups.includes(user_access) || allowedGroups.includes('none')) {
+      return true
+  } else {
+      return false
+  }
 }
 
 const routes = [
@@ -60,6 +79,7 @@ const routes = [
         name: "profile",
         component: () => import("pages/ProfilePage.vue"),
         beforeEnter: requireAuth,
+        meta: { allowedGroups: "all" }, //All
       },
       // ============================= ADMIN USER PAGES =============================
       {
@@ -67,12 +87,14 @@ const routes = [
         name: "users",
         component: () => import("pages/Users.vue"),
         beforeEnter: requireAuth,
+        meta: { allowedGroups: "Manager" },
       },
       {
         path: "/manage_schedule",
         name: "manage_schedule",
         component: () => import("pages/ManageSchedule.vue"),
         beforeEnter: requireAuth,
+        meta: { allowedGroups: "Manager" }, 
       },
       {
         path: "/schedule_import",
