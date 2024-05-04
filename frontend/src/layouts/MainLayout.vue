@@ -46,11 +46,11 @@
                   <q-item-label class="text-orange-10">Logout</q-item-label>
                 </q-item-section> -->
               </q-item>
-              <q-item v-if="!loggedIn" clickable v-close-popup to="/login">
+              <!-- <q-item v-if="!loggedIn" clickable v-close-popup to="/login">
                 <q-item-section>
                   <q-item-label>Login</q-item-label>
                 </q-item-section>
-              </q-item>
+              </q-item> -->
               <!-- <q-item >
                 <q-item-section>
                   <div class="text-accent">v: {{ version }}</div>
@@ -250,28 +250,16 @@ export default defineComponent({
   },
   setup () {
     const router = useRouter();
-    const loggedIn = ref(false)
-    const managerPriv = ref(false)
-    const adminPriv = ref(false)
-    // const mainStore = useMainStore();
+    const loggedIn = ref(mainStore.loggedIn)
+    const managerPriv = ref(mainStore.checkAccess(["Manager"]))
+    const adminPriv = ref(mainStore.checkAccess(["Admin"]))
     watch(() => mainStore.loggedIn, () => {
-      if (localStorage.getItem('access_token')) {
-        loggedIn.value = true;
-        mainStore.setLoggedIn(true)
-      } else {
-        loggedIn.value = false;
-      }
+      loggedIn.value = mainStore.loggedIn;
     })
 
     watch(() => mainStore.permissions, () => {
-      console.log(mainStore.access)
-      if (mainStore.access.includes('Admin')) {
-        adminPriv.value = true;
-        managerPriv.value = true;
-      } 
-      if (mainStore.access.includes('Manager')) {
-        managerPriv.value = true;
-      } 
+        adminPriv.value = mainStore.checkAccess(["Admin"]);
+        managerPriv.value = mainStore.checkAccess(["Manager"]);
     })
 
     return {
@@ -297,22 +285,22 @@ export default defineComponent({
       handler(value) {
         if (value == true) {
           // mainStore.updatePermissions()
-          // console.log(value, localStorage.getItem('user'))
-          this.user = localStorage.getItem('user')
+          console.log(value, localStorage.getItem('user'))
+          this.user = mainStore.user
         }
       }
     },
   },
 
   methods: {
-    verify_login() {
+    async verify_login() {
       console.log(`Logging in...`)
       if (mainStore.loggedIn || localStorage.getItem('access_token')) {
         // console.log('Logged in')
         this.loggedIn = true;
         this.user = localStorage.getItem('user')
-        mainStore.setLoggedIn(true)
-        mainStore.updatePermissions()
+        await mainStore.setLoggedIn(true)
+        // await mainStore.updatePermissions()
       }
       // } else {
       //   console.log('Not logged in')
@@ -326,10 +314,11 @@ export default defineComponent({
       mainStore.logout()
     }
   },
+
+  created() {
+  }, 
+
   mounted() {
-    this.verify_login()
-    // console.log("Main Layout, check store: \n", mainStore.access, mainStore.access.includes('Admin'))
-    mainStore.show_status()
   }
 })
 </script>

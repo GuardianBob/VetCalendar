@@ -1,4 +1,6 @@
 import APIService from "../../services/api.js";
+import { useMainStore } from "src/stores/main-store.js";
+
 
 function requireAuth(to, from, next) {
   // const token = localStorage.getItem('access_token');
@@ -15,7 +17,11 @@ function requireAuth(to, from, next) {
   let token = localStorage.getItem('access_token');
   APIService.validateAccess({ token: token }).then((response) => {
     console.log(response.data)
+    // console.log('router: access : ', useMainStore.access)
     if (token && validateUserAccess(to, response.data.access)) {
+      if (useMainStore.access == 'undefined') {
+        useMainStore.updatePermissions();
+      }
       next();
       // Proceed to the route
     } else {
@@ -37,7 +43,13 @@ function validateUserAccess(to, user_access) {
   if (allowedGroups.includes('all') || user_access.includes('Admin')) {
       return true
   }
-  if (allowedGroups.includes(user_access) || allowedGroups.includes('none')) {
+  if (Array.isArray(user_access) && user_access.length != 0) {
+    for (let i = 0; i < user_access.length; i++) {
+      if (allowedGroups.includes(user_access[i])) {
+        return true
+      }
+    }
+  } else if (allowedGroups.includes(user_access) || allowedGroups.includes('none')) {
       return true
   } else {
       return false
@@ -127,6 +139,7 @@ const routes = [
         name: "master settings",
         component: () => import("pages/SettingsPage.vue"),
         beforeEnter: requireAuth,
+        meta: { allowedGroups: "Manager" }, 
         props: { 
           api_route: '/login/master_settings', 
           page_title: 'Admin Settings',

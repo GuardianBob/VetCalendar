@@ -1,19 +1,24 @@
 import { defineStore } from 'pinia';
 import APIService from "../../services/api"
+import { useLocalStorage } from "@vueuse/core"
 
 export const useMainStore = defineStore('main-store', {
-  state: () => ({
-    refreshToken: null,
-    accessToken: null,
-    csrfToken: null,
-    loggedIn: false,
-    permissions: [],
-    access: [],
-    user: null,
-    // return {
-    //   loggedIn,
-    // }
-  }),
+  state: () => {
+    const user = useLocalStorage('user', null);
+    
+    return {
+      refreshToken: null,
+      accessToken: null,
+      csrfToken: null,
+      loggedIn: false,
+      permissions: [],
+      access: [],
+      user,
+      // return {
+      //   loggedIn,
+      // }
+    }
+  },
   getters: {
     // doubleCount: (state) => state.counter * 2,
     getCsrfToken: (state) => state.csrfToken,
@@ -38,16 +43,45 @@ export const useMainStore = defineStore('main-store', {
       this.permissions = permissions
     },
 
-    updatePermissions() {
-      APIService.validateAccess().then((response) => {
-        console.log(response.data)
+    async updatePermissions() {
+      try {
+        console.log("Updating Permissions...")
+        const response = await APIService.validateAccess();
+        console.log("permissions response : ",response.data)
         this.access = response.data.access
         this.permissions = response.data.permissions
-      }).catch((error) => {
+      } catch (error) {
         console.log(error)
-      })
+      }
       console.log('permissions \n', this.permissions)
       return [this.access, this.permissions]
+    },
+
+    checkAccess(accessLevel = null) {
+      console.log('checking access', this.access)
+      if (this.access.includes(accessLevel) || this.access.includes("Admin")) {
+        console.log('access granted')
+        return true
+      } 
+      console.log('access denied')
+      return false
+    },
+
+    checkPermissions(permission = null) {
+      console.log('checking permissions', this.permissions.length)
+      if (Array.isArray(permission)) {
+        for (let i = 0; i < permission.length; i++) {
+          if (this.permissions.includes(permission[i]) || this.access.includes("Admin")) {
+            console.log('Permission allowed')
+            return true
+          }
+        }
+      } else if (this.permissions.includes(permission) || this.access.includes("Admin")) {
+        console.log('Permission allowed')
+        return true
+      } else {
+        return false
+      }
     },
 
     logout() {
@@ -60,7 +94,7 @@ export const useMainStore = defineStore('main-store', {
       this.user = null
     },
 
-    show_status() {
+    status() {
       console.log(
         this.refreshToken,
         this.accessToken,

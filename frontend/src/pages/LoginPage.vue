@@ -130,7 +130,7 @@ export default defineComponent({
             timeout: 3000,
           });
           console.log(mainStore.loggedIn)
-          this.$router.push("/");
+          this.$router.push(`/`);
         })
         .catch((error) => {
           console.log(error.response);
