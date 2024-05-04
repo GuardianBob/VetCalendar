@@ -293,21 +293,6 @@ export default defineComponent({
   },
 
   methods: {
-    async verify_login() {
-      console.log(`Logging in...`)
-      if (mainStore.loggedIn || localStorage.getItem('access_token')) {
-        // console.log('Logged in')
-        this.loggedIn = true;
-        this.user = localStorage.getItem('user')
-        await mainStore.setLoggedIn(true)
-        // await mainStore.updatePermissions()
-      }
-      // } else {
-      //   console.log('Not logged in')
-      //   // this.loggedIn = false;
-      // }
-    },
-    
     logout() {
       // router.push({ name: 'login' });
       APIService.logout();
