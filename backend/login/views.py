@@ -533,8 +533,8 @@ def get_user_list(request):
     users = User.objects.select_related('access_levels').values('id', 'first_name', 'last_name', 'initials', 'email', 'access_levels__access')
     # print(users)
     user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
+    print(user_dict)
     user_data = json.dumps(user_dict)   
-    # print(user_data)
     return HttpResponse(user_data)
 
 # class UserListView(APIView):
@@ -1128,7 +1128,8 @@ def master_settings(request):
           'id': al.id,
           'access': al.access,
           'permissions': [{"label": perm.permission, "value":perm.id} for perm in al.permissions.all()], # al['fields']['permissions'],
-          'users': list(al.users.annotate(label=F('last_name'), value=F('id')).values('label', 'value')),
+          # 'users': list(al.users.annotate(label=F('last_name'), value=F('id')).values('label', 'value')),
+          # 'users': list(al.users.values_list('last_name', flat=True)),
         }
         accessLvls.append(new_lvl)
       print("access levels ====> : \n", accessLvls)
