@@ -2,10 +2,10 @@
   <q-page class="items-center flex-center q-my-xl">
     <div class="row q-mx-md justify-end">
       <div class="col-10 ">
-        <q-btn color="accent" dense class="q-px-sm" size="xs" label="Add" icon="add" @click="add_user()"/>
+        <q-btn v-if="addUserPriv" color="accent" dense class="q-px-sm" size="xs" label="Add" icon="add" @click="add_user()"/>
       </div>
     </div>
-    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :parentFunc02="reset_password" :title="pageTitle"/>
+    <DataTable :rowData="users" :columns="columns" :parentFunc01="edit_user" :parentFunc02="reset_password" :title="pageTitle" :managerPriv="editUserPriv"/>
     <q-dialog v-model="view_user" transition-show="slide-down" transition-hide="slide-up">
       <div class="dialog-60">
         <component 
@@ -47,22 +47,40 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, watch } from 'vue'
 import APIService from "../../services/api"
 import DataTable from "components/DataTable.vue"
 import { useFormFields } from "stores/form-fields.js"
 import FormTest from 'src/components/FormTest.vue'
 import BaseForm from 'src/components/BaseForm.vue'
+import { useMainStore } from 'src/stores/main-store'
 const formStore = useFormFields();
-
+const mainStore = useMainStore();
 
 export default defineComponent({
   name: "UserInfo",
+  props: [
+  ],
   components: {
     DataTable,
     // FormTest,
   },
   setup() {
+
+    // ===================== Watch for permissions update in Pinia store =====================
+    // This allows the page permissions to be updated if the user reloads the page
+    // This won't work if the user navigates away from teh page then back to the page
+    const managerPriv = ref(mainStore.checkPermissions(["Edit User", "Add User", "Delete User"]))
+    const addUserPriv = ref(mainStore.checkPermissions(["Add User"]))
+    const editUserPriv = ref(mainStore.checkPermissions(["Edit User"]))
+  
+    // watch(() => mainStore.permissions, () => {
+    //   managerPriv.value = mainStore.checkPermissions(["Edit User", "Add User", "Delete User"])
+    //   addUserPriv.value = mainStore.checkPermissions(["Add User"])
+    //   editUserPriv.value = mainStore.checkPermissions(["Edit User"])
+    // })
+    // ========================================================================================
+
     return {
       // Update column headers with code from SchedSettings.vue
       columns: ref(formStore.formFields.columns),
@@ -71,7 +89,9 @@ export default defineComponent({
       new_user: ref(false),
       user_list: ref([]),
       user_id: ref(),
-      admin: ref(),
+      managerPriv,
+      addUserPriv,
+      editUserPriv,
       userInfo: ref(),
       python_form: ref(),
       api_string: ref(""),
@@ -107,7 +127,7 @@ export default defineComponent({
       this.forms = ["user_basic_info", "user_address", "user_city", "user_occupation", "user_level"]
       this.linked_forms = true
       this.user_id = userInfo.id
-      this.admin = "true"
+      // this.admin = "true"
       this.form_title = "User Details"
       this.view_user = true
     },
@@ -124,7 +144,7 @@ export default defineComponent({
     reset_password(userInfo) {
       this.forms = ["password_reset"]
       this.linked_forms = false
-      this.admin = true
+      // this.admin = true
       this.user_id = userInfo.id
       this.form_title = "Reset User Password"
       this.okBtnName = "Reset"
@@ -153,9 +173,17 @@ export default defineComponent({
   },
   
   mounted() {
+    // ================= Update permissions for the page =================
+    // This is needed to update the permissions for the page when the user navigates to the page
+    // This will not work on a page reload. 
+    // this.managerPriv = mainStore.checkAccess("Manager")
+    // this.addUserPriv = mainStore.checkPermissions(["Add User"])
+    // this.editUserPriv = mainStore.checkPermissions(["Edit User"])
+    // ==================================================================
     this.get_user_list()
     const componentName = process.env.VUE_APP_FORM_PAGE;
     this.dynamicComponent = this.components[componentName];
   },
+    
 })
 </script>

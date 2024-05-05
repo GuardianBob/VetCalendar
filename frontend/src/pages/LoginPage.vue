@@ -111,12 +111,17 @@ export default defineComponent({
       if (this.remember == false) {
         formData.append("remember_me", false)
       }
-      console.log(formData)
       APIService.login(formData)
         .then((res) => {
+          console.log(this.email)
           console.log(res);
+          mainStore.setToken(res.data)
+          mainStore.setUser(this.email)
+          mainStore.updatePermissions()
+          mainStore.setLoggedIn(true)
           localStorage.setItem('access_token', res.data.access);
           localStorage.setItem('refresh_token', res.data.refresh);
+          localStorage.setItem('user', this.email);
           Notify.create({
             message: "Logged in successfully",
             color: "green",
@@ -124,9 +129,8 @@ export default defineComponent({
             position: "center",
             timeout: 3000,
           });
-          mainStore.setLoggedIn(true)
           console.log(mainStore.loggedIn)
-          this.$router.push("/");
+          this.$router.push(`/`);
         })
         .catch((error) => {
           console.log(error.response);

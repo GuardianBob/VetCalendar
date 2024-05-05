@@ -6,27 +6,29 @@
           flat
           dense
           round
+          class=""
           icon="menu"
           aria-label="Menu"
           @click="drawer = !drawer"
           color="secondary"
           v-if="loggedIn"
         />
-
-        <q-toolbar-title>
-          <q-btn flat size="lg" label="VSS || Vet Scheduling System" to="/" />
-        </q-toolbar-title>
-        <div>
+        <div  class="col-12 q-pr-lg flex justify-between">
+          <q-toolbar-title>
+            <q-btn flat label="VSS || Vet Scheduling System" to="/" />
+          </q-toolbar-title>
+        <!-- </div>
+        <div> -->
           <q-btn v-if="!loggedIn" flat label="Login" to="/login" />
           <q-btn-dropdown v-if="loggedIn" color="white" dropdown-icon="account_circle" flat dense >
-            <q-list style="min-width: 100px; max-width: 200px;" class="text-center q-py-none">              
+            <q-list style="min-width: 100px; max-width: 400px;" class="q-py-none">              
               <q-item v-if="loggedIn" clickable v-close-popup @click="onItemClick">
                 <q-item-section class="">
-                  <q-btn icon="manage_accounts" color="black" flat dense />
+                  <q-btn icon="manage_accounts" align="left" flat dense :label="user" />
                 </q-item-section>
-                <q-item-section>
-                  <q-item-label>Profile</q-item-label>
-                </q-item-section>
+                <!-- <q-item-section>
+                  <q-item-label>{{ user }}</q-item-label>
+                </q-item-section> -->
               </q-item>
               <!-- <q-item v-if="loggedIn" clickable v-close-popup @click="onItemClick">
                 <q-item-section class="">
@@ -38,17 +40,17 @@
               </q-item> -->
               <q-item v-if="loggedIn" clickable v-close-popup @click="logout">
                 <q-item-section class="">
-                  <q-btn icon="logout" text-color="black" flat dense />
+                  <q-btn icon="logout" align="left" text-color="black" flat dense label="Logout"/>
                 </q-item-section>
-                <q-item-section>
+                <!-- <q-item-section>
                   <q-item-label class="text-orange-10">Logout</q-item-label>
-                </q-item-section>
+                </q-item-section> -->
               </q-item>
-              <q-item v-if="!loggedIn" clickable v-close-popup to="/login">
+              <!-- <q-item v-if="!loggedIn" clickable v-close-popup to="/login">
                 <q-item-section>
                   <q-item-label>Login</q-item-label>
                 </q-item-section>
-              </q-item>
+              </q-item> -->
               <!-- <q-item >
                 <q-item-section>
                   <div class="text-accent">v: {{ version }}</div>
@@ -74,11 +76,27 @@
           <q-icon v-if="$q.platform.is.mobile" name="menu" size="md" color="secondary" @click="drawer = !drawer" ></q-icon>
           Menu
         </q-item-label> -->
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
+        <span>
+          <EssentialLink
+            v-for="link in userLinks"
+            :key="link.title"
+            v-bind="link"
+          />
+        </span>
+        <span v-if="managerPriv">
+          <EssentialLink
+            v-for="link in managerLinks"
+            :key="link.title"
+            v-bind="link"
+          />
+        </span>
+        <span v-if="adminPriv">
+          <EssentialLink
+            v-for="link in adminLinks"
+            :key="link.title"
+            v-bind="link"
+          />
+        </span>
         <q-item>
           <q-item-section avatar>
             <q-icon name="account_tree" color="accent"/>
@@ -90,8 +108,8 @@
       </q-list>
     </q-drawer>
 
-    <q-footer v-if="!loggedIn" elevated>
-      <div class="text-center">v: {{ version }}</div>
+    <q-footer elevated>
+      <div class="text-center">© {{ year }} JBear Creations || v: {{ version }}</div>
     </q-footer>
 
     <q-page-container >
@@ -110,13 +128,16 @@ import APIService from '../../services/api';
 
 const mainStore = useMainStore();
 
-const linksList = [
+const userLinks = [
   {
     title: 'Home',
     caption: '',
     icon: 'home',
     link: '/'
   },
+]
+
+const managerLinks = [
   // {
   //   title: 'Login',
   //   caption: '',
@@ -171,7 +192,7 @@ const linksList = [
     caption: '',
     icon: 'settings',
     link: '/master_settings'
-  },
+  }
       // {
       //   title: 'Schedule Import',
       //   caption: '',
@@ -180,6 +201,9 @@ const linksList = [
       // },
     // ]
   // },
+]
+
+const adminLinks = [
   {
     title: 'Testing',
     caption: '',
@@ -226,25 +250,29 @@ export default defineComponent({
   },
   setup () {
     const router = useRouter();
-    const loggedIn = ref(false)
-    // const mainStore = useMainStore();
+    const loggedIn = ref(mainStore.loggedIn)
+    const managerPriv = ref(mainStore.checkAccess(["Manager"]))
+    const adminPriv = ref(mainStore.checkAccess(["Admin"]))
     watch(() => mainStore.loggedIn, () => {
-      // check_login()
-      // console.log(`Logging in...`)
-      if (localStorage.getItem('access_token')) {
-        // console.log('Logged in')
-        loggedIn.value = true;
-      } else {
-        // console.log('Not logged in')
-        loggedIn.value = false;
-      }
+      loggedIn.value = mainStore.loggedIn;
+    })
+
+    watch(() => mainStore.permissions, () => {
+        adminPriv.value = mainStore.checkAccess(["Admin"]);
+        managerPriv.value = mainStore.checkAccess(["Manager"]);
     })
 
     return {
       drawer: ref(false),
-      essentialLinks: linksList,
+      userLinks: ref(userLinks),
+      managerLinks: ref(managerLinks),
+      adminLinks: ref(adminLinks),
       profile_icon: ref('no_accounts'),
       loggedIn,
+      managerPriv,
+      adminPriv,
+      year: ref(new Date().getFullYear()),
+      user: ref(''),
       // toggleLeftDrawer () {
       //   leftDrawerOpen.value = !leftDrawerOpen.value
       // }
@@ -252,34 +280,30 @@ export default defineComponent({
   },
 
   watch: {
-    // mainStore: {
-    //   immediate: true,
-    //   handler() {
-    //     this.verify_login()
-    //   }
-    // },
-  },
-  methods: {
-    verify_login() {
-      console.log(`Logging in...`)
-      if (localStorage.getItem('access_token')) {
-        console.log('Logged in')
-        this.loggedIn = true;
-        mainStore.setLoggedIn(true)
+    loggedIn: {
+      immediate: true,
+      handler(value) {
+        if (value == true) {
+          // mainStore.updatePermissions()
+          console.log(value, localStorage.getItem('user'))
+          this.user = mainStore.user
+        }
       }
-      // } else {
-      //   console.log('Not logged in')
-      //   // this.loggedIn = false;
-      // }
     },
+  },
+
+  methods: {
     logout() {
       // router.push({ name: 'login' });
       APIService.logout();
-      mainStore.setLoggedIn(false)
+      mainStore.logout()
     }
   },
+
+  created() {
+  }, 
+
   mounted() {
-    this.verify_login()
   }
 })
 </script>

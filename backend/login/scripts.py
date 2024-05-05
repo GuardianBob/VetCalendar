@@ -115,8 +115,10 @@ def get_settings_columns(data):
         type = "color"
       if 'description' in key:
         type = "textarea"
-      if 'permissions' in key or 'users' in key:
+      if 'permissions' in key:
         type = "multi-select"
+      if 'users' in key:
+        type = "text"
       if 'id' in key or 'name' in key:
         type = "fixed"
       headers.append({

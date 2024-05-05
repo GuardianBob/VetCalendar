@@ -308,7 +308,24 @@ def validate_login(email, password):
         return user
     return None
 
-
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def validate(request):
+  try:
+    if request.method == 'POST':
+      if request.user.is_authenticated:
+        print(request.user)
+        user_access = AccessLevel.objects.filter(users=request.user).values('access', 'permissions__permission')
+        print(user_access)
+        access = list(map(lambda x: x['access'], user_access))
+        access = list(set(access))
+        permissions = list(map(lambda x: x['permissions__permission'], user_access))
+        return JsonResponse({'message':'User Valid', 'access': access, 'permissions': permissions}, status=200)
+    return JsonResponse({'message':'User is not validated', 'access': False}, status=400)
+  except Exception as e:
+    return trace_error(e, True)
 
 def verify_new_user(email):
   print(email)
@@ -516,8 +533,8 @@ def get_user_list(request):
     users = User.objects.select_related('access_levels').values('id', 'first_name', 'last_name', 'initials', 'email', 'access_levels__access')
     # print(users)
     user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
+    print(user_dict)
     user_data = json.dumps(user_dict)   
-    # print(user_data)
     return HttpResponse(user_data)
 
 # class UserListView(APIView):
@@ -1111,7 +1128,8 @@ def master_settings(request):
           'id': al.id,
           'access': al.access,
           'permissions': [{"label": perm.permission, "value":perm.id} for perm in al.permissions.all()], # al['fields']['permissions'],
-          'users': list(al.users.annotate(label=F('last_name'), value=F('id')).values('label', 'value')),
+          # 'users': list(al.users.annotate(label=F('last_name'), value=F('id')).values('label', 'value')),
+          # 'users': list(al.users.values_list('last_name', flat=True)),
         }
         accessLvls.append(new_lvl)
       print("access levels ====> : \n", accessLvls)

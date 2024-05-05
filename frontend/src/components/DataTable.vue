@@ -19,10 +19,10 @@
       <template v-slot:body-cell-actions="props">
         <q-td :props="props">
           <div>
-            <q-btn color="positive" dense class="q-px-sm q-mx-xs" size="xs" label="" icon="edit" @click="editBtn(props.row)">
+            <q-btn v-if="managerPriv" color="positive" dense class="q-px-sm q-mx-xs" size="xs" label="" icon="edit" @click="editBtn(props.row)">
               <q-tooltip class="bg-accent" anchor="bottom middle">Edit User Info</q-tooltip>
             </q-btn>
-            <q-btn color="warning" dense class="q-px-sm q-mx-xs" size="xs" label="" icon="lock_reset" @click="reset_button(props.row)">
+            <q-btn v-if="managerPriv" color="warning" dense class="q-px-sm q-mx-xs" size="xs" label="" icon="lock_reset" @click="reset_button(props.row)">
               <q-tooltip class="bg-accent" anchor="bottom middle">Reset User Password</q-tooltip>
             </q-btn>
           </div>
@@ -44,6 +44,7 @@ export default {
     "columns",
     "rowData",
     "separator",
+    "managerPriv",
     "parentFunc01",
     "parentFunc02",
     "parentFunc03",

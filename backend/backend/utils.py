@@ -290,7 +290,7 @@ def build_form(content):
       for form in content['forms']:
         # print(form)
         form = FormBuilderNew.objects.values().get(form_name=form)
-        # print("FORM ====> \n", form)
+        print("FORM ====> \n", form)
         for value in form['fields']:
           if value['type'] == 'date':
             value['value'] = None if value['value'] == '' else value['value']

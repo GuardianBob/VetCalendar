@@ -11,7 +11,6 @@
 
 const { configure } = require('quasar/wrappers');
 
-
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
@@ -32,6 +31,7 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       
       'axios',
+      'customBoot',
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
