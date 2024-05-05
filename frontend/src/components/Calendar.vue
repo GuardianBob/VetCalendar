@@ -106,10 +106,10 @@ export default {
           },
         },
         eventDragStart: () => {
-          this.isDragging = true;
+            this.isDragging = true;
         },
         eventDragStop: () => {
-          this.isDragging = false;
+            this.isDragging = false;
         },
         eventAdd: (info) => {
           this.handleEventChange(info);
@@ -179,7 +179,9 @@ export default {
             },
         plugins: [dayGridPlugin, interactionPlugin],
         editable: this.editCal,
-        droppable: this.editCal,
+        // droppable: this.editCal,
+        droppable: true,
+        // dragScroll: false,
         initialView: 'dayGridMonth',
         weekends: true,
         initialDate: new Date(),
@@ -191,7 +193,8 @@ export default {
         dayMaxEvents: 4,
         // eventBorderColor: 'primary',
         events: [],
-        longPressDelay: 500,
+        longPressDelay: 2000,
+        eventLongPressDelay: 50000,
       }),
     }
   },
