@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
+from VetCalendar.models import Shifts
 from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email, save_model, delete_model, get_app_from_model, print_line
 from django.db.models import Prefetch, Q, F
 from django.contrib import messages
@@ -592,6 +593,10 @@ def get_user_profile(request):
         # }
         # user_info = {**user, **address, **city_state, **occupation}
         user_info = {**user, **(address if address is not None else {}), **(city_state if city_state is not None else {}), **(occupation if occupation is not None else {})}
+        shifts = Shifts.objects.filter(user=user["id"]).values('id', 'shift_name__shift_label', 'shift_type__type_label', 'shift_start').order_by('shift_start')
+        shifts_list = list(shifts)
+        print(shifts_list)
+        user_info['shifts'] = shifts_list
 
         user_json = json.dumps(user_info, default=str)
         print(user_json)
