@@ -12,6 +12,7 @@ urlpatterns = [
     path('register', views.register, name="register"),
     path('request_access', views.request_access, name="request_access"),
     re_path(r'^user_profile(?:/(?P<id>\d+))?$', views.user_profile, name='user_profile'),
+    path('get_user_profile', views.get_user_profile, name='get_user_profile'),
     # path('get_user_data/<int:user_id>', views.get_user_data, name='get_user_data'),
     path('get_user_list', views.get_user_list, name='get_user_list'),
     # path('create_user', views.create_user, name='create_user'),

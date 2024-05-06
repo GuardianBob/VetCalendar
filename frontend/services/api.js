@@ -244,10 +244,10 @@ class APIService {
     return api.get('/login/get_user_list');
   }
 
-  // get_user_profile_old(req) {
-  //   this.setTokenHeader();
-  //   return api.post('/login/get_user_profile', req);
-  // }
+  get_user_profile(email) {
+    this.setTokenHeader();
+    return api.post('/login/get_user_profile', email);
+  }
 
   // get_user_profile_admin(id) {
   //   this.setTokenHeader();

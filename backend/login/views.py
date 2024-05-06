@@ -32,6 +32,7 @@ from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 import logging.handlers
+from django.core.exceptions import ObjectDoesNotExist
 
 # class TokenVerifyView(APIView):
 #   def post(self, request):
@@ -559,6 +560,38 @@ def form_to_dict(form):
     'fields': {name: str(field) for name, field in form.fields.items()},
     'data': form,
   }
+
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+  try:
+    print("getting profile")
+    if request.method == 'POST':
+      email = request.body.decode("utf-8")
+      try:
+        user = User.objects.prefetch_related('user_phone').get(email=email)
+        address = Address.objects.get(user=user) if Address.objects.filter(user=user).count() > 0 else None
+        city_state = CityState.objects.get(user=user) if CityState.objects.filter(user=user).count() > 0 else None
+        occupation = Occupation.objects.get(user=user) if Occupation.objects.filter(user=user).count() > 0 else None
+        user_info = {
+          'user': user,
+          'address': address,
+          'city_state': city_state,
+          'phone': user.user_phone,
+          'occupation': occupation,
+        }
+        user_json = json.dumps(user_info, default=str)
+        print(user_json)
+      except ObjectDoesNotExist:
+        return JsonResponse({'message':'User does not exist'}, status=500)
+    return JsonResponse({'message':'User Profile'}, status=200)
+  except Exception as e:
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+  
+      
 
 # @csrf_exempt 
 # @api_view(['GET', 'POST'])

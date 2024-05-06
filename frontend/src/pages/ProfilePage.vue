@@ -52,11 +52,13 @@ import ProfileEdit from 'components/ProfileEdit.vue'
 import ProfileView from 'components/ProfileView.vue'
 import { useDummyData } from "stores/dummy-data.js"
 import { storeToRefs } from 'pinia'
+import { useMainStore } from 'src/stores/main-store'
 // import { validators } from "app/services/ValidateService";
 
 const api = APIService
 const form_email = document.getElementById("id_login_email")
 const form_pass = document.getElementById("login_password")
+const mainStore = useMainStore()
 
 export default defineComponent({
   name: "ProfilePage",
@@ -70,25 +72,8 @@ export default defineComponent({
     return {
       store,
       // dummyData,
-      user: ref({}),
+      user: ref(mainStore.user),
       userInfoLabels: ref({}),
-      // password: ref(''),
-      // password2: ref(''),
-      // user: ref(dummyData.users[0]),
-      // userInfoLabels: ref(dummyData.userInfoLabels),
-      // userInfo: ref({
-      //   email: ref('mail@mail'),
-      //   firstName: ref('J'),
-      //   lastName: ref('Bear'),
-      //   nickname: ref(''),
-      //   address: ref(''),
-      //   address2: ref(''),
-      //   userLevel: ref(''),
-      //   apt: ref(''),
-      //   city: ref(''),
-      //   state: ref(''),
-      //   zip: ref(''),
-      // }),
       edit: ref(false),
       pageTitle: ref('User Details'),
       remember: ref(false),
@@ -121,6 +106,14 @@ export default defineComponent({
   },
 
   methods: {
+    get_profile() {
+      console.log("Getting Profile : ", this.user)
+      api.get_user_profile(this.user).then((results) => {
+        console.log(results.data)
+        // this.user = results.data
+      })
+    },
+
     submit() {
       console.log(this.store.dummyData.users[0])
       // .then((res) => {
@@ -173,10 +166,8 @@ export default defineComponent({
   mounted() {
     // this.get_form()
     // this.get_csrf()
-    console.log(this.store.dummyData.users[0]);
-    this.user = this.store.dummyData.users[0];
-    this.userInfoLabels = this.store.dummyData.userInfoLabels;
-    console.log(this.user)
+    this.get_profile()
+    // console.log(this.user)
   }
 })
 </script>
