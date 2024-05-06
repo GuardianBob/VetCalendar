@@ -7,6 +7,8 @@
       row-key="name"
       class="col-10"
       flat
+      no-data-label="Whoops! Nothing here!"
+      no-results-label="The filter didn't uncover any results"
       :separator="separator"
       :rows-per-page-options="[10,20,50,0]"
     >
@@ -29,6 +31,15 @@
           <div>
           </div>
         </q-td>
+      </template>
+      <template v-slot:no-data="{ icon, message, filter }">
+        <div class="full-width row flex-center text-accent q-gutter-sm">
+          <q-icon size="2em" name="fa-solid fa-paw" />
+          <span>
+            {{ message }}
+          </span>
+          <q-icon size="2em" :name="filter ? 'fa-solid fa-paw' : icon" />
+        </div>
       </template>
     </q-table>
   </div>

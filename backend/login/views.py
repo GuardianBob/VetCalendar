@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, HttpResponse, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseRedirect
 from .models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation, FormOptions, PasswordReset, AccountRequest
+from VetCalendar.models import Shifts
 from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email, save_model, delete_model, get_app_from_model, print_line
 from django.db.models import Prefetch, Q, F
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate, login
 import bcrypt, json
 from django.middleware import csrf
 from .forms import AccountRequestForm, Login_Form, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, PermissionForm, AccessLevelForm
@@ -12,11 +13,10 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.forms.models import model_to_dict
 import random, secrets, re, traceback, sys
 from itertools import count
-from django.contrib.auth import authenticate, login
 from django.conf import settings
 from datetime import timedelta
 from django.core import serializers
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from .scripts import set_form_fields, generate_password, get_settings_columns
 from django.apps import apps
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -32,6 +32,7 @@ from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 import logging.handlers
+from django.core.exceptions import ObjectDoesNotExist
 
 # class TokenVerifyView(APIView):
 #   def post(self, request):
@@ -560,6 +561,52 @@ def form_to_dict(form):
     'data': form,
   }
 
+@csrf_exempt 
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+  try:
+    print("getting profile")
+    if request.method == 'POST':
+      email = request.body.decode("utf-8")
+      try:
+        user = model_to_dict(User.objects.prefetch_related('user_phone').get(email=email))
+        address = model_to_dict(Address.objects.get(user=user["id"])) if Address.objects.filter(user=user["id"]).count() > 0 else None
+        city_state = model_to_dict(CityState.objects.get(user=user["id"])) if CityState.objects.filter(user=user["id"]).count() > 0 else None
+        occupation = model_to_dict(Occupation.objects.get(user=user["id"])) if Occupation.objects.filter(user=user["id"]).count() > 0 else None
+        del user['password']
+        del user['groups']
+        del user['is_superuser']
+        del user['is_staff']
+        del user['is_active']
+        del user['date_joined']
+        del user['last_login']
+        del user['user_permissions']
+
+        # user_info = {
+        #   'user': user,
+        #   'address': address,
+        #   'city_state': city_state,
+        #   'occupation': occupation,
+        # }
+        # user_info = {**user, **address, **city_state, **occupation}
+        user_info = {**user, **(address if address is not None else {}), **(city_state if city_state is not None else {}), **(occupation if occupation is not None else {})}
+        shifts = Shifts.objects.filter(user=user["id"]).values('id', 'shift_name__shift_label', 'shift_type__type_label', 'shift_start').order_by('shift_start')
+        shifts_list = list(shifts)
+        print(shifts_list)
+        user_info['shifts'] = shifts_list
+
+        user_json = json.dumps(user_info, default=str)
+        print(user_json)
+        return JsonResponse(user_info, status=200)
+      except ObjectDoesNotExist:
+        return JsonResponse({'message':'User does not exist'}, status=500)
+    return JsonResponse({'message':'User Profile'}, status=200)
+  except Exception as e:
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+
 # @csrf_exempt 
 # @api_view(['GET', 'POST'])
 # @authentication_classes([JWTAuthentication])
@@ -604,74 +651,136 @@ def form_to_dict(form):
 #       return update_user(request)
 
 @csrf_exempt
-def update_user(request):
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
   try:
-    data = request.POST
-    print("data: ", data)
-    # Create or update User
-    user, created = User.objects.update_or_create(
-      username=data['email'],
-      defaults={
-        'first_name': data['first_name'],
-        'middle_name': data['middle_name'],
-        'last_name': data['last_name'],
-        'email': data['email'],
-      }
-    )
-    if created:
-      generate_password(user)
-    if user.initials == '' and user.first_name != '' and user.last_name != '':
-      initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
-      user.initials = initials
-      user.username = user.email
-      user.save()
-
-    # Create or update Address
-    if data['street'].strip():
-      address, created = Address.objects.update_or_create(
-        user=user,
-        defaults={
-          'street': data['street'],
-          'street2': data['street2'],
-          'apt_num': data['apt_num'],
-        }
-      )
-
-    # Create or update CityState
-    if data['state'].strip():
-      city_state, created = CityState.objects.update_or_create(
-        user=user,
-        defaults={
-          'city': data['city'],
-          'state': data['state'],
-          'zipcode': data['zipcode'],
-        }
-      )
-
-    # Create or update Phone
-    if data['phone_number'].strip():
-      phone_number = re.sub('\D', '', data['phone_number'])
-      phone, created = Phone.objects.update_or_create(
-        users=user,
-        defaults={
-          'phone_number': phone_number,
-          'phone_type': data['phone_type'],
-        }
-      )
+    if request.method == 'POST':
+      data = json.loads(request.body)
       
-    # Create or update Occupation
-    if data['occupation'].strip():
-      occupation, created = Occupation.objects.update_or_create(
-      user=user,
-      defaults={
-        'occupation': data['occupation'],
-      }
+      print("data: ", data)
+      # Create or update User
+      user, created = User.objects.update_or_create(
+        username=data['email'],
+        defaults={
+          'first_name': data['first_name'],
+          'middle_name': data['middle_name'],
+          'last_name': data['last_name'],
+          'email': data['email'],
+          'initials': data['initials'] if 'initials' in data else '',
+          'nickname': data['nickname'] if 'nickname' in data else '',
+        },
       )
+      if created:
+        generate_password(user)
+      if user.initials == '' and user.first_name != '' and user.last_name != '':
+        initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
+        user.initials = initials
+        user.username = user.email
+        user.save()
 
-    return JsonResponse({'message': 'User updated'}, status=200)
+      # Create or update Address
+      if 'street' in data:
+        address, created = Address.objects.update_or_create(
+          user=user,
+          defaults={
+            'street': data['street'],
+            'street2': data['street2'],
+            'apt_num': data['apt_num'],
+          }
+        )
+
+      # Create or update CityState
+      if 'state' in data:
+        city_state, created = CityState.objects.update_or_create(
+          user=user,
+          defaults={
+            'city': data['city'],
+            'state': data['state'],
+            'zipcode': data['zipcode'],
+          }
+        )
+
+      # Create or update Phone
+      if 'phone_number' in data:
+        phone_number = re.sub('\D', '', data['phone_number'])
+        if Phone.objects.filter(users__id=user.id).exists():
+          phone = Phone.objects.get(users__id=user.id)
+          phone.phone_number = phone_number
+          phone.phone_type = data['phone_type']
+          phone.save()
+        else:
+          phone, created = Phone.objects.update_or_create(
+            defaults={
+              'phone_number': phone_number,
+              'phone_type': data['phone_type'],
+            }
+          )
+          phone.users.add(user)
+        
+      # Create or update Occupation
+      if 'occupation' in data:
+        occupation, created = Occupation.objects.update_or_create(
+        user=user,
+        defaults={
+          'occupation': data['occupation'],
+        }
+        )
+
+      return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
   
+@csrf_exempt 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_password(request):
+  try:
+    if request.method == 'POST':
+      data = json.loads(request.body)
+      print(data)
+      user = User.objects.get(email=data['email'])
+      if check_password(data['new_password'], user.password):
+        return JsonResponse({'message':'New password cannot be the same as the old password'}, status=500)
+      if check_password(data['old_password'], user.password):
+        print('passwords match!')
+        user.set_password(data['new_password'])
+        user.save()
+      else:
+        print('passwords do not match')
+        return JsonResponse({'message':'Password is incorrect'}, status=500)
+      return JsonResponse({'message': 'Password updated'}, status=200)
+  except Exception as e:
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+  
+@csrf_exempt 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def password_reset(request):
+  try:
+    if request.method == 'POST':
+      data = json.loads(request.body)
+      print(data)
+      user = User.objects.get(email=data['email'])
+      password = generate_password(user)
+      message = f'''
+        <p>Your password has been reset.</p>
+        <p>Your temporary password is: <strong>{password['decrypted']}</strong></p>
+      '''
+      send_html_email("VSS Password Reset", message, [user.email])
+      return JsonResponse({'message': 'Password reset'}, status=200)
+  except Exception as e:
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+
+@csrf_exempt 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def reset_user_password(data, id):
   try:
     print(data, id)
@@ -687,8 +796,8 @@ def reset_user_password(data, id):
     else:
       return JsonResponse({'message': 'Form was not validated'}, status=500)
   except Exception as e:
-    return trace_error(e, True)
-  pass
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
 
 # @csrf_exempt 
 # def get_user_profile2(request):

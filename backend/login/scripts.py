@@ -80,7 +80,7 @@ def generate_password(user):
   password = secrets.token_urlsafe(15)
   reset_link = secrets.token_urlsafe(50)
   reset_code = random.randint(100000, 999999)
-  print(password)
+  # print(password)
   user.set_password(password)
   user.save()
   new_user_password, created = PasswordReset.objects.update_or_create(

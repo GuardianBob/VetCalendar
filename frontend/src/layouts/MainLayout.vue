@@ -24,7 +24,7 @@
             <q-list style="min-width: 100px; max-width: 400px;" class="q-py-none">              
               <q-item v-if="loggedIn" clickable v-close-popup @click="onItemClick">
                 <q-item-section class="">
-                  <q-btn icon="manage_accounts" align="left" flat dense :label="user" />
+                  <q-btn icon="manage_accounts" align="left" flat dense :label="user" to="/profile"/>
                 </q-item-section>
                 <!-- <q-item-section>
                   <q-item-label>{{ user }}</q-item-label>
@@ -97,14 +97,14 @@
             v-bind="link"
           />
         </span>
-        <q-item>
+        <!-- <q-item>
           <q-item-section avatar>
             <q-icon name="account_tree" color="accent"/>
           </q-item-section>
           <q-item-section>
             <div class="text-accent">v: {{ version }}</div>
           </q-item-section>
-        </q-item>
+        </q-item> -->
       </q-list>
     </q-drawer>
 

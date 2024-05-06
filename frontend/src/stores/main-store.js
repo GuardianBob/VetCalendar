@@ -58,13 +58,21 @@ export const useMainStore = defineStore('main-store', {
     },
 
     checkAccess(accessLevel = null) {
-      console.log('checking access', this.access)
-      if (this.access.includes(accessLevel) || this.access.includes("Admin")) {
+      console.log('checking access \n', accessLevel, this.access)
+      if (Array.isArray(accessLevel)) {
+        for (let i = 0; i < accessLevel.length; i++) {
+          if (this.access.includes(accessLevel[i]) || this.access.includes("Admin")) {
+            console.log('access granted')
+            return true
+          }
+        }
+      } else if (this.access.includes(accessLevel) || this.access.includes("Admin")) {
         console.log('access granted')
         return true
-      } 
-      console.log('access denied')
-      return false
+      } else {
+        console.log('access denied')
+        return false
+      }
     },
 
     checkPermissions(permission = null) {

@@ -43,7 +43,7 @@ class Address(models.Model):
   street2 = models.CharField(max_length=100, blank=True, null=True)
   apt_num = models.CharField(max_length=15, blank=True, null=True)
   # user = models.OneToOneField(User, related_name='user_address', on_delete=models.CASCADE, blank=True, null=True)  
-  user = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+  user = models.ForeignKey (settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='user_address')
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
   @property

@@ -244,10 +244,10 @@ class APIService {
     return api.get('/login/get_user_list');
   }
 
-  // get_user_profile_old(req) {
-  //   this.setTokenHeader();
-  //   return api.post('/login/get_user_profile', req);
-  // }
+  get_user_profile(email) {
+    this.setTokenHeader();
+    return api.post('/login/get_user_profile', email);
+  }
 
   // get_user_profile_admin(id) {
   //   this.setTokenHeader();
@@ -271,10 +271,20 @@ class APIService {
   //   return api.get(`/login/user_profile/${id}`)
   // }
 
-  // update_user_profile(data) {
-  //   this.setTokenHeader();
-  //   return api.post('/login/user_profile', data)
-  // }
+  update_profile(data) {
+    this.setTokenHeader();
+    return api.post('/login/update_profile', data)
+  }
+
+  update_password(data) {
+    this.setTokenHeader();
+    return api.post('/login/update_password', data)
+  }
+
+  reset_password(data) {
+    this.setTokenHeader();
+    return api.post('/login/reset_password', data)
+  }
 
   
 }
