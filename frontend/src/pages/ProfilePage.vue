@@ -53,6 +53,7 @@ import ProfileView from 'components/ProfileView.vue'
 import { useDummyData } from "stores/dummy-data.js"
 import { storeToRefs } from 'pinia'
 import { useMainStore } from 'src/stores/main-store'
+import { userInfoLabels } from 'src/components/formFields.json'
 // import { validators } from "app/services/ValidateService";
 
 const api = APIService
@@ -73,7 +74,7 @@ export default defineComponent({
       store,
       // dummyData,
       user: ref(mainStore.user),
-      userInfoLabels: ref({}),
+      userInfoLabels: ref(userInfoLabels),
       edit: ref(false),
       pageTitle: ref('User Details'),
       remember: ref(false),
@@ -110,7 +111,7 @@ export default defineComponent({
       console.log("Getting Profile : ", this.user)
       api.get_user_profile(this.user).then((results) => {
         console.log(results.data)
-        // this.user = results.data
+        this.user = results.data
       })
     },
 

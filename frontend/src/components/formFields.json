@@ -13,13 +13,14 @@
     "middle_name": "Middle Name",
     "last_name": "Last Name",
     "nickname": "Nickname",
+    "initials": "Initials",
     "email": "Email",
-    "user_phone__number": "Phone Number",
-    "user_address__street": "Address Line One",
-    "user_address__street2": "Address Line Two",
-    "user_city_state__city": "City",
-    "user_city_state__state": "State",
-    "user_city_state__zipcode": "Zip Code"
+    "phone_number": "Phone Number",
+    "street": "Address Line One",
+    "street2": "Address Line Two",
+    "city": "City",
+    "state": "State",
+    "zipcode": "Zip Code"
   },
 
   "userInfoFormat" : {

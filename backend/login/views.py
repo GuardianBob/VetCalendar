@@ -571,19 +571,30 @@ def get_user_profile(request):
     if request.method == 'POST':
       email = request.body.decode("utf-8")
       try:
-        user = User.objects.prefetch_related('user_phone').get(email=email)
-        address = Address.objects.get(user=user) if Address.objects.filter(user=user).count() > 0 else None
-        city_state = CityState.objects.get(user=user) if CityState.objects.filter(user=user).count() > 0 else None
-        occupation = Occupation.objects.get(user=user) if Occupation.objects.filter(user=user).count() > 0 else None
-        user_info = {
-          'user': user,
-          'address': address,
-          'city_state': city_state,
-          'phone': user.user_phone,
-          'occupation': occupation,
-        }
+        user = model_to_dict(User.objects.prefetch_related('user_phone').get(email=email))
+        address = model_to_dict(Address.objects.get(user=user["id"])) if Address.objects.filter(user=user["id"]).count() > 0 else None
+        city_state = model_to_dict(CityState.objects.get(user=user["id"])) if CityState.objects.filter(user=user["id"]).count() > 0 else None
+        occupation = model_to_dict(Occupation.objects.get(user=user["id"])) if Occupation.objects.filter(user=user["id"]).count() > 0 else None
+        del user['password']
+        del user['groups']
+        del user['is_superuser']
+        del user['is_staff']
+        del user['is_active']
+        del user['date_joined']
+        del user['last_login']
+        del user['user_permissions']
+
+        # user_info = {
+        #   'user': user,
+        #   'address': address,
+        #   'city_state': city_state,
+        #   'occupation': occupation,
+        # }
+        user_info = {**user, **address, **city_state, **occupation}
+
         user_json = json.dumps(user_info, default=str)
         print(user_json)
+        return JsonResponse(user_info, status=200)
       except ObjectDoesNotExist:
         return JsonResponse({'message':'User does not exist'}, status=500)
     return JsonResponse({'message':'User Profile'}, status=200)
