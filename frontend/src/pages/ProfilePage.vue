@@ -6,7 +6,7 @@
         <!-- <div class="col-4 q-mx-xl text-center"> -->
         <!-- <ProfileEdit :userInfoLabels="userInfoLabels" :userInfo="user" v-show="edit" /> -->
         <!-- <ProfileView :userInfoLabels="userInfoLabels" :userInfo="user" /> -->
-        <q-form>
+        <q-form @submit="submit">
           <h5 class="text-primary q-py-none q-my-sm">{{ pageTitle }}</h5>
           <div class="row justify-around text-center q-ma-md">
             <!-- <div outline class="col-4 q-px-md q-mx-md" > -->
@@ -54,6 +54,7 @@ import { useDummyData } from "stores/dummy-data.js"
 import { storeToRefs } from 'pinia'
 import { useMainStore } from 'src/stores/main-store'
 import { userInfoLabels } from 'src/components/formFields.json'
+import { preventDefault } from '@fullcalendar/core/internal'
 // import { validators } from "app/services/ValidateService";
 
 const api = APIService
@@ -116,27 +117,28 @@ export default defineComponent({
     },
 
     submit() {
-      console.log(this.store.dummyData.users[0])
-      // .then((res) => {
-      //   console.log(res)
-      //   Notify.create({
-      //     message: "Logged in successfully",
-      //     color: "green",
-      //     textColor: "white",
-      //     position: "center",
-      //     timeout: 3000
-      //   })
-      // })
-      // .catch(error => {
-      //   console.log(error)
-      //     Notify.create({
-      //       message: error.response.data,
-      //       color: "red",
-      //       textColor: "white",
-      //       position: "center",
-      //       timeout: 3000
-      //     })
-      //   })
+      // console.log(this.store.dummyData.users[0])
+      console.log(this.user)
+      api.update_profile(this.user).then((results) => {
+        console.log(results.data)
+        Notify.create({
+          message: "Profile updated successfully",
+          color: "green",
+          textColor: "white",
+          position: "center",
+          timeout: 3000
+        })
+      })
+      .catch(error => {
+        console.log(error)
+          Notify.create({
+            message: "Error updating profile",
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000
+          })
+        })
     },
     async get_form() {
       await api.get_form().then(async (results) => {

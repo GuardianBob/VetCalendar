@@ -271,10 +271,10 @@ class APIService {
   //   return api.get(`/login/user_profile/${id}`)
   // }
 
-  // update_user_profile(data) {
-  //   this.setTokenHeader();
-  //   return api.post('/login/user_profile', data)
-  // }
+  update_profile(data) {
+    this.setTokenHeader();
+    return api.post('/login/update_profile', data)
+  }
 
   
 }

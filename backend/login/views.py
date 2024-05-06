@@ -590,7 +590,8 @@ def get_user_profile(request):
         #   'city_state': city_state,
         #   'occupation': occupation,
         # }
-        user_info = {**user, **address, **city_state, **occupation}
+        # user_info = {**user, **address, **city_state, **occupation}
+        user_info = {**user, **(address if address is not None else {}), **(city_state if city_state is not None else {}), **(occupation if occupation is not None else {})}
 
         user_json = json.dumps(user_info, default=str)
         print(user_json)
@@ -601,8 +602,6 @@ def get_user_profile(request):
   except Exception as e:
     print(trace_error(e, True))
     return JsonResponse({'message':'Something went wrong'}, status=500)
-  
-      
 
 # @csrf_exempt 
 # @api_view(['GET', 'POST'])
@@ -648,71 +647,84 @@ def get_user_profile(request):
 #       return update_user(request)
 
 @csrf_exempt
-def update_user(request):
+@api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
   try:
-    data = request.POST
-    print("data: ", data)
-    # Create or update User
-    user, created = User.objects.update_or_create(
-      username=data['email'],
-      defaults={
-        'first_name': data['first_name'],
-        'middle_name': data['middle_name'],
-        'last_name': data['last_name'],
-        'email': data['email'],
-      }
-    )
-    if created:
-      generate_password(user)
-    if user.initials == '' and user.first_name != '' and user.last_name != '':
-      initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
-      user.initials = initials
-      user.username = user.email
-      user.save()
-
-    # Create or update Address
-    if data['street'].strip():
-      address, created = Address.objects.update_or_create(
-        user=user,
-        defaults={
-          'street': data['street'],
-          'street2': data['street2'],
-          'apt_num': data['apt_num'],
-        }
-      )
-
-    # Create or update CityState
-    if data['state'].strip():
-      city_state, created = CityState.objects.update_or_create(
-        user=user,
-        defaults={
-          'city': data['city'],
-          'state': data['state'],
-          'zipcode': data['zipcode'],
-        }
-      )
-
-    # Create or update Phone
-    if data['phone_number'].strip():
-      phone_number = re.sub('\D', '', data['phone_number'])
-      phone, created = Phone.objects.update_or_create(
-        users=user,
-        defaults={
-          'phone_number': phone_number,
-          'phone_type': data['phone_type'],
-        }
-      )
+    if request.method == 'POST':
+      data = json.loads(request.body)
       
-    # Create or update Occupation
-    if data['occupation'].strip():
-      occupation, created = Occupation.objects.update_or_create(
-      user=user,
-      defaults={
-        'occupation': data['occupation'],
-      }
+      print("data: ", data)
+      # Create or update User
+      user, created = User.objects.update_or_create(
+        username=data['email'],
+        defaults={
+          'first_name': data['first_name'],
+          'middle_name': data['middle_name'],
+          'last_name': data['last_name'],
+          'email': data['email'],
+          'initials': data['initials'] if 'initials' in data else '',
+          'nickname': data['nickname'] if 'nickname' in data else '',
+        },
       )
+      if created:
+        generate_password(user)
+      if user.initials == '' and user.first_name != '' and user.last_name != '':
+        initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
+        user.initials = initials
+        user.username = user.email
+        user.save()
 
-    return JsonResponse({'message': 'User updated'}, status=200)
+      # Create or update Address
+      if 'street' in data:
+        address, created = Address.objects.update_or_create(
+          user=user,
+          defaults={
+            'street': data['street'],
+            'street2': data['street2'],
+            'apt_num': data['apt_num'],
+          }
+        )
+
+      # Create or update CityState
+      if 'state' in data:
+        city_state, created = CityState.objects.update_or_create(
+          user=user,
+          defaults={
+            'city': data['city'],
+            'state': data['state'],
+            'zipcode': data['zipcode'],
+          }
+        )
+
+      # Create or update Phone
+      if 'phone_number' in data:
+        phone_number = re.sub('\D', '', data['phone_number'])
+        if Phone.objects.filter(users__id=user.id).exists():
+          phone = Phone.objects.get(users__id=user.id)
+          phone.phone_number = phone_number
+          phone.phone_type = data['phone_type']
+          phone.save()
+        else:
+          phone, created = Phone.objects.update_or_create(
+            defaults={
+              'phone_number': phone_number,
+              'phone_type': data['phone_type'],
+            }
+          )
+          phone.users.add(user)
+        
+      # Create or update Occupation
+      if 'occupation' in data:
+        occupation, created = Occupation.objects.update_or_create(
+        user=user,
+        defaults={
+          'occupation': data['occupation'],
+        }
+        )
+
+      return JsonResponse({'message': 'User updated'}, status=200)
   except Exception as e:
     return trace_error(e, True)
   
