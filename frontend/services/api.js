@@ -276,6 +276,16 @@ class APIService {
     return api.post('/login/update_profile', data)
   }
 
+  update_password(data) {
+    this.setTokenHeader();
+    return api.post('/login/update_password', data)
+  }
+
+  reset_password(data) {
+    this.setTokenHeader();
+    return api.post('/login/reset_password', data)
+  }
+
   
 }
 

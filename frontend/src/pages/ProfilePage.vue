@@ -72,7 +72,7 @@
             </q-tab-panel>
 
             <q-tab-panel name="shifts">
-              <ShiftData :shifts="shifts" />
+              <ShiftData :shiftData="shifts" />
             </q-tab-panel>
           </q-tab-panels>
         </q-card>
@@ -173,14 +173,15 @@ export default defineComponent({
         console.log(results.data)
         this.user = results.data
         // this.shifts = results.data.shifts
-        this.shifts = results.data.shifts.map(shift => {
-          let date = new Date(shift.shift_start);
-          let days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          let dayName = days[date.getDay()];
-          let formattedDate = `${dayName}, ${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
-          // let formattedDate = `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
-          return { ...shift, shift_date: formattedDate };
-        });
+        this.shifts = results.data.shifts
+        // .map(shift => {
+        //   let date = new Date(shift.shift_start);
+        //   let days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        //   let dayName = days[date.getDay()];
+        //   let formattedDate = `${dayName}, ${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
+        //   // let formattedDate = `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
+        //   return { ...shift, shift_date: formattedDate };
+        // });
         // this.shift_count()
       })
     },
@@ -212,7 +213,50 @@ export default defineComponent({
     },
     async update_pass() {
       console.log(this.password, this.newPassword, this.newPassword2)
-    
+      if (this.newPassword != this.newPassword2) {
+        this.passError = true
+        Notify.create({
+          message: "Passwords do not match",
+          color: "red",
+          textColor: "white",
+          position: "center",
+          timeout: 3000
+        })
+        return
+      } 
+      if (this.newPassword == this.password) {
+        this.passError = true
+        Notify.create({
+          message: "New password cannot be the same as the old password",
+          color: "red",
+          textColor: "white",
+          position: "center",
+          timeout: 3000
+        })
+        return
+      }
+        await api.update_password({"email": this.user.email ,"old_password": this.password, "new_password": this.newPassword}).then((results) => {
+          console.log(results.data)
+          Notify.create({
+            message: "Password updated successfully",
+            color: "green",
+            textColor: "white",
+            position: "center",
+            timeout: 3000
+          })
+          this.edit_password = false
+        })
+        .catch(error => {
+          console.log(error.response)
+          Notify.create({
+            message: error.response.data.message,
+            color: "red",
+            textColor: "white",
+            position: "center",
+            timeout: 3000
+          })
+        })
+      
     },
 
     // async get_form() {

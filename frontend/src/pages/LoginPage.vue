@@ -122,13 +122,13 @@ export default defineComponent({
           localStorage.setItem('access_token', res.data.access);
           localStorage.setItem('refresh_token', res.data.refresh);
           localStorage.setItem('user', this.email);
-          Notify.create({
-            message: "Logged in successfully",
-            color: "green",
-            textColor: "white",
-            position: "center",
-            timeout: 3000,
-          });
+          // Notify.create({
+          //   message: "Logged in successfully",
+          //   color: "green",
+          //   textColor: "white",
+          //   position: "center",
+          //   timeout: 3000,
+          // });
           console.log(mainStore.loggedIn)
           this.$router.push(`/`);
         })

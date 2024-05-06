@@ -4,8 +4,7 @@
     <div class="col-12">
       <div class="text-h4">Total Shifts: {{ total_shifts }}</div>
     </div>
-    <div v-if="selectedMonth" class="text-h6 text-secondary col-12 q-my-md">Total for {{ selectedMonth }}: {{ filtered_count }}</div>
-    <div v-if="selectedYear && !selectedMonth" class="text-h6 text-secondary col-12 q-my-md">Total for {{ selectedYear }}: {{ filtered_count }}</div>
+    <div class="text-h6 text-secondary col-12 q-my-md">Total for {{ selectedMonth }} {{ selectedYear }}: {{ filtered_count }}</div>
     <!-- <q-date 
       v-model="filter_date" 
       default-view="Months"
@@ -34,7 +33,9 @@
         </template>
       </q-select>
     </div>
-    
+    <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+      <q-btn class="full-width" color="accent" label="Clear Filters" icon="highlight_off" @click="clear_filters" />
+    </div>
     <DataTable :columns="columnLabels" :rowData="filtered_shifts"/>
   </div>
 </template>
@@ -46,14 +47,14 @@ import DataTable from './DataTable.vue'
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug", "Sep", "Oct", "Nov", "Dec"];
 const defaultLabels = [
-  { "name": "shift_type__type_label", "align": "left", "label": "Shift Type", "field": "shift_type__type_label", "sortable": true },
-  { "name": "shift_name__shift_label", "align": "left", "label": "Shift", "field": "shift_name__shift_label", "sortable": true },
-  { "name": "shift_start", "align": "right", "label": "Date", "field": "shift_date", "sortable": true },
+  { "name": "shift_type__type_label", "align": "center", "label": "Shift Type", "field": "shift_type__type_label", "sortable": true },
+  { "name": "shift_name__shift_label", "align": "center", "label": "Shift", "field": "shift_name__shift_label", "sortable": true },
+  { "name": "shift_start", "align": "center", "label": "Date", "field": "shift_date", "sortable": true },
 ]
 
 const typeLabels = [
-  { "name": "type", "align": "left", "label": "Shift Type", "field": "type", "sortable": true },
-  { "name": "count", "align": "left", "label": "Type Total", "field": "count", "sortable": true },
+  { "name": "type", "align": "center", "label": "Shift", "field": "type", "sortable": true },
+  { "name": "count", "align": "center", "label": "Type Total", "field": "count", "sortable": true },
 ]
 
 export default {
@@ -63,7 +64,7 @@ export default {
   },
   props: [ 
     "parentFunction", 
-    "shifts",
+    "shiftData",
   ],
   setup() {
     return {
@@ -82,15 +83,25 @@ export default {
       dataTable_columns: ref([]),
       sort_options: ref([{value: 'shift_type__shift_type', label:'Shift Type'}, {value: 'shift_name__shift_name', label:'Shift Name'}]),
       sort_by: ref(''),
+      shifts: ref([]),
     }
   },
 
   watch: {
-    shifts: {
+    shiftData: {
       immediate: true,
       handler(newValue, oldValue) {
         console.log("watcher triggered")
         this.total_shifts = newValue.length
+        console.log(newValue)
+        this.shifts = newValue.map(shift => {
+          let date = new Date(shift.shift_start);
+          let days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          let dayName = days[date.getDay()];
+          let formattedDate = `${dayName}, ${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
+          // let formattedDate = `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
+          return { ...shift, shift_date: formattedDate };
+        });
         this.update_shifts()
       }
     },
@@ -193,15 +204,6 @@ export default {
         this.filtered_shifts = Object.entries(shiftCounts).map(([type, count]) => ({ type, count }));
         this.columnLabels = typeLabels
       }
-      //   this.filtered_shifts = this.shifts.reduce((acc, shift) => {
-      //     acc[shift.shift_type__type_label] = (acc[shift.shift_type__type_label] || 0) + 1;
-      //     return acc;
-      //   }, {});
-      // } else {
-      //   this.filtered_shifts = this.shifts.reduce((acc, shift) => {
-      //     acc[shift.shift_name__shift_label] = (acc[shift.shift_name__shift_label] || 0) + 1;
-      //     return acc;
-      //   }, {});
       else {
         this.filtered_count = this.filtered_shifts.length
         this.columnLabels = defaultLabels
@@ -210,14 +212,20 @@ export default {
     },
 
     update_shifts() {
-      let date = new Date()
-      this.years = Array.from({length: 10}, (v, k) => date.getFullYear() - k)
+      
       this.columnLabels = defaultLabels
       this.filtered_shifts = this.shifts
       this.filtered_count = this.shifts.length
       this.selectedYear = new Date().getFullYear()
       this.shift_count_year()
       console.log(this.shifts, this.total_shifts)
+    },
+
+    clear_filters() {
+      this.selectedMonth = ''
+      this.selectedYear = new Date().getFullYear()
+      this.sort_by = ''
+      this.update_shifts()
     },
     
     childFunction(data) {
@@ -231,6 +239,8 @@ export default {
   mounted() {
     // this.userData = this.users
     // this.update_shifts()
+    let date = new Date()
+    this.years = Array.from({length: 10}, (v, k) => date.getFullYear() - k)
   }
 };
 </script>

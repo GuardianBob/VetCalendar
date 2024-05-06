@@ -5,7 +5,7 @@ from VetCalendar.models import Shifts
 from backend.utils import trace_error, process_forms_test, strip_form_content, send_text_email, send_html_email, save_model, delete_model, get_app_from_model, print_line
 from django.db.models import Prefetch, Q, F
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate, login
 import bcrypt, json
 from django.middleware import csrf
 from .forms import AccountRequestForm, Login_Form, UserAdminUpdateForm, UpdatePasswordForm, UpdateOccupationForm, UserInfoForm, AddressForm, CityStateForm, PhoneForm, PermissionForm, AccessLevelForm
@@ -13,11 +13,10 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.forms.models import model_to_dict
 import random, secrets, re, traceback, sys
 from itertools import count
-from django.contrib.auth import authenticate, login
 from django.conf import settings
 from datetime import timedelta
 from django.core import serializers
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from .scripts import set_form_fields, generate_password, get_settings_columns
 from django.apps import apps
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -733,6 +732,55 @@ def update_profile(request):
   except Exception as e:
     return trace_error(e, True)
   
+@csrf_exempt 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_password(request):
+  try:
+    if request.method == 'POST':
+      data = json.loads(request.body)
+      print(data)
+      user = User.objects.get(email=data['email'])
+      if check_password(data['new_password'], user.password):
+        return JsonResponse({'message':'New password cannot be the same as the old password'}, status=500)
+      if check_password(data['old_password'], user.password):
+        print('passwords match!')
+        user.set_password(data['new_password'])
+        user.save()
+      else:
+        print('passwords do not match')
+        return JsonResponse({'message':'Password is incorrect'}, status=500)
+      return JsonResponse({'message': 'Password updated'}, status=200)
+  except Exception as e:
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+  
+@csrf_exempt 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def password_reset(request):
+  try:
+    if request.method == 'POST':
+      data = json.loads(request.body)
+      print(data)
+      user = User.objects.get(email=data['email'])
+      password = generate_password(user)
+      message = f'''
+        <p>Your password has been reset.</p>
+        <p>Your temporary password is: <strong>{password['decrypted']}</strong></p>
+      '''
+      send_html_email("VSS Password Reset", message, [user.email])
+      return JsonResponse({'message': 'Password reset'}, status=200)
+  except Exception as e:
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
+
+@csrf_exempt 
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def reset_user_password(data, id):
   try:
     print(data, id)
@@ -748,8 +796,8 @@ def reset_user_password(data, id):
     else:
       return JsonResponse({'message': 'Form was not validated'}, status=500)
   except Exception as e:
-    return trace_error(e, True)
-  pass
+    print(trace_error(e, True))
+    return JsonResponse({'message':'Something went wrong'}, status=500)
 
 # @csrf_exempt 
 # def get_user_profile2(request):
