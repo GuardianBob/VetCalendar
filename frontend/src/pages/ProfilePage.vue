@@ -31,7 +31,12 @@
                 <div class="row justify-around text-center q-ma-md">
                   <!-- <div outline class="col-4 q-px-md q-mx-md" > -->
                   <div v-for="(label, key) in userInfoLabels" :key="key" outline class="col-4 q-px-md q-mx-md">
-                    <q-input v-model="user[key]" :label="label" dense class="q-my-sm" :disable="!edit"></q-input>
+                    <span v-if="key == 'email'">
+                      <q-input v-model="user[key]" :label="label" dense class="q-my-sm" disable></q-input>
+                    </span>
+                    <span v-else>
+                      <q-input  v-model="user[key]" :label="label" dense class="q-my-sm" :disable="!edit"></q-input>
+                    </span>
                   </div>
                   <!-- </div> -->
                   <div class="col-10 q-px-md q-mx-md" v-show="edit">
