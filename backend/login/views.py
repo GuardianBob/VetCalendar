@@ -1332,7 +1332,7 @@ def save_user_profile(data, model=None, id=None):
         except Occupation.DoesNotExist:
           occupation = Occupation.objects.create(user=user, occupation=data['occupation'])
       elif model['model'] == 'AccessLevel':
-        print('access: ', data['access'])
+        print('access: ', data['access'], data['id'])
         try:
           print('User: ', user.id, user.first_name, user.last_name)
           check_access = AccessLevel.objects.filter(users__id=user.id).first()
@@ -1342,9 +1342,14 @@ def save_user_profile(data, model=None, id=None):
               check_access.users.remove(user)
             else:
               print('No access found')
-            access = AccessLevel.objects.get(
-              id=data['access'],
-            )
+            if isinstance(data['access'], int):
+              access = AccessLevel.objects.get(
+                id=data['access'],
+              )
+            else:
+              access = AccessLevel.objects.get(
+                access=data['access'],
+              )
             print('access: ', access)
             access.users.add(user)
         except AccessLevel.DoesNotExist:

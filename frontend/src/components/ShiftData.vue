@@ -15,55 +15,56 @@
       :key="dpKey"
       size="sm"
     /> -->
-    <div class="col-12 text-left">
-      <q-expansion-item
-        v-model="expanded"
-        icon="filter_alt"
-        label="Filters"
-      >
-        <q-card>
-          <q-card-section>
-            <div class="row justify-around ">
-              <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-                <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedMonth" :options="months" label="Month" >
-                <template v-if="selectedMonth" v-slot:append>
-                  <q-icon name="cancel" @click.stop.prevent="selectedMonth = null" class="cursor-pointer" />
-                </template>
-                </q-select>
-              </div>
-              <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-                <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedYear" :options="years" label="Year" >
-                </q-select>
-              </div>
-              <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-                <q-select bg-color="primary" dense dark filled label-color="white" v-model="sort_by" :options="sort_options.map(option => ({label: option.label, value: option.value}))" map-options label="Show Count By" >
-                  <template v-if="sort_by" v-slot:append>
-                    <q-icon name="cancel" @click.stop.prevent="sort_by = null" class="cursor-pointer" />
+    <q-list padding bordered class="rounded-borders col-12 text-left">
+        <q-expansion-item
+          v-model="expanded"
+          icon="filter_alt"
+          label="Display / Filters"
+          dense
+        >
+          <q-card>
+            <q-card-section>
+              <div class="row justify-around ">
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm ">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedMonth" :options="months" label="Month" >
+                  <template v-if="selectedMonth" v-slot:append>
+                    <q-icon name="cancel" @click.stop.prevent="selectedMonth = null" class="cursor-pointer" />
                   </template>
-                </q-select>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedYear" :options="years" label="Year" >
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="sort_by" :options="sort_options.map(option => ({label: option.label, value: option.value}))" map-options label="Show Count By" >
+                    <template v-if="sort_by" v-slot:append>
+                      <q-icon name="cancel" @click.stop.prevent="sort_by = null" class="cursor-pointer" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="shift_filter" :options="filter_by_shift_options" map-options label="Filter by Shift" >
+                    <template v-if="shift_filter" v-slot:append>
+                      <q-icon name="cancel" @click.stop.prevent="shift_filter = null" class="cursor-pointer" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="type_filter" :options="filter_by_type_options" map-options label="Filter by Type" >
+                    <template v-if="type_filter" v-slot:append>
+                      <q-icon name="cancel" @click.stop.prevent="type_filter = null" class="cursor-pointer" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-btn class="full-width" color="accent" label="Clear Filters" icon="highlight_off" @click="clear_filters" />
+                </div>
               </div>
-              <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-                <q-select bg-color="primary" dense dark filled label-color="white" v-model="shift_filter" :options="filter_by_shift_options" map-options label="Filter by Shift" >
-                  <template v-if="shift_filter" v-slot:append>
-                    <q-icon name="cancel" @click.stop.prevent="shift_filter = null" class="cursor-pointer" />
-                  </template>
-                </q-select>
-              </div>
-              <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-                <q-select bg-color="primary" dense dark filled label-color="white" v-model="type_filter" :options="filter_by_type_options" map-options label="Filter by Type" >
-                  <template v-if="type_filter" v-slot:append>
-                    <q-icon name="cancel" @click.stop.prevent="type_filter = null" class="cursor-pointer" />
-                  </template>
-                </q-select>
-              </div>
-              <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-                <q-btn class="full-width" color="accent" label="Clear Filters" icon="highlight_off" @click="clear_filters" />
-              </div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
-    </div>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+    </q-list>
     <DataTable :columns="columnLabels" :rowData="filtered_shifts" />
   </div>
 </template>
