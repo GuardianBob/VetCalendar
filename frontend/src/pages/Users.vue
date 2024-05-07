@@ -51,6 +51,8 @@
           </div>
           <div class="col-12 text-center ">
             <span class="text-h5">Are you sure you want to reset the password for {{ reset_pass_email }}?</span>
+          </div>
+          <div class="col-12 text-center q-mt-md">
             <q-toggle
               v-model="verify_reset"
               color="red"
