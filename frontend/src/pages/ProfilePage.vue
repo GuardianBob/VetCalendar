@@ -31,6 +31,8 @@
                 <div class="row justify-around text-center q-ma-md">
                   <!-- <div outline class="col-4 q-px-md q-mx-md" > -->
                   <div v-for="(label, key) in userInfoLabels" :key="key" outline class="col-4 q-px-md q-mx-md">
+                    <!-- User profile is duplicated when email is updated from profile page -->
+                    <!-- Disabled editing user email in profile for temp fix -->
                     <span v-if="key == 'email'">
                       <q-input v-model="user[key]" :label="label" dense class="q-my-sm" disable></q-input>
                     </span>
