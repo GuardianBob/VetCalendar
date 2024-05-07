@@ -15,28 +15,57 @@
       :key="dpKey"
       size="sm"
     /> -->
-    <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-      <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedMonth" :options="months" label="Month" >
-      <template v-if="selectedMonth" v-slot:append>
-        <q-icon name="cancel" @click.stop.prevent="selectedMonth = null" class="cursor-pointer" />
-      </template>
-      </q-select>
-    </div>
-    <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-      <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedYear" :options="years" label="Year" >
-      </q-select>
-    </div>
-    <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-      <q-select bg-color="primary" dense dark filled label-color="white" v-model="sort_by" :options="sort_options.map(option => ({label: option.label, value: option.value}))" map-options label="Show Count By" >
-        <template v-if="sort_by" v-slot:append>
-          <q-icon name="cancel" @click.stop.prevent="sort_by = null" class="cursor-pointer" />
-        </template>
-      </q-select>
-    </div>
-    <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
-      <q-btn class="full-width" color="accent" label="Clear Filters" icon="highlight_off" @click="clear_filters" />
-    </div>
-    <DataTable :columns="columnLabels" :rowData="filtered_shifts"/>
+    <q-list padding bordered class="rounded-borders col-12 text-left">
+        <q-expansion-item
+          v-model="expanded"
+          icon="filter_alt"
+          label="Display / Filters"
+          dense
+        >
+          <q-card>
+            <q-card-section>
+              <div class="row justify-around ">
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm ">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedMonth" :options="months" label="Month" >
+                  <template v-if="selectedMonth" v-slot:append>
+                    <q-icon name="cancel" @click.stop.prevent="selectedMonth = null" class="cursor-pointer" />
+                  </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="selectedYear" :options="years" label="Year" >
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="sort_by" :options="sort_options.map(option => ({label: option.label, value: option.value}))" map-options label="Show Count By" >
+                    <template v-if="sort_by" v-slot:append>
+                      <q-icon name="cancel" @click.stop.prevent="sort_by = null" class="cursor-pointer" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="shift_filter" :options="filter_by_shift_options" map-options label="Filter by Shift" >
+                    <template v-if="shift_filter" v-slot:append>
+                      <q-icon name="cancel" @click.stop.prevent="shift_filter = null" class="cursor-pointer" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-select bg-color="primary" dense dark filled label-color="white" v-model="type_filter" :options="filter_by_type_options" map-options label="Filter by Type" >
+                    <template v-if="type_filter" v-slot:append>
+                      <q-icon name="cancel" @click.stop.prevent="type_filter = null" class="cursor-pointer" />
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-2 col-xs-10 col-sm-2 col-md-2 col-lg-2 q-ma-sm">
+                  <q-btn class="full-width" color="accent" label="Clear Filters" icon="highlight_off" @click="clear_filters" />
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </q-expansion-item>
+    </q-list>
+    <DataTable :columns="columnLabels" :rowData="filtered_shifts" />
   </div>
 </template>
 
@@ -57,6 +86,11 @@ const typeLabels = [
   { "name": "count", "align": "center", "label": "Type Total", "field": "count", "sortable": true },
 ]
 
+const monthLabels = [
+  { "name": "type", "align": "center", "label": "Shift", "field": "type", "sortable": true },
+  { "name": "count", "align": "center", "label": "Type Total", "field": "count", "sortable": true },
+]
+
 export default {
   name: "ShiftData",
   components: {
@@ -66,6 +100,12 @@ export default {
     "parentFunction", 
     "shiftData",
   ],
+  data() {
+    return {
+      filter_icon: ref('filter_alt'),
+      
+    }
+  },
   setup() {
     return {
       pageTitle: ref(''),
@@ -76,15 +116,25 @@ export default {
       shifts_month: ref([]),
       shifts_year: ref([]),
       total_shifts: ref(),
+      filter_by_shift_options: ref([]),
+      filter_by_type_options: ref([]),
+      shift_filter: ref(''),
+      type_filter: ref(''),
       filtered_shifts: ref([]),
       filtered_count: ref(0),
       selectedMonth: ref(''),
       selectedYear: ref(new Date().getFullYear()),
       dataTable_columns: ref([]),
-      sort_options: ref([{value: 'shift_type__shift_type', label:'Shift Type'}, {value: 'shift_name__shift_name', label:'Shift Name'}]),
-      sort_by: ref(''),
+      sort_options: ref([
+        {value: 'shift_type__shift_type', label:'Shift Type'}, 
+        {value: 'shift_name__shift_name', label:'Shift Name'},
+        {value: 'shift_start', label:'Month'}
+      ]),
+      sort_by: ref({value: 'shift_start', label:'Month'}),
       shifts: ref([]),
-    }
+      expanded: ref(false),
+      filter_label: ref('Filter'),
+    }    
   },
 
   watch: {
@@ -102,6 +152,13 @@ export default {
           // let formattedDate = `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()} ${date.getFullYear()} || ${date.getHours() % 12 || 12}:${date.getMinutes().toString().padStart(2, '0')} ${date.getHours() >= 12 ? 'PM' : 'AM'}`;
           return { ...shift, shift_date: formattedDate };
         });
+        let shift_options = newValue.map(shift => shift.shift_name__shift_label)
+        shift_options = shift_options.filter((value, index, self) => self.indexOf(value) === index)
+        this.filter_by_shift_options = shift_options
+        let type_options = newValue.map(shift => shift.shift_type__type_label)
+        type_options = type_options.filter((value, index, self) => self.indexOf(value) === index)
+        this.filter_by_type_options = type_options
+        console.log(this.filter_by_shift_options, this.filter_by_type_options)
         this.update_shifts()
       }
     },
@@ -110,14 +167,20 @@ export default {
     },
     selectedYear(newValue, oldValue) {
       console.log(oldValue)
-      if (oldValue != null) {
+      if (oldValue != null ) {
         this.filter_shifts()
       }
       console.log(this.selectedMonth)
     },
     sort_by(newValue, oldValue) {
       this.filter_shifts()
-    }
+    },
+    shift_filter(newValue, oldValue) {
+      this.filter_shifts()
+    },
+    type_filter(newValue, oldValue) {
+      this.filter_shifts()
+    },
   },
 
   methods: {
@@ -181,12 +244,27 @@ export default {
       this.filtered_count = this.filtered_shifts.length
     },
 
+    filter_name_type() {
+      if (this.shift_filter && this.type_filter) {
+        this.filtered_shifts = this.filtered_shifts.filter(shift => shift.shift_name__shift_label == this.shift_filter && shift.shift_type__type_label == this.type_filter)
+        this.filtered_count = this.filtered_shifts.length
+      } else if (this.shift_filter) {
+        this.filtered_shifts = this.filtered_shifts.filter(shift => shift.shift_name__shift_label == this.shift_filter)
+        this.filtered_count = this.filtered_shifts.length
+      } else if (this.type_filter) {
+        this.filtered_shifts = this.filtered_shifts.filter(shift => shift.shift_type__type_label == this.type_filter)
+        this.filtered_count = this.filtered_shifts.length
+      }
+    },
+
     filter_shifts() {
       console.log(this.sort_by)
+      this.filter_icon = 'fa-solid fa-filter-circle-xmark'
       // group shifts objects by filter and show count
       // sample shift object: {"id": 17, "shift_name__shift_label": "Day", "shift_type__type_label": "Holiday", "shift_start": "2024-02-25 15:00:00"}
       let shiftCounts = []
       this.filter_date()
+      this.filter_name_type()
       console.log(this.filtered_shifts)
       if (this.sort_by){
         console.log(this.sort_by.value)
@@ -195,37 +273,48 @@ export default {
             acc[shift.shift_type__type_label] = (acc[shift.shift_type__type_label] || 0) + 1;
             return acc;
           }, {});
+          this.columnLabels = typeLabels
         } else if (this.sort_by.value == 'shift_name__shift_name') {
           shiftCounts = this.filtered_shifts.reduce((acc, shift) => {
             acc[shift.shift_name__shift_label] = (acc[shift.shift_name__shift_label] || 0) + 1;
             return acc;
           }, {});
+          this.columnLabels = typeLabels
+        } else if (this.sort_by.value == 'shift_start') {
+          shiftCounts = this.filtered_shifts.reduce((acc, shift) => {
+            let shift_date = new Date(shift.shift_start);
+            acc[this.months[shift_date.getMonth()]] = (acc[this.months[shift_date.getMonth()]] || 0) + 1;
+            return acc;
+          }, {});
+          console.log(shiftCounts)
+          this.columnLabels = monthLabels
         }
         this.filtered_shifts = Object.entries(shiftCounts).map(([type, count]) => ({ type, count }));
-        this.columnLabels = typeLabels
-      }
-      else {
+        
+      }  else {
         this.filtered_count = this.filtered_shifts.length
         this.columnLabels = defaultLabels
       }
-      // console.log(shiftCounts)
+      console.log(shiftCounts)
     },
 
     update_shifts() {
-      
       this.columnLabels = defaultLabels
       this.filtered_shifts = this.shifts
       this.filtered_count = this.shifts.length
       this.selectedYear = new Date().getFullYear()
-      this.shift_count_year()
+      this.filter_shifts()
       console.log(this.shifts, this.total_shifts)
     },
 
     clear_filters() {
-      this.selectedMonth = ''
+      this.selectedMonth = null
       this.selectedYear = new Date().getFullYear()
-      this.sort_by = ''
+      this.sort_by = null
+      this.shift_filter = null
+      this.type_filter = null
       this.update_shifts()
+      this.filter_icon = 'filter_alt'
     },
     
     childFunction(data) {

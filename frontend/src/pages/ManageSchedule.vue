@@ -59,6 +59,8 @@
         </div>
       </div>
     </div>
+    <div class="row q-my-lg">
+    </div>
     <q-dialog v-model="add_shifts" position="left" @hide="resetEventId">
       <q-card style="width: 90%" class="dialog-25">
         <component 
@@ -392,11 +394,11 @@ export default defineComponent({
       this.confirm = false;
       console.log(choice);
       if (choice) {
-        this.clear_shifts();
+        this.clear_shifts_month();
       }
     },
 
-    async clear_shifts() {
+    async clear_shifts_month() {
       this.user_shifts = []
       this.filtered_shifts = []
       await APIService.clear_shifts(this.date)

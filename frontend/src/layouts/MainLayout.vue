@@ -13,12 +13,13 @@
           color="secondary"
           v-if="loggedIn"
         />
-        <div  class="col-12 q-pr-lg flex justify-between">
+        <!-- <div  class="col-12 q-pr-lg flex"> -->
           <q-toolbar-title>
             <q-btn flat label="VSS || Vet Scheduling System" to="/" />
           </q-toolbar-title>
         <!-- </div>
         <div> -->
+          <!-- <q-space /> -->
           <q-btn v-if="!loggedIn" flat label="Login" to="/login" />
           <q-btn-dropdown v-if="loggedIn" color="white" dropdown-icon="account_circle" flat dense >
             <q-list style="min-width: 100px; max-width: 400px;" class="q-py-none">              
@@ -58,7 +59,7 @@
               </q-item> -->
             </q-list>
           </q-btn-dropdown>
-        </div>
+        <!-- </div> -->
         <!-- <div class="text-secondary">v: {{ version }}</div> -->
       </q-toolbar>
     </q-header>
