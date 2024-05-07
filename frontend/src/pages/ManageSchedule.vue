@@ -59,6 +59,8 @@
         </div>
       </div>
     </div>
+    <div class="row q-my-lg">
+    </div>
     <q-dialog v-model="add_shifts" position="left" @hide="resetEventId">
       <q-card style="width: 90%" class="dialog-25">
         <component 
