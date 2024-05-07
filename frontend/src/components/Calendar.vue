@@ -123,28 +123,28 @@ export default {
         eventClick: (info) => {
           // this.editCal ? this.handleEventClicked(info) : null;
           // console.log(this.$q.platform.is.desktop)
-          if (this.$q.platform.is.desktop) {
+          // if (this.$q.platform.is.desktop) {
             // Handle event click on mobile device
-            if (this.clickTimeout) {
-              clearTimeout(this.clickTimeout);
-              this.clickTimeout = null;
-              this.editCal ? this.handleEventClicked(info) : null; // Handle double click
-            } else {
-              this.clickTimeout = setTimeout(() => {
-                this.clickTimeout = null;
-                // Handle single click if necessary
-              }, 500); // Wait for 250ms before deciding if it's a single or double click
-            }
-          } else {
-            // this.editCal ? this.handleEventClicked(info) : null;
-            if (this.pressTimer !== null) {
-              clearTimeout(this.pressTimer);
-              this.pressTimer = null;
-            }
-              this.pressTimer = setTimeout(() => {
-                this.pressTimer = null;
-                this.editCal ? this.handleEventClicked(info) : null; // Handle long press
-              }, 500);
+        if (this.clickTimeout) {
+          clearTimeout(this.clickTimeout);
+          this.clickTimeout = null;
+          this.editCal ? this.handleEventClicked(info) : null; // Handle double click
+        } else {
+          this.clickTimeout = setTimeout(() => {
+            this.clickTimeout = null;
+            // Handle single click if necessary
+          }, 500); // Wait for 250ms before deciding if it's a single or double click
+            // }
+          // } else {
+          //   // this.editCal ? this.handleEventClicked(info) : null;
+          //   if (this.pressTimer !== null) {
+          //     clearTimeout(this.pressTimer);
+          //     this.pressTimer = null;
+          //   }
+          //     this.pressTimer = setTimeout(() => {
+          //       this.pressTimer = null;
+          //       this.editCal ? this.handleEventClicked(info) : null; // Handle long press
+          //     }, 500);
             }
         },
         dateClick: (info) => {
