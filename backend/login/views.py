@@ -1161,7 +1161,7 @@ def create_update_settings(settings):
         for item in data:
           if setting['model'] == 'AccessLevel':
             instance = Model.objects.get(id=item['id'])
-            update_m2m_users(item, instance)
+            # update_m2m_users(item, instance)
             update_m2m_permissions(item, instance)
           if setting['model'] == 'Permission':
             # print("Permission : ", item)

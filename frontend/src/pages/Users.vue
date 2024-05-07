@@ -92,7 +92,7 @@ export default defineComponent({
     // ===================== Watch for permissions update in Pinia store =====================
     // This allows the page permissions to be updated if the user reloads the page
     // This won't work if the user navigates away from teh page then back to the page
-    const managerPriv = ref(mainStore.checkPermissions(["Edit User", "Add User", "Delete User"]))
+    const managerPriv = ref(mainStore.checkAccess("Manager"))
     const addUserPriv = ref(mainStore.checkPermissions(["Add User"]))
     const editUserPriv = ref(mainStore.checkPermissions(["Edit User"]))
   
