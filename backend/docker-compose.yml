@@ -1,0 +1,54 @@
+services:
+  backend:
+    image: docker.io/vss/vss-backend:latest
+    container_name: vss-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # - .:/DjangoDevdocker 
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # network_mode: host
+    # Dollar signs must be escaped with another dollar sign in the environment variables
+    env_file: 
+      .env.docker.prod
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+    # depends_on:
+    #   - redis # NEW
+  # redis:
+  #   image: redis:alpine
+  #   container_name: is-redis
+  #   restart: unless-stopped
+  # celery:
+  #   image: isprod.guest.corp.microsoft.com:5050/is/is-master-backend:latest
+  #   container_name: is-backend-celery
+  #   command: celery -A ISMain worker -l info
+  #   volumes:
+  #     - ./:/usr/src/app/
+  #   restart: unless-stopped
+  #   # env_file: ".env.celery"
+  #   env_file: 
+  #     .env.docker.prod
+  #   depends_on:
+  #     - redis
+  # celery-beat:
+  #   image: isprod.guest.corp.microsoft.com:5050/is/is-master-backend:latest
+  #   container_name: is-backend-celery-beat
+  #   command: celery -A ISMain beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+  #   volumes:
+  #     - ./:/usr/src/app/
+  #   restart: unless-stopped
+  #   # env_file: ".env.celery"
+  #   env_file: 
+  #     .env.docker.prod
+  #   depends_on:
+  #     - redis

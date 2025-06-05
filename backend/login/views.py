@@ -243,7 +243,7 @@ def user_login(request):
   try:
     if request.method == 'POST':
       req = request.POST
-      print(req['email'])
+      print(req)
       form = Login_Form(req)
       remember_me = req['remember_me']
       print(remember_me)
@@ -254,9 +254,11 @@ def user_login(request):
         # user = validate_login(email, password)
         print(email)
         user = authenticate(request, username=req['email'], password=req['password'])
-        print(user)
-        if user is not None:        
+        print("user : ", user)
+        if user is not None:
           login(request, user)
+          user_data = list(User.objects.filter(email=user).values('id', 'email'))
+          print(user_data)
           # Generate JWT token:
           # refresh = TokenObtainPairSerializer.get_token(user)
           if remember_me:
@@ -270,9 +272,11 @@ def user_login(request):
           refresh = RefreshToken.for_user(user)
           refresh['user_id'] = user.id
           refresh['admin'] = user.is_superuser
+          # return JsonResponse({ 'message' : 'testing' }, status=500)
           return JsonResponse({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
+            # 'user': json.dumps(model_to_dict(user))
           }, status=200)
         else:
           # return response_msg(400, 'Incorrect Login or Password')
@@ -281,13 +285,7 @@ def user_login(request):
         print("failed")
         print(form.errors)
         return JsonResponse({'message':'Incorrect Login or Password'}, status=400)
-    else:
-      form = Login_Form()
-      context = {
-        'form': form,
-        'page_title': 'User Login:'   
-      }
-      return render(request, 'form.html', context)
+    return JsonResponse({'message':'User Logged In'}, status=200)
     # return JsonResponse({'form': login_form.as_table()})
   except Exception as e:
     return trace_error(e, True)
@@ -661,19 +659,28 @@ def update_profile(request):
       
       print("data: ", data)
       # Create or update User
-      user, created = User.objects.update_or_create(
-        username=data['email'],
-        defaults={
-          'first_name': data['first_name'],
-          'middle_name': data['middle_name'],
-          'last_name': data['last_name'],
-          'email': data['email'],
-          'initials': data['initials'] if 'initials' in data else '',
-          'nickname': data['nickname'] if 'nickname' in data else '',
-        },
-      )
-      if created:
-        generate_password(user)
+      # user, created = User.objects.update_or_create(
+      #   username=data['user'],
+      #   defaults={
+      #     'first_name': data['first_name'],
+      #     'middle_name': data['middle_name'],
+      #     'last_name': data['last_name'],
+      #     'email': data['email'],
+      #     'initials': data['initials'] if 'initials' in data else '',
+      #     'nickname': data['nickname'] if 'nickname' in data else '',
+      #   },
+      # )
+      user = User.objects.get(id=data['user'])
+      user.username = data['email']
+      user.first_name = data['first_name']
+      user.middle_name = data['middle_name']
+      user.last_name = data['last_name']
+      user.email = data['email']
+      user.initials = data['initials'] if 'initials' in data else ''
+      user.nickname = data['nickname'] if 'nickname' in data else ''
+      user.save()
+      # if created:
+      #   generate_password(user)
       if user.initials == '' and user.first_name != '' and user.last_name != '':
         initials = get_unique_initials(user.first_name, user.middle_name, user.last_name)
         user.initials = initials
@@ -728,7 +735,7 @@ def update_profile(request):
         }
         )
 
-      return JsonResponse({'message': 'User updated'}, status=200)
+      return JsonResponse({'message': 'User updated', 'user': user.username}, status=200)
   except Exception as e:
     return trace_error(e, True)
   

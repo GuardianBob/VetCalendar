@@ -212,30 +212,36 @@ LOGGING = {
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-if os.getenv('DEVELOPMENT_MODE') == "True":
-    DATABASES = {
+DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         },
     }
+# if os.getenv('DEVELOPMENT_MODE') == "True":
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         },
+#     }
     # CSRF_COOKIE_DOMAIN = None
     # CSRF_COOKIE_SECURE = False # Set this to True if you are using HTTPS
     # CSRF_COOKIE_HTTPONLY = False # Set this to True if you are using 
-else:
-    DATABASES = {
-        'default': { # MySQL Settings
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_TABLE'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASS'),
-            'HOST': 'localhost',
-            'PORT': '3306',
-            'OPTIONS': {  
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
-            }
-        }
-    }
+# else:
+#     DATABASES = {
+#         'default': { # MySQL Settings
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': os.getenv('DB_TABLE'),
+#             'USER': os.getenv('DB_USER'),
+#             'PASSWORD': os.getenv('DB_PASS'),
+#             'HOST': 'localhost',
+#             'PORT': '3306',
+#             'OPTIONS': {  
+#                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
+#             }
+#         }
+#     }
     # CSRF_COOKIE_DOMAIN = CORS_ORIGIN_WHITELIST
     # CSRF_COOKIE_SECURE = True # Set this to True if you are using HTTPS
 
