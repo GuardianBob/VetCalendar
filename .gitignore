@@ -169,3 +169,4 @@ backend/error.log*
 Layout Ideas/
 temp/
 /node_modules
+backend/.env.*
