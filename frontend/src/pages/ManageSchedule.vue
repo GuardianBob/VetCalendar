@@ -145,6 +145,9 @@ import DataTable from "components/DataTable.vue"
 import ConfirmDialog from "components/ConfirmDialog.vue"
 import SettingsPage from './SettingsPage.vue';
 import ScheduleTools from 'components/ScheduleTools.vue';
+import { useMainStore } from 'src/stores/main-store';
+
+const mainStore = useMainStore()
 
 export default defineComponent({
   name: "ScheduleShifts",
@@ -210,22 +213,23 @@ export default defineComponent({
       tab: ref('totals'),
       splitterModel: ref(20),
       update_settings: ref(false),
+      shiftCount: ref([]),
     };
   },
   watch: {
     date(newValue, oldValue) {
-      // console.log(newValue, oldValue)
+      // mainStore.testing && console.log(newValue, oldValue)
       // this.handleMonthChange(newValue, oldValue)
       let oldYear = oldValue.slice(0, 4);
       let newYear = newValue.slice(0, 4);
-      // console.log(oldYear, newYear)
+      // mainStore.testing && console.log(oldYear, newYear)
       if (newYear !== oldYear) {
-        console.log("Year changed")
+        mainStore.testing && console.log("Year changed")
         this.getShiftsYear().then(() => {
           this.shift_count()
         });
       } else {
-        console.log("Month changed")
+        mainStore.testing && console.log("Month changed")
         this.shift_count()
       }
     },
@@ -241,7 +245,7 @@ export default defineComponent({
   },
   methods: {
     set_date(date){
-      console.log(date)
+      mainStore.testing && console.log(date)
       this.date = date
     },
 
@@ -253,7 +257,7 @@ export default defineComponent({
     },
 
     set_filter(filter){
-      console.log(filter)
+      mainStore.testing && console.log(filter)
       this.user = filter
       if (filter != null){
         this.filtered_shifts = this.user_shifts.filter(shift => shift.employee.includes(filter))
@@ -280,7 +284,7 @@ export default defineComponent({
     },
 
     edit_event(info) {
-      console.log(info.id)
+      mainStore.testing && console.log(info.id)
       this.event_id = info.id
       this.event_edit = true
       this.get_form = `/handle_forms`
@@ -290,12 +294,12 @@ export default defineComponent({
     },
 
     date_clicked(date) {
-      console.log(date)
+      mainStore.testing && console.log(date)
       this.get_form = '/handle_forms'
       this.submit_form = '/handle_forms'
       this.add_shifts = true
       this.add_to_date = date
-      console.log(this.form_data)
+      mainStore.testing && console.log(this.form_data)
       this.form_data = {
         "date": date,
       }
@@ -319,20 +323,21 @@ export default defineComponent({
 
     async shift_count() {
       // calculate on backend with data pull
-      // console.log(this.events, this.users)
+      // mainStore.testing && console.log(this.events, this.users)
       let date_filter = MainFunctions.date_to_number(this.date)
       // let year = date_filter.slice(0, 4)
       let temp_filter_date = new Date(this.date + "-01")
       let year = temp_filter_date.getFullYear()
       let month = temp_filter_date.getMonth()
-      console.log(temp_filter_date, year, month)
+      // mainStore.testing ? mainStore.testing && console.log(temp_filter_date, year, month): null
+      mainStore.testing && console.log(temp_filter_date, year, month)
       this.user_shifts = []
       this.filtered_shifts = []      
-      console.log(this.shifts, this.events)
+      mainStore.testing && console.log(this.shifts, this.events)
       for (let user of this.users) {
         let new_mon_arr = this.shifts.filter(shift => new Date(shift.start).getMonth() == month && shift.title.includes(user));
         let new_arr = this.shifts.filter(shift => new Date(shift.start).getFullYear() == year && shift.title.includes(user));
-        console.log(`${user}: month : ${Object.keys(new_mon_arr).length}, array: ${Object.keys(new_arr).length}`)
+        mainStore.testing && console.log(`${user}: month : ${Object.keys(new_mon_arr).length}, array: ${Object.keys(new_arr).length}`)
         // let new_arr = this.shifts.filter((shift) => { return shift.title == user })
         // this.user_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
         // this.filtered_shifts.push({ employee: user, monthTotal: new_mon_arr.length, yearTotal: new_arr.length })
@@ -342,11 +347,11 @@ export default defineComponent({
       if (this.user != null){
         this.filtered_shifts = this.filtered_shifts.filter(shift => shift.employee.includes(this.user))
       }
-      // console.log(this.user_shifts)
+      // mainStore.testing && console.log(this.user_shifts)
     },
 
     async file_upload() {
-      console.log("and for ALL the marbles...!")
+      mainStore.testing && console.log("and for ALL the marbles...!")
       if (this.file) {
         this.user_shifts = []
         // localStorage.setItem("gmail", this.gmail)
@@ -392,7 +397,7 @@ export default defineComponent({
 
     confirm_choice(choice) {
       this.confirm = false;
-      console.log(choice);
+      mainStore.testing && console.log(choice);
       if (choice) {
         this.clear_shifts_month();
       }
@@ -402,7 +407,7 @@ export default defineComponent({
       this.user_shifts = []
       this.filtered_shifts = []
       await APIService.clear_shifts(this.date)
-      console.log("Cleared shifts")
+      mainStore.testing && console.log("Cleared shifts")
       this.getShiftsYear().then(() => {
         this.shift_count()
       });
@@ -418,7 +423,9 @@ export default defineComponent({
   mounted() {
     const componentName = process.env.VUE_APP_FORM_PAGE;
     this.dynamicComponent = this.components[componentName];
-    console.log(this.store.dummyData.shiftCountColumns)
+    // mainStore.testing && console.log(mainStore.log(this.store.dummyData.shiftCountColumns))
+    // mainStore.testing && console.log(mainStore.testing)
+    mainStore.testing && console.log(this.store.dummyData.shiftCountColumns)
     this.columnLabels = this.store.dummyData.shiftCountColumns
     // this.get_user_list();
     this.getShiftsYear().then(() => {

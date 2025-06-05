@@ -98,6 +98,9 @@ import BaseForm from 'components/BaseForm.vue';
 import APIService from "../../services/api"
 import { api } from "boot/axios";
 import ConfirmDialog from "components/ConfirmDialog.vue";
+import { useMainStore } from "stores/main-store.js"
+
+const mainStore = useMainStore()
 
 export default defineComponent({
   name: "ScheduleSettings",
@@ -144,7 +147,7 @@ export default defineComponent({
     api_route: {
       immediate: true,
       handler(newValue) {
-        console.log(newValue)
+        mainStore.testing && console.log(newValue)
         this.get_settings()
       }
     },
@@ -156,9 +159,9 @@ export default defineComponent({
   methods: {
     get_settings() {
       // get settings from database
-      console.log(this.api_route)
+      mainStore.testing && console.log(this.api_route)
       api.get(this.api_route).then(response => {
-        console.log(Object.keys(response.data)[0])   
+        mainStore.testing && console.log(Object.keys(response.data)[0])   
         this.tab = Object.keys(response.data)[0]
         this.settings = response.data
       })
@@ -176,41 +179,41 @@ export default defineComponent({
     },
 
     addNewItem(model) {
-      console.log(model)
-      console.log(this.forms_input)
+      mainStore.testing && console.log(model)
+      mainStore.testing && console.log(this.forms_input)
       let obj = [
         { model: 'ShiftName', form: 'add_shift_info'}, 
         { model: 'ShiftType', form: 'add_shift_type' },
         ]
-      console.log(this.forms_input.find(item => item.model === model).form)
+      mainStore.testing && console.log(this.forms_input.find(item => item.model === model).form)
       // if (model === 'ShiftName') {
       //   this.forms = ['add_shift_info']
       // } else if (model === 'ShiftType') {
       //   this.forms = ['add_shift_type']
       // }
       this.forms = [this.forms_input.find(item => item.model === model).form]
-      console.log(this.get_form_api, this.forms)
+      mainStore.testing && console.log(this.get_form_api, this.forms)
       // this.get_form_api = `/get_model_form/${model}`
       // this.save_form_api = `/get_model_form`
       this.new_item = true
       // APIService.get_model_form(model).then((response) => {
-      //   console.log(response.data)
+      //   mainStore.testing && console.log(response.data)
       // })
     },
 
     deleteItem(event){
-      // console.log(event["model"], '\n', event['id'], '\n', this.api_route)
+      // mainStore.testing && console.log(event["model"], '\n', event['id'], '\n', this.api_route)
       this.item_data = event
       this.confirm = true
     },
 
     confirm_delete(event) {
       this.confirm = false
-      // console.log(event, '\n', this.item_data)
+      // mainStore.testing && console.log(event, '\n', this.item_data)
       if (event) {
         api.delete(this.api_route, {data: this.item_data})
         .then((response) => {
-          // console.log(response.data)
+          // mainStore.testing && console.log(response.data)
           this.get_settings()
           Notify.create({
             message: response.data.message,
@@ -221,7 +224,7 @@ export default defineComponent({
           });
         })
         .catch((error) => {
-          console.log(error.response.data);
+          mainStore.testing && console.log(error.response.data);
           Notify.create({
             message: error.response.data.error,
             color: "red",
@@ -234,10 +237,10 @@ export default defineComponent({
     },
 
     save() {
-      console.log(this.settings)
+      mainStore.testing && console.log(this.settings)
       api.post(this.api_route, this.settings)
       .then((response) => {
-        console.log(response.data)
+        mainStore.testing && console.log(response.data)
         // this.get_settings()
         this.$emit('settings_updated')
         Notify.create({
@@ -249,7 +252,7 @@ export default defineComponent({
         });
       })
       .catch((error) => {
-        console.log(error.response.data);
+        mainStore.testing && console.log(error.response.data);
         Notify.create({
           message: error.response.data.error,
           color: "red",

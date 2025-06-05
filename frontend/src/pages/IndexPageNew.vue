@@ -5,8 +5,6 @@
         @send_date="set_date" 
         @send_filter="set_filter" 
         @send_events="store_updated_events" 
-        @edit_event="edit_event" 
-        @date_clicked="date_clicked"
         :calEvents="events" 
         :calShifts="shifts" 
         :calUsers="users" 

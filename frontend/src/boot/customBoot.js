@@ -11,9 +11,9 @@ export default boot(async (/* { app, router, ... } */) => {
   watch(
     () => mainStore.user,
     (newUser, oldUser) => {
-      console.log('User changed:', newUser);
+      mainStore.testing && console.log('User changed:', newUser);
       if (newUser) {
-        console.log('updating permissions at boot...')
+        mainStore.testing && console.log('updating permissions at boot...')
         mainStore.updatePermissions();
         mainStore.setLoggedIn(true);
       }

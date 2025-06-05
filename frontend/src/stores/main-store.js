@@ -5,6 +5,7 @@ import { useLocalStorage } from "@vueuse/core"
 export const useMainStore = defineStore('main-store', {
   state: () => {
     const user = useLocalStorage('user', null);
+    const local_dev = process.env.LOCAL_DEV_ENV === "true"
     
     return {
       refreshToken: null,
@@ -14,6 +15,10 @@ export const useMainStore = defineStore('main-store', {
       permissions: [],
       access: [],
       user,
+      local_dev, // set to true if running on local dev environment
+      // local_dev: false,
+      testing: local_dev, // set to true if running on local dev environment
+
       // return {
       //   loggedIn,
       // }
@@ -30,6 +35,7 @@ export const useMainStore = defineStore('main-store', {
 
     setUser(user) {
       this.user = user
+      useLocalStorage('user', user);
     },
 
     setToken(data) {
@@ -37,55 +43,66 @@ export const useMainStore = defineStore('main-store', {
       this.accessToken = data.accessToken
     },
 
+    setTesting(value) {
+      this.testing = value
+    },
+
     setPermissions(access, permissions) {
-      console.log('permissions \n', permissions)
+      this.testing && console.log('permissions \n', permissions)
       this.access = access
       this.permissions = permissions
     },
 
+    log(...args) {
+      if (this.local_dev) {
+        console.trace(...args)
+      }
+    },
+
     async updatePermissions() {
       try {
-        console.log("Updating Permissions...")
+        this.testing && console.log("env setting: ", process.env.LOCAL_DEV_ENV)
+        this.testing && console.log("Updating Permissions...")
         const response = await APIService.validateAccess();
-        console.log("permissions response : ",response.data)
+        this.testing && console.log("permissions response : ", response.data)
         this.access = response.data.access
         this.permissions = response.data.permissions
       } catch (error) {
-        console.log(error)
+        this.testing && console.log(error)
       }
-      console.log('permissions \n', this.permissions)
+      this.testing && console.log('permissions \n', this.permissions)
       return [this.access, this.permissions]
     },
 
     checkAccess(accessLevel = null) {
-      console.log('checking access \n', accessLevel, this.access)
+      this.testing && console.log('checking access \n', accessLevel, this.access)
       if (Array.isArray(accessLevel)) {
         for (let i = 0; i < accessLevel.length; i++) {
           if (this.access.includes(accessLevel[i]) || this.access.includes("Admin")) {
-            console.log('access granted')
+            this.testing && console.log('access granted')
             return true
           }
         }
       } else if (this.access.includes(accessLevel) || this.access.includes("Admin")) {
-        console.log('access granted')
+        this.testing && console.log('access granted')
         return true
       } else {
-        console.log('access denied')
+        this.testing && console.log('access denied')
         return false
       }
     },
 
     checkPermissions(permission = null) {
-      console.log('checking permissions', this.permissions.length)
+      this.testing && console.log('checking permissions', this.permissions.length)
       if (Array.isArray(permission)) {
         for (let i = 0; i < permission.length; i++) {
           if (this.permissions.includes(permission[i]) || this.access.includes("Admin")) {
-            console.log('Permission allowed')
+            this.testing && console.log('Permission allowed')
             return true
           }
         }
       } else if (this.permissions.includes(permission) || this.access.includes("Admin")) {
-        console.log('Permission allowed')
+        this.testing && console.log('Permission allowed')
         return true
       } else {
         return false
@@ -103,7 +120,7 @@ export const useMainStore = defineStore('main-store', {
     },
 
     status() {
-      console.log(
+      this.testing && console.log( 
         this.refreshToken,
         this.accessToken,
         this.csrfToken,
@@ -125,7 +142,7 @@ export const useMainStore = defineStore('main-store', {
 
     get_csrf(){
       APIService.get_csrf().then((results) => {
-        console.log(results)
+        this.testing && console.log(results)
         this.csrf_token = results.data['token'];
         let token_expire = new Date().setDate(new Date().getDate() + 10)
         let cookieString = 'csrftoken=' + this.csrf_token + '; expires = ' + token_expire + '; path=/';
@@ -135,8 +152,8 @@ export const useMainStore = defineStore('main-store', {
         // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
         document.cookie = 'csrfToken =; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         document.cookie = 'd_csrfToken =; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        console.log(this.csrf_token)
-        console.log(document.cookie);
+        this.testing && console.log(this.csrf_token)
+        this.testing && console.log(document.cookie)
       } )
     },
 

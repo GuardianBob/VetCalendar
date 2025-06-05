@@ -48,6 +48,9 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
+import { useMainStore } from "stores/main-store.js"
+
+const mainStore = useMainStore()
 
 export default {
   name: "DataTable",
@@ -79,7 +82,7 @@ export default {
       this.parentFunc01(data)
     },
     reset_button(data) {
-      console.log(data)
+      mainStore.testing && console.log(data)
       this.parentFunc02(data)
     },    
   },

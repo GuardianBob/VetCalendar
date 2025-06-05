@@ -287,6 +287,9 @@ import ValidateService from "../../services/ValidateService";
 import { api } from "boot/axios";
 import statesJson from "components/states.json";
 import ConfirmDialog from "components/ConfirmDialog.vue";
+import mainStore from "src/store/mainStore";
+
+const mainStore = useMainStore();
 
 export default defineComponent({
   components: {
@@ -350,20 +353,20 @@ export default defineComponent({
     // formData: {
     //   deep: true,
     //   handler(newVal) {
-    //     console.log(newVal);
+    //     mainStore.testing && console.log(newVal);
     //     // if (newVal[''] && newVal[''].shift_date && newVal[''].shift_date.value) {
     //     //   const dateRanges = newVal[''].shift_date.value;
-    //     //   // console.log(dateRanges);
+    //     //   // mainStore.testing && console.log(dateRanges);
     //     // }
     //   },
     // },
     // formData: {
     //   deep: true,
     //   handler(newVal) {
-    //     // console.log(newVal);
+    //     // mainStore.testing && console.log(newVal);
     //     if (newVal["Add New Item"] != undefined && newVal["Add New Item"].permission) {
     //       let permission_label = newVal["Add New Item"].permission.value;
-    //       // console.log(permission_label)
+    //       // mainStore.testing && console.log(permission_label)
     //       // Replace spaces with underscores
     //       if (permission_label) {
     //         permission_label = permission_label
@@ -379,7 +382,7 @@ export default defineComponent({
     columns: {
       immediate: true,
       handler(newValue) {
-        console.log(newValue);
+        mainStore.testing && console.log(newValue);
         if (newValue === "one") {
           this.cols = this.one;
         } else {
@@ -391,7 +394,7 @@ export default defineComponent({
       immediate: true,
       handler(newValue) {
         if (newValue) {
-          console.log(newValue)
+          mainStore.testing && console.log(newValue)
           this.add_to_form_date = newValue;
         }
       }
@@ -400,13 +403,13 @@ export default defineComponent({
 
   methods: {
     isValidEmail(event) {
-      console.log(event);
+      mainStore.testing && console.log(event);
       const regex = /^[A-Za-z0-9+_.-]+@(.+)$/;
       return regex.test(event);
     },
 
     add_date(date) {
-      console.log(this.formData)
+      mainStore.testing && console.log(this.formData)
       this.formData['']['shift_date']['value'] = [date];
     },
 
@@ -416,7 +419,7 @@ export default defineComponent({
 
     confirm_choice(choice) {
       this.confirm = false;
-      console.log(choice);
+      mainStore.testing && console.log(choice);
       if (choice) {
         this.delete_item();
       }
@@ -438,11 +441,11 @@ export default defineComponent({
       // and only resets the input textbox to empty string
 
       if (val.length > 0) {
-        console.log(val)
+        mainStore.testing && console.log(val)
         if (!this.customOptions.includes(val)) {
           this.customOptions.push(val)
         }
-        console.log(this.customOptions)
+        mainStore.testing && console.log(this.customOptions)
         done(val, 'add-unique')
       }
     },
@@ -462,40 +465,40 @@ export default defineComponent({
     },
 
     handleTableSelected(event) {
-      console.log(event.label, event.value);
+      mainStore.testing && console.log(event.label, event.value);
       let data = {"app": event.value, "model": event.label}
-      console.log(data)
+      mainStore.testing && console.log(data)
       APIService.get_table_fields(event.value).then((res) => {
-        console.log(res.data);
+        mainStore.testing && console.log(res.data);
         this.fieldChoices, this.selectedFields = null;
         this.fieldChoices = res.data.fields;
       });
     },
 
     handleFieldSelected(event) {
-      console.log("field ===> ", event);
+      mainStore.testing && console.log("field ===> ", event);
     },
 
     handleOptionSelected(event) {
-      console.log("Option ===> ", event);
+      mainStore.testing && console.log("Option ===> ", event);
       let data = []
       for (let i = 0; i < event.length; i++) {
-        console.log(event[i].label, event[i].value, event[i].value.related_model);
+        mainStore.testing && console.log(event[i].label, event[i].value, event[i].value.related_model);
         if (event[i].value.related_model) {
           data.push(event[i].value.related_model);
         }
       }
       APIService.get_field_options(event).then((res) => {
-        console.log(res.data);
+        mainStore.testing && console.log(res.data);
       //   this.fieldOptionSettings = res.data;
       });
     },
 
     delete_item() {
-      console.log("Delete Event");
-      console.log(this.formData, this.formData['']['id']['value'])
+      mainStore.testing && console.log("Delete Event");
+      mainStore.testing && console.log(this.formData, this.formData['']['id']['value'])
       api.post(this.delete_api, {id: this.formData['']['id']['value']}).then((res) => {
-        console.log(res.data);
+        mainStore.testing && console.log(res.data);
         this.$emit("done");
         Notify.create({
           message: res.data.message,
@@ -506,7 +509,7 @@ export default defineComponent({
         });
       })
       .catch((error) => {
-          console.log(error.response.data);
+          mainStore.testing && console.log(error.response.data);
           Notify.create({
             message: error.response.data.message,
             color: "red",
@@ -519,7 +522,7 @@ export default defineComponent({
 
     submit(event) {
       try {
-        console.log(this.formData)
+        mainStore.testing && console.log(this.formData)
         // RETURNS VALUES ONLY 
         // const values = Object.values(this.formData).map(item => item.value);
 
@@ -530,7 +533,7 @@ export default defineComponent({
         //   }
         //   return item.value;
         // });
-        // console.log(values);
+        // mainStore.testing && console.log(values);
 
         // // RETURNS KEY VALUE PAIRS AND ACCOUNTS FOR NESTED OBJECTS
         // const entries = Object.entries(this.formData).map(([key, item]) => {
@@ -548,15 +551,15 @@ export default defineComponent({
         // const entries = Object.entries(this.formData).map(([key, item]) => {
         //   let value;
         //   if (typeof item === 'object' && item !== null) {
-        //     // console.log("===> ", value)
+        //     // mainStore.testing && console.log("===> ", value)
         //     value = Object.entries(item).reduce((acc, [subKey, subItem]) => {
         //       if (typeof subItem.value === 'object' && subItem !== null && subItem.value !== null) {
         //         if (Array.isArray(subItem.value)) {
-        //           console.log(subItem.value)
+        //           mainStore.testing && console.log(subItem.value)
         //           // If subItem.value is an array, assign it directly to acc[subKey]
         //           acc[subKey] = subItem.value.map(item => item);
         //         } else {
-        //           console.log(subItem)
+        //           mainStore.testing && console.log(subItem)
         //           acc[subKey] = subItem.value.value;
         //         }
         //         // acc[subKey] = subItem.value.value;
@@ -569,10 +572,10 @@ export default defineComponent({
         //   } else {
         //     value = item;
         //   }
-        //   // console.log(value)
+        //   // mainStore.testing && console.log(value)
         //   return { [key]: value };
         // });
-        // console.log(Object.keys(entries[0]).length)
+        // mainStore.testing && console.log(Object.keys(entries[0]).length)
         // let data
         // if (entries.length == 1) {
         //   data = entries[0][Object.keys(entries[0])[0]];
@@ -580,7 +583,7 @@ export default defineComponent({
         //   data = entries
         // }
         // data["model"] = this.model;
-        // console.log("new", this.submitForm, data);
+        // mainStore.testing && console.log("new", this.submitForm, data);
         // let form_test = {
         //   "Add Shift": {
         //     "fields": {
@@ -600,7 +603,7 @@ export default defineComponent({
         //   }
         // }
         api.post(this.submitForm, form_test).then((res) => {
-          console.log(res.data);
+          mainStore.testing && console.log(res.data);
           this.$emit("done");
           Notify.create({
             message: res.data.message,
@@ -611,7 +614,7 @@ export default defineComponent({
           });
         })
         .catch((error) => {
-          console.log(error.response.data);
+          mainStore.testing && console.log(error.response.data);
           Notify.create({
             message: error.response.data.message,
             color: "red",
@@ -626,15 +629,15 @@ export default defineComponent({
     },
 
     async get_form() {
-      console.log(this.getForm); // login/create_user
+      mainStore.testing && console.log(this.getForm); // login/create_user
       await api.get(this.getForm).then(async (results) => {
-        console.log(results.data);
+        mainStore.testing && console.log(results.data);
         this.formData = results.data.forms;
 
         this.options = results.data.options ? results.data.options : null;
         this.model = results.data.forms["Build Form"].model ? results.data.forms["Build Form"].model : null;
-        // console.log(this.formData["Add New Item"].permission_label)
-        console.log(this.formData, this.model);
+        // mainStore.testing && console.log(this.formData["Add New Item"].permission_label)
+        mainStore.testing && console.log(this.formData, this.model);
         if (this.add_to_form_date) {
           this.add_date(this.add_to_form_date)
         }
@@ -647,7 +650,7 @@ export default defineComponent({
     async add_password_watcher(id) {
       if ($(id)) {
         $(id).on("input", function () {
-          // console.log('Input value changed to:', this.value.length);
+          // mainStore.testing && console.log('Input value changed to:', this.value.length);
           if (this.value.length >= 8) {
             $("#submit_btn").prop("disabled", false);
           } else {
@@ -665,7 +668,7 @@ export default defineComponent({
 
     async get_csrf() {
       await APIService.get_csrf().then((results) => {
-        console.log(results);
+        mainStore.testing && console.log(results);
         this.csrf_token = results.data;
         // document.head.querySelector('meta[name="csrf-token"]');
         // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data

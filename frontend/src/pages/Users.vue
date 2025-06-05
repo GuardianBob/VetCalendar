@@ -83,6 +83,7 @@ const mainStore = useMainStore();
 
 export default defineComponent({
   name: "UserInfo",
+  
   props: [
   ],
   components: {
@@ -108,6 +109,7 @@ export default defineComponent({
     return {
       // Update column headers with code from SchedSettings.vue
       columns: ref(formStore.formFields.columns),
+      pageTitle: "Manage Users",
       users: ref(),
       view_user: ref(false),
       new_user: ref(false),
@@ -150,7 +152,7 @@ export default defineComponent({
 
   methods: {
     async edit_user(userInfo) {
-      console.log(userInfo.id)
+      mainStore.testing && console.log(userInfo.id)
       this.forms = ["user_basic_info", "user_address", "user_city", "user_occupation", "user_level"]
       this.linked_forms = true
       this.user_id = userInfo.id
@@ -169,7 +171,7 @@ export default defineComponent({
     },
 
     reset_password_show(userInfo) {
-      console.log(userInfo.email)
+      mainStore.testing && console.log(userInfo.email)
       this.reset_pass_email = userInfo.email
       this.reset_pass_form = true
       // this.forms = ["password_reset"]
@@ -182,9 +184,9 @@ export default defineComponent({
     },
 
     reset_password() {
-      console.log("Resetting password \n", this.reset_pass_email)
+      mainStore.testing && console.log("Resetting password \n", this.reset_pass_email)
       APIService.reset_password({"email": this.reset_pass_email}).then((res) => {
-        console.log(res)
+        mainStore.testing && console.log(res)
         Notify.create({
           message: "Password reset successfully",
           color: "green",
@@ -196,7 +198,7 @@ export default defineComponent({
         this.verify_reset = false
       })
       .catch(error => {
-        console.log(error)
+        mainStore.testing && console.log(error)
         Notify.create({
           message: error.response.data.message,
           color: "red",
@@ -219,7 +221,7 @@ export default defineComponent({
 
     async get_user_list() {
       await APIService.get_user_list().then((res) => {
-        console.log(res.data);
+        mainStore.local_dev ? mainStore.testing && console.log(res.data) : null;
         this.users = res.data
       })
     },

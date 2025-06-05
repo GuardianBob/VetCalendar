@@ -5,10 +5,10 @@ import { useMainStore } from "src/stores/main-store.js";
 function requireAuth(to, from, next) {
   // const token = localStorage.getItem('access_token');
   // APIService.validateToken(token).then((response) => {
-  //   console.log(response.data)
+  //   useMainStore.testing && console.log(response.data)
   //   next();
   // }).catch((error) => {
-  //   console.log(error)
+  //   useMainStore.testing && console.log(error)
   //   next('/login');
   // })
   // Check if the route requires authentication
@@ -16,8 +16,8 @@ function requireAuth(to, from, next) {
   // Check if no token is stored in localStorage
   let token = localStorage.getItem('access_token');
   APIService.validateAccess({ token: token }).then((response) => {
-    console.log(response.data)
-    // console.log('router: access : ', useMainStore.access)
+    useMainStore.testing && console.log(response.data)
+    // useMainStore.testing && console.log('router: access : ', useMainStore.access)
     if (token && validateUserAccess(to, response.data.access)) {
       if (useMainStore.access == 'undefined') {
         useMainStore.updatePermissions();
@@ -29,7 +29,7 @@ function requireAuth(to, from, next) {
       next({ path: '/' });
     }
   }).catch((error) => {
-    console.log(error)
+    useMainStore.testing && console.log(error)
     next('/');
   })
   // } else {

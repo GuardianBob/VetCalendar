@@ -33,10 +33,10 @@
                   <div v-for="(label, key) in userInfoLabels" :key="key" outline class="col-4 q-px-md q-mx-md">
                     <!-- User profile is duplicated when email is updated from profile page -->
                     <!-- Disabled editing user email in profile for temp fix -->
-                    <span v-if="key == 'email'">
+                    <!-- <span v-if="key == 'email'">
                       <q-input v-model="user[key]" :label="label" dense class="q-my-sm" disable></q-input>
-                    </span>
-                    <span v-else>
+                    </span> -->
+                    <span>
                       <q-input  v-model="user[key]" :label="label" dense class="q-my-sm" :disable="!edit"></q-input>
                     </span>
                   </div>
@@ -158,7 +158,7 @@ export default defineComponent({
   watch: {
     newPassword2(newValue, oldValue) {
       // form_pass.value = newValue
-      // console.log(form_pass.value)
+      // mainStore.testing && console.log(form_pass.value)
       if (newValue.length >= 8 && newValue == this.newPassword) {
         this.passDisabled = false
       } else if (newValue.length >= 8 && newValue != this.newPassword) {
@@ -175,9 +175,9 @@ export default defineComponent({
 
   methods: {
     get_profile() {
-      console.log("Getting Profile : ", this.user)
+      mainStore.testing && console.log("Getting Profile : ", this.user)
       api.get_user_profile(this.user).then((results) => {
-        console.log(results.data)
+        mainStore.testing && console.log(results.data)
         this.user = results.data
         // this.shifts = results.data.shifts
         this.shifts = results.data.shifts
@@ -194,10 +194,10 @@ export default defineComponent({
     },
 
     submit() {
-      // console.log(this.store.dummyData.users[0])
-      console.log(this.user)
+      // mainStore.testing && console.log(this.store.dummyData.users[0])
+      mainStore.testing && console.log(this.user)
       api.update_profile(this.user).then((results) => {
-        console.log(results.data)
+        mainStore.testing && console.log(results.data.user)
         Notify.create({
           message: "Profile updated successfully",
           color: "green",
@@ -205,10 +205,12 @@ export default defineComponent({
           position: "center",
           timeout: 3000
         })
+        mainStore.setUser(results.data.user)
+        localStorage.setItem('user',results.data.user)
         this.edit = false
       })
       .catch(error => {
-        console.log(error)
+        mainStore.testing && console.log(error)
           Notify.create({
             message: "Error updating profile",
             color: "red",
@@ -219,7 +221,7 @@ export default defineComponent({
         })
     },
     async update_pass() {
-      console.log(this.password, this.newPassword, this.newPassword2)
+      mainStore.testing && console.log(this.password, this.newPassword, this.newPassword2)
       if (this.newPassword != this.newPassword2) {
         this.passError = true
         Notify.create({
@@ -243,7 +245,7 @@ export default defineComponent({
         return
       }
         await api.update_password({"email": this.user.email ,"old_password": this.password, "new_password": this.newPassword}).then((results) => {
-          console.log(results.data)
+          mainStore.testing && console.log(results.data)
           Notify.create({
             message: "Password updated successfully",
             color: "green",
@@ -254,7 +256,7 @@ export default defineComponent({
           this.edit_password = false
         })
         .catch(error => {
-          console.log(error.response)
+          mainStore.testing && console.log(error.response)
           Notify.create({
             message: error.response.data.message,
             color: "red",
@@ -268,14 +270,14 @@ export default defineComponent({
 
     // async get_form() {
     //   await api.get_form().then(async (results) => {
-    //     console.log(results.data);
+    //     mainStore.testing && console.log(results.data);
     //     this.python_form = results.data;
     //   })
     // },
 
     async get_csrf() {
       await api.get_csrf().then((results) => {
-        console.log(results.data)
+        mainStore.testing && console.log(results.data)
         this.csrf_token = results.data
         // document.head.querySelector('meta[name="csrf-token"]');
         // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
@@ -284,7 +286,7 @@ export default defineComponent({
 
     passEnabl() {
       let login_password = document.getElementById("login_password").val();
-      console.log("enabling?")
+      mainStore.testing && console.log("enabling?")
       if (login_password.length >= 8) {
         document.getElementById("login").attr("disabled", false);
       } else {
@@ -300,7 +302,7 @@ export default defineComponent({
     // this.selectedYear = date.getFullYear()
     // this.years = Array.from({length: 10}, (v, k) => date.getFullYear() - k)
     this.get_profile()
-    // console.log(this.user)
+    // mainStore.testing && console.log(this.user)
   }
 })
 </script>

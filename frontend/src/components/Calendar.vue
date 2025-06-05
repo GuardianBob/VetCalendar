@@ -44,6 +44,9 @@ import MainFunctions from 'app/services/MainFunctions'
 import CalendarFunctions from '../../services/CalendarFunctions'
 import IconButton from './IconButton.vue'
 // import APIService from "../../services/api"
+import { useMainStore } from 'src/stores/main-store';
+
+const mainStore = useMainStore()
 
 export default {
   name: "VetCalendar",
@@ -80,7 +83,7 @@ export default {
           prev: {
             text: "PREV",
             click: () => {
-              // console.log("eventPrev");
+              // mainStore.testing && console.log("eventPrev");
               let calendarApi = this.$refs.fullCalendar.getApi();
               calendarApi.prev();
               this.handleCalendarChange(calendarApi.getDate().toString())
@@ -89,7 +92,7 @@ export default {
           next: { // this overrides the next button
             text: "NEXT",
             click: () => {
-              // console.log("eventNext");
+              // mainStore.testing && console.log("eventNext");
               let calendarApi = this.$refs.fullCalendar.getApi();
               calendarApi.next();
               this.handleCalendarChange(calendarApi.getDate().toString())
@@ -98,7 +101,7 @@ export default {
           today: { // this overrides the next button
             text: "Today",
             click: () => {
-              // console.log("eventToday");
+              // mainStore.testing && console.log("eventToday");
               let calendarApi = this.$refs.fullCalendar.getApi();
               calendarApi.today();
               this.handleCalendarChange(calendarApi.getDate().toString())
@@ -122,7 +125,7 @@ export default {
         },
         eventClick: (info) => {
           // this.editCal ? this.handleEventClicked(info) : null;
-          // console.log(this.$q.platform.is.desktop)
+          // mainStore.testing && console.log(this.$q.platform.is.desktop)
           // if (this.$q.platform.is.desktop) {
             // Handle event click on mobile device
         if (this.clickTimeout) {
@@ -148,7 +151,7 @@ export default {
             }
         },
         dateClick: (info) => {
-          // console.log('Date clicked:', info.dateStr);
+          // mainStore.testing && console.log('Date clicked:', info.dateStr);
           if (this.$q.platform.is.desktop) {
             // Handle event click on mobile device
             if (this.clickTimeout) {
@@ -193,8 +196,8 @@ export default {
         dayMaxEvents: 4,
         // eventBorderColor: 'primary',
         events: [],
-        longPressDelay: 2000,
-        eventLongPressDelay: 50000,
+        // longPressDelay: 2000,
+        // eventLongPressDelay: 50000,
       }),
     }
   },
@@ -218,7 +221,7 @@ export default {
 
   watch: {
     date(newValue, oldValue) {
-      // console.log(newValue, oldValue)
+      // mainStore.testing && console.log(newValue, oldValue)
       this.handleMonthChange(newValue, oldValue)
       this.show_picker = false
       // this.parHandleCalChange(newValue, oldValue)
@@ -244,7 +247,7 @@ export default {
     calShifts: {
       immediate: true,
       handler(newValue) {
-        console.log("Shifts updated:", newValue)
+        mainStore.testing && console.log("Shifts updated:", newValue)
         this.shifts = newValue;
       }
     },
@@ -252,7 +255,7 @@ export default {
     dialog_open: {
       immediate: true,
       handler(newValue) {
-        console.log("Shifts updated:", newValue)
+        mainStore.testing && console.log("Shifts updated:", newValue)
         if (!newValue) {
           this.resetEventColor(this.event_id)
         }
@@ -262,11 +265,11 @@ export default {
 
   methods: {
     // handleTouchStart() {
-    //   console.log("Touch start")
+    //   mainStore.testing && console.log("Touch start")
     //   clearTimeout(this.pressTimer);
     //   this.pressTimer = setTimeout(() => {
     //     // this.editCal ? this.handleEventClicked(info) : null;
-    //     console.log(this.pressTimer)
+    //     mainStore.testing && console.log(this.pressTimer)
     //   }, 500); // Wait for 500ms before deciding it's a long press
       
     // },
@@ -281,7 +284,7 @@ export default {
     },
 
     handleEventChange(info) {
-      // console.log('Event changed:', info.event);
+      // mainStore.testing && console.log('Event changed:', info.event);
       let event = {
         id: parseInt(info.event.id),
         title: info.event.title,
@@ -290,10 +293,10 @@ export default {
         shift_type: info.event.extendedProps.shift_type_id,
         shift_date: info.event.start.toLocaleDateString(),
       }
-      // console.log(event)
+      // mainStore.testing && console.log(event)
       this.$emit("send_events", event)
       const calEvent = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
-      console.log("Event:", calEvent, calEvent.id, calEvent.title, calEvent.start, calEvent.extendedProps)
+      mainStore.testing && console.log("Event:", calEvent, calEvent.id, calEvent.title, calEvent.start, calEvent.extendedProps)
       let update = this.calendarOptions.events.find(obj => obj.id == calEvent.id)
       update.start = calEvent.start
       let shift = this.shifts.find(obj => obj.id == calEvent.id)
@@ -305,7 +308,7 @@ export default {
       let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == id);
       if (eventIndex !== -1) {
         let event = this.calendarOptions.events[eventIndex];
-        console.log(event, event.borderColor)
+        mainStore.testing && console.log(event, event.borderColor)
         let color = event.borderColor
         event.backgroundColor = color
         event.textColor = MainFunctions.getTextColor(event.borderColor)
@@ -316,7 +319,7 @@ export default {
       let eventIndex = this.calendarOptions.events.findIndex(obj => obj.id == id);
       if (eventIndex !== -1) {
         let event = this.calendarOptions.events[eventIndex];
-        console.log(event, event.borderColor)
+        mainStore.testing && console.log(event, event.borderColor)
         event.backgroundColor = '#ffffff'
         event.textColor = event.borderColor
       }
@@ -324,14 +327,14 @@ export default {
 
     handleEventClicked(info) {
       let event = this.$refs.fullCalendar.getApi().getEventById(info.event.id);
-      console.log('Event clicked:', info.event, info.event.id, info.event.title, info.event.start);
-      console.log(this.calendarOptions.events, event)
+      mainStore.testing && console.log('Event clicked:', info.event, info.event.id, info.event.title, info.event.start);
+      mainStore.testing && console.log(this.calendarOptions.events, event)
       this.set_event_color(info.event.id)
       this.$emit("edit_event", info.event)
     },
 
     handleDateClicked(info) {
-      console.log('Date clicked:', info.dateStr);
+      mainStore.testing && console.log('Date clicked:', info.dateStr);
       this.$emit("date_clicked", info.dateStr)
     },
 
@@ -349,7 +352,7 @@ export default {
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.prev();
       this.handleCalendarChange(calendarApi.getDate().toString())
-      console.log("swiped right")
+      mainStore.testing && console.log("swiped right")
     },
 
     async handleLeftSwipe() {
@@ -357,7 +360,7 @@ export default {
       let calendarApi = this.$refs.fullCalendar.getApi();
       calendarApi.next();
       this.handleCalendarChange(calendarApi.getDate().toString())
-      console.log("swiped left")
+      mainStore.testing && console.log("swiped left")
     },
 
     async handleMonthChange(newValue, oldValue) {
@@ -366,7 +369,7 @@ export default {
       let oldYear = oldValue.slice(0, 4);
       let newYear = newValue.slice(0, 4);
       if (newYear !== oldYear) {
-        // console.log("Year changed")
+        // mainStore.testing && console.log("Year changed")
         await this.getShiftsYear()
         if (this.user) {
           this.filterShifts()
@@ -396,10 +399,10 @@ export default {
         this.clearFilters()
       } else {
       this.calendarOptions.events = []
-      console.log(this.user)
+      mainStore.testing && console.log(this.user)
       this.shifts.map(shift => {
         if (this.user.includes(shift["title"])) {
-          // console.log(shift)
+          // mainStore.testing && console.log(shift)
           let new_shift = JSON.parse(JSON.stringify(shift))
           new_shift["backgroundColor"] = shift["borderColor"]
           new_shift["textColor"] = this.isDarkColor(shift["textColor"]) ? "#FFFFFF" : "#000000"
@@ -412,10 +415,10 @@ export default {
 
     async clearFilters() {
       this.calendarOptions.events = []
-      console.log(this.shifts)      
+      mainStore.testing && console.log(this.shifts)      
       this.shifts.map(shift => {
         let new_shift = JSON.parse(JSON.stringify(shift))
-        // console.log(new_shift)
+        // mainStore.testing && console.log(new_shift)
         this.calendarOptions.events.push(new_shift)
       })
       this.user = null
@@ -431,9 +434,9 @@ export default {
     //   if (this.user) {
     //     this.filterShifts()
     //   }
-    //   console.log(this.calendarOptions.events)
+    //   mainStore.testing && console.log(this.calendarOptions.events)
     // })    
-    // console.log(this.date)
+    // mainStore.testing && console.log(this.date)
     // this.calendarOptions.events = this.calEvents
     // this.date = this.calDate
     // this.users = this.calUsers

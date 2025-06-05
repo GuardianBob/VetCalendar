@@ -254,6 +254,7 @@ export default defineComponent({
     const loggedIn = ref(mainStore.loggedIn)
     const managerPriv = ref(mainStore.checkAccess(["Manager"]))
     const adminPriv = ref(mainStore.checkAccess(["Admin"]))
+    const user = ref(mainStore.user)
     watch(() => mainStore.loggedIn, () => {
       loggedIn.value = mainStore.loggedIn;
     })
@@ -261,6 +262,10 @@ export default defineComponent({
     watch(() => mainStore.permissions, () => {
         adminPriv.value = mainStore.checkAccess(["Admin"]);
         managerPriv.value = mainStore.checkAccess(["Manager"]);
+    })
+
+    watch(() => mainStore.user, () => {
+        user.value = mainStore.user;
     })
 
     return {
@@ -273,7 +278,7 @@ export default defineComponent({
       managerPriv,
       adminPriv,
       year: ref(new Date().getFullYear()),
-      user: ref(''),
+      user,
       // toggleLeftDrawer () {
       //   leftDrawerOpen.value = !leftDrawerOpen.value
       // }
@@ -286,11 +291,13 @@ export default defineComponent({
       handler(value) {
         if (value == true) {
           // mainStore.updatePermissions()
-          console.log(value, localStorage.getItem('user'))
+          mainStore.testing && console.log("Mainstore testing variable :", mainStore.testing)
+          mainStore.testing && console.log(value, localStorage.getItem('user'))
           this.user = mainStore.user
         }
       }
     },
+    
   },
 
   methods: {

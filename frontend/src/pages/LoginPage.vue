@@ -105,7 +105,7 @@ export default defineComponent({
     },
 
     submit(event) {
-      console.log(event);
+      mainStore.testing && console.log(event);
       // event.preventDefault();
       let formData = new FormData(event.target);
       if (this.remember == false) {
@@ -113,8 +113,8 @@ export default defineComponent({
       }
       APIService.login(formData)
         .then((res) => {
-          console.log(this.email)
-          console.log(res);
+          mainStore.testing && console.log(this.email)
+          mainStore.testing && console.log(res);
           mainStore.setToken(res.data)
           mainStore.setUser(this.email)
           mainStore.updatePermissions()
@@ -129,11 +129,11 @@ export default defineComponent({
           //   position: "center",
           //   timeout: 3000,
           // });
-          console.log(mainStore.loggedIn)
+          mainStore.testing && console.log(mainStore.loggedIn)
           this.$router.push(`/`);
         })
         .catch((error) => {
-          console.log(error.response);
+          mainStore.testing && console.log(error.response);
           Notify.create({
             message: error.response.data.message,
             color: "red",
@@ -145,14 +145,14 @@ export default defineComponent({
     },
     // async get_form() {
     //   await APIService.login(false).then(async (results) => {
-    //     console.log(results);
+    //     mainStore.testing && console.log(results);
     //     this.python_form = results.data;
     //   });
     // },
 
     async get_csrf() {
       await APIService.get_csrf().then((results) => {
-        console.log(results.data);
+        mainStore.testing && console.log(results.data);
         this.csrf_token = results.data["token"];
         let token_expire = new Date().setDate(new Date().getDate() + 10);
         let cookieString =
@@ -167,8 +167,8 @@ export default defineComponent({
         // document.head.querySelector('meta[name="csrf-token"]');
         // window.axios.defaults.headers.common['X-CSRF-TOKEN'] = results.data
         document.cookie = "csrfToken =; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-        console.log(mainStore.csrfToken);
-        console.log(document.cookie);
+        mainStore.testing && console.log(mainStore.csrfToken);
+        mainStore.testing && console.log(document.cookie);
       });
     },
 

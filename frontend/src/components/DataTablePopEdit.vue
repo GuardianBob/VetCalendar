@@ -120,6 +120,9 @@
 <script>
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
+import { useMainStore } from "stores/main-store.js"
+
+const mainStore = useMainStore()
 
 export default {
   name: "DataTable",
@@ -150,7 +153,7 @@ export default {
     delete_item: {
       immediate: true,
       handler() {
-        console.log(this.columns)
+        mainStore.testing && console.log(this.columns)
       }
     }
   },
@@ -170,12 +173,12 @@ export default {
     },
 
     deleteItem(event) {
-      console.log("clicked on delete \n", `model: ${this.model} \n`, event['id'])
+      mainStore.testing && console.log("clicked on delete \n", `model: ${this.model} \n`, event['id'])
       this.$emit('delete_item', { id: event['id'], model: this.model})
     },
 
     fix_cell(cell) {
-      console.log('cell :', cell)
+      mainStore.testing && console.log('cell :', cell)
       let fixed = []
       cell.map(item => {
         fixed.push(item.label)
@@ -184,7 +187,7 @@ export default {
     },
 
     handleFieldSelected(scope) {
-      console.log('scope :', scope)
+      mainStore.testing && console.log('scope :', scope)
       scope.set()
       return scope
     },

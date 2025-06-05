@@ -73,7 +73,9 @@
 import { defineComponent, ref } from 'vue'
 import { useQuasar, Notify } from "quasar"
 import DataTable from './DataTable.vue'
+import { useMainStore } from 'src/stores/main-store'
 
+const mainStore = useMainStore()
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug", "Sep", "Oct", "Nov", "Dec"];
 const defaultLabels = [
   { "name": "shift_type__type_label", "align": "center", "label": "Shift Type", "field": "shift_type__type_label", "sortable": true },
@@ -141,9 +143,9 @@ export default {
     shiftData: {
       immediate: true,
       handler(newValue, oldValue) {
-        console.log("watcher triggered")
+        mainStore.local_dev && console.log("watcher triggered")
         this.total_shifts = newValue.length
-        console.log(newValue)
+        mainStore.local_dev && console.log(newValue)
         this.shifts = newValue.map(shift => {
           let date = new Date(shift.shift_start);
           let days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -158,7 +160,7 @@ export default {
         let type_options = newValue.map(shift => shift.shift_type__type_label)
         type_options = type_options.filter((value, index, self) => self.indexOf(value) === index)
         this.filter_by_type_options = type_options
-        console.log(this.filter_by_shift_options, this.filter_by_type_options)
+        mainStore.local_dev && console.log(this.filter_by_shift_options, this.filter_by_type_options)
         this.update_shifts()
       }
     },
@@ -166,11 +168,11 @@ export default {
       this.filter_shifts()
     },
     selectedYear(newValue, oldValue) {
-      console.log(oldValue)
+      mainStore.local_dev && console.log(oldValue)
       if (oldValue != null ) {
         this.filter_shifts()
       }
-      console.log(this.selectedMonth)
+      mainStore.local_dev && console.log(this.selectedMonth)
     },
     sort_by(newValue, oldValue) {
       this.filter_shifts()
@@ -187,10 +189,10 @@ export default {
     shift_count() {
       let year = new Date().getFullYear();
       let date = new Date("01 " + this.selectedMonth + " " + year)
-      console.log
+      mainStore.local_dev && console.log
       // this.filter_date = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
       this.shifts_month = []
-      console.log(date.getFullYear())
+      mainStore.local_dev && console.log(date.getFullYear())
       let new_mon_arr = this.shifts.filter(shift => new Date(shift.shift_start).getMonth() == date.getMonth());
       let new_arr = this.shifts.filter(shift => new Date(shift.shift_start).getFullYear() == date.getFullYear());
       // this.shifts_month = [...this.shifts_month, { type: shift, monthTotal: new_mon_arr.length, yearTotal: new_arr.length }];
@@ -210,20 +212,20 @@ export default {
         return acc;
       }, {});
 
-      console.log(shiftTypeCounts);
-      console.log(shiftNameCounts);
-      console.log(date.getMonth(), shiftTypeByMonth);
+      mainStore.local_dev && console.log(shiftTypeCounts);
+      mainStore.local_dev && console.log(shiftNameCounts);
+      mainStore.local_dev && console.log(date.getMonth(), shiftTypeByMonth);
     },
 
     shift_count_month() {
       let date = new Date("01 " + this.selectedMonth + " " + this.selectedYear)
-      console.log(this.filtered_shifts)
+      mainStore.local_dev && console.log(this.filtered_shifts)
     },
     
     shift_count_year() {
-      console.log(this.selectedMonth)
+      mainStore.local_dev && console.log(this.selectedMonth)
       let date = new Date("01 Jan " + this.selectedYear)
-      console.log(date)
+      mainStore.local_dev && console.log(date)
       this.filtered_shifts = this.shifts.filter(shift => new Date(shift.shift_start).getFullYear() == this.selectedYear);
       if (this.months.includes(this.selectedMonth)) {
         this.shift_count_month()
@@ -238,7 +240,7 @@ export default {
           return shiftDate.getFullYear() == this.selectedYear && shiftDate.getMonth() == date.getMonth();
         });
       } else {
-        console.log('filtering by year only')
+        mainStore.local_dev && console.log('filtering by year only')
         this.filtered_shifts = this.shifts.filter(shift => new Date(shift.shift_start).getFullYear() == this.selectedYear);
       }
       this.filtered_count = this.filtered_shifts.length
@@ -258,16 +260,16 @@ export default {
     },
 
     filter_shifts() {
-      console.log(this.sort_by)
+      mainStore.local_dev && console.log(this.sort_by)
       this.filter_icon = 'fa-solid fa-filter-circle-xmark'
       // group shifts objects by filter and show count
       // sample shift object: {"id": 17, "shift_name__shift_label": "Day", "shift_type__type_label": "Holiday", "shift_start": "2024-02-25 15:00:00"}
       let shiftCounts = []
       this.filter_date()
       this.filter_name_type()
-      console.log(this.filtered_shifts)
+      mainStore.local_dev && console.log(this.filtered_shifts)
       if (this.sort_by){
-        console.log(this.sort_by.value)
+        mainStore.local_dev && console.log(this.sort_by.value)
         if (this.sort_by.value == 'shift_type__shift_type') {
           shiftCounts = this.filtered_shifts.reduce((acc, shift) => {
             acc[shift.shift_type__type_label] = (acc[shift.shift_type__type_label] || 0) + 1;
@@ -286,7 +288,7 @@ export default {
             acc[this.months[shift_date.getMonth()]] = (acc[this.months[shift_date.getMonth()]] || 0) + 1;
             return acc;
           }, {});
-          console.log(shiftCounts)
+          mainStore.local_dev && console.log(shiftCounts)
           this.columnLabels = monthLabels
         }
         this.filtered_shifts = Object.entries(shiftCounts).map(([type, count]) => ({ type, count }));
@@ -295,7 +297,7 @@ export default {
         this.filtered_count = this.filtered_shifts.length
         this.columnLabels = defaultLabels
       }
-      console.log(shiftCounts)
+      mainStore.local_dev && console.log(shiftCounts)
     },
 
     update_shifts() {
@@ -304,7 +306,7 @@ export default {
       this.filtered_count = this.shifts.length
       this.selectedYear = new Date().getFullYear()
       this.filter_shifts()
-      console.log(this.shifts, this.total_shifts)
+      mainStore.local_dev && console.log(this.shifts, this.total_shifts)
     },
 
     clear_filters() {
