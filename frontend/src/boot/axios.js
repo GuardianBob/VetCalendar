@@ -8,12 +8,12 @@ import axios from 'axios'
 // "export default () => {}" function below (which runs individually
 // for each client)
 let HTTP = ''
-if (process.env.LOCAL_DEV_ENV == "true") {
-  HTTP = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}`
-} else if (process.env.LOCAL_DEV_ENV == "false" && process.env.TEST_ENV == "true") {
-  HTTP = `https://${process.env.REST_API_TEST}`
+if (import.meta.env.VITE_LOCAL_DEV_ENV == "true") {
+  HTTP = `http://${import.meta.env.VITE_REST_API_HOST}:${import.meta.env.VITE_REST_API_PORT}`
+} else if (import.meta.env.VITE_LOCAL_DEV_ENV == "false" && import.meta.env.VITE_TEST_ENV == "true") {
+  HTTP = `https://${import.meta.env.VITE_REST_API_TEST}`
 } else {
-  HTTP = `https://${process.env.REST_API_LIVE}`
+  HTTP = `https://${import.meta.env.VITE_REST_API_LIVE}`
 }
 const api = axios.create({
   // baseURL: 'https://api.example.com'

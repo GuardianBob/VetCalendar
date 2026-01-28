@@ -3,8 +3,8 @@ import axios from 'axios';
 // import { useMainStore } from "stores/main-store.js";
 
 
-class APIService {  
-  constructor() {    
+class APIService {
+  constructor() {
     // Add a response interceptor
     api.interceptors.response.use(undefined, error => {
       // console.log(error)
@@ -43,7 +43,7 @@ class APIService {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       // console.log(token)
-    } 
+    }
   }
 
   refreshToken() {
@@ -65,10 +65,10 @@ class APIService {
   logout() {
     // Clear tokens from localStorage and reload page to logout
     localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');  
-    localStorage.removeItem('user');  
-    window.location.replace('/'); 
-    return 
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    window.location.replace('/');
+    return
   }
 
   // get_form() {
@@ -107,7 +107,7 @@ class APIService {
 
   get_api_keys(keys) {
     this.setTokenHeader();
-    return api.post('/get_keys', {"data": keys});
+    return api.post('/get_keys', { "data": keys });
   }
 
   upload_file(formData) {
@@ -115,22 +115,22 @@ class APIService {
     console.log("uploading", formData);
     // return api.post("/upload_file", { file })
     let upload_url = ''
-    if (process.env.LOCAL_DEV_ENV == "true") {
-      upload_url = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}/upload_file`
-    } else if (process.env.LOCAL_DEV_ENV == "false" && process.env.TEST_ENV == "true") {
-      upload_url = `https://${process.env.REST_API_TEST}/upload_file`
+    if (import.meta.env.VITE_LOCAL_DEV_ENV == "true") {
+      upload_url = `http://${import.meta.env.VITE_REST_API_HOST}:${import.meta.env.VITE_REST_API_PORT}/upload_file`
+    } else if (import.meta.env.VITE_LOCAL_DEV_ENV == "false" && import.meta.env.VITE_TEST_ENV == "true") {
+      upload_url = `https://${import.meta.env.VITE_REST_API_TEST}/upload_file`
     } else {
-      upload_url = `https://${process.env.REST_API_LIVE}/upload_file`
+      upload_url = `https://${import.meta.env.VITE_REST_API_LIVE}/upload_file`
     }
-    // upload_url = `https://${process.env.REST_API_LIVE}/upload_file`
+    // upload_url = `https://${import.meta.env.REST_API_LIVE}/upload_file`
     // console.log("url", upload_url);
     return axios({
       method: "post",
       url: upload_url,
       data: formData,
-      headers: { 
+      headers: {
         "Content-Type": "multipart/form-data",
-        'Authorization': `Bearer ${token}` 
+        'Authorization': `Bearer ${token}`
       },
     })
   }
@@ -141,7 +141,7 @@ class APIService {
 
   return_shifts(date) {
     this.setTokenHeader();
-    return api.post('/return_shifts', {date})
+    return api.post('/return_shifts', { date })
   }
 
   // save_schedule_updates(data) {
@@ -150,7 +150,7 @@ class APIService {
   // }
 
   // This saves events that are dragged and dropped
-  edit_event(data = null, update=false) {
+  edit_event(data = null, update = false) {
     this.setTokenHeader();
     if (update) {
       return api.post('/edit_event', data)
@@ -193,12 +193,12 @@ class APIService {
 
   // get_user_list(formData) {
   //   let upload_url = ''
-  //   if (process.env.LOCAL_DEV_ENV == "true") {
-  //     upload_url = `http://${process.env.REST_API_HOST}:${process.env.REST_API_PORT}/return_user_list`
+  //   if (import.meta.env.LOCAL_DEV_ENV == "true") {
+  //     upload_url = `http://${import.meta.env.REST_API_HOST}:${import.meta.env.REST_API_PORT}/return_user_list`
   //   } else {
-  //     upload_url = `https://${process.env.REST_API_LIVE}/return_user_list`
+  //     upload_url = `https://${import.meta.env.REST_API_LIVE}/return_user_list`
   //   }
-  //   // upload_url = `https://${process.env.REST_API_LIVE}/return_user_list`
+  //   // upload_url = `https://${import.meta.env.REST_API_LIVE}/return_user_list`
   //   console.log("url", upload_url);
   //   return axios({
   //     method: "post",
@@ -286,7 +286,7 @@ class APIService {
     return api.post('/login/reset_password', data)
   }
 
-  
+
 }
 
 export default new APIService();
