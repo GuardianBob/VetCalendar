@@ -19,28 +19,20 @@ from django.urls import path, include, re_path
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from VetCalendar import views
-import login.views as login_views
 from django.conf import settings
 from django.conf.urls.static import static
-# from django.conf.urls import url
 from django.views.generic.base import TemplateView
-from login.views import validate_token
-from login.views import CustomTokenRefreshView
+from authenticate.views import validate_token
 
 router = routers.DefaultRouter()
-# router.register(r'todos', views.TodoView, 'todo')
-# router.register(r'upload_file', views.upload_file, 'upload')
 
 urlpatterns = [
     path('', include('VetCalendar.urls')),
     re_path(r'admin\/?', admin.site.urls),
-    re_path(r'login\/?', include('login.urls')),
-    # re_path(r'api\/?', include(router.urls)),
+    re_path(r'authenticate\/?', include('authenticate.urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', validate_token, name='token_verify'),
-    # path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-    # path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'), # Custom view to check if token on backend
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # cPanel
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) # cPanel
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

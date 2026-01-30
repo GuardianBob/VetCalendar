@@ -6,24 +6,52 @@ from django.apps import apps
 from importlib import import_module
 import logging, inspect
 import logging.handlers
+from logger.db_logger import DatabaseLogging
 from django.db import models
 from django.core.mail import send_mail, EmailMultiAlternatives
 
-# Create a logger
-logger = logging.getLogger(__name__)
+# # Create a logger
+# logger = logging.getLogger(__name__)
 
-# Set the log level
-logger.setLevel(logging.ERROR)
+# # Set the log level
+# logger.setLevel(logging.ERROR)
 
-# Create a rotating file handler
-handler = logging.handlers.RotatingFileHandler('logs/error.log', maxBytes=20000, backupCount=5)
+# # Create a rotating file handler
+# handler = logging.handlers.RotatingFileHandler('logs/error.log', maxBytes=20000, backupCount=5)
 
-# Create a logging format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
+# # Create a logging format
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# handler.setFormatter(formatter)
 
-# Add the handler to the logger
-logger.addHandler(handler)
+# # Add the handler to the logger
+# logger.addHandler(handler)
+
+logger = DatabaseLogging(__name__)
+
+def trace_error(e, log=False):
+	try:
+		exc_type, exc_value, exc_traceback = sys.exc_info()
+		# tb = traceback.extract_tb(exc_traceback)
+		filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+		# filename, line_number, func_name, text = tb[-1]
+		error_message = f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}"
+		if log:
+			logger.error(error_message)
+			logger.error(f"Error: {str(e)}")
+		print(f"{filename}:{line_number}: Error in {func_name}(): {text}")
+		print("Error: ", str(e))
+	except Exception as e:
+		print("trace_error Error: ", str(e))
+
+def debug_print(message, log=False):
+  if os.environ.get('DEBUG') == 'True':
+    # Get the caller's frame information
+    frame = inspect.currentframe().f_back
+    line_number = frame.f_lineno
+    filename = os.path.basename(frame.f_code.co_filename)
+    print(f'[{filename}] [{line_number}] {message}')
+  if log:
+    logger.debug(message)
 
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 

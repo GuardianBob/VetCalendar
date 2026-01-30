@@ -110,7 +110,7 @@ export default defineComponent({
       // Update column headers with code from SchedSettings.vue
       columns: ref(formStore.formFields.columns),
       pageTitle: "Manage Users",
-      users: ref(),
+      users: ref([]),
       view_user: ref(false),
       new_user: ref(false),
       user_list: ref([]),
@@ -220,10 +220,14 @@ export default defineComponent({
     },
 
     async get_user_list() {
-      await APIService.get_user_list().then((res) => {
-        mainStore.local_dev ? mainStore.testing && console.log(res.data) : null;
-        this.users = res.data
-      })
+      try {
+        const res = await APIService.get_user_list()
+        mainStore.testing && console.log('get_user_list response:', res.data)
+        this.users = res.data || []
+      } catch (error) {
+        console.error('Error fetching user list:', error)
+        this.users = []
+      }
     },
     
   },

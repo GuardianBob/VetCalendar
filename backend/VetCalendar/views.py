@@ -7,11 +7,11 @@ from django.http import JsonResponse
 from .models import Calendar, ShiftName, ShiftType, ShiftName, Shifts, FormBuilder, FormBuilderNew
 from django.forms.models import model_to_dict
 # from .forms import QuickAddForm, ShiftNameForm
-from login.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
-# from login.forms import AccessLevelForm, PermissionForm
+from authenticate.models import User, Address, CityState, Phone, AccessLevel, Permission, Occupation
+# from authenticate.forms import AccessLevelForm, PermissionForm
 from django.views.decorators.csrf import csrf_exempt
 from .scripts import convert_schedule, get_users, load_schedule, set_form_fields, convert_to_shift_datetime, fix_timezone, convert_label
-from login.scripts import get_settings_columns
+from authenticate.scripts import get_settings_columns
 import json, traceback, sys, re, pytz, os, datetime
 from datetime import date, timedelta
 import dateutil.parser as parser

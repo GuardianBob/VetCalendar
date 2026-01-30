@@ -126,7 +126,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_jsonform',
     'VetCalendar',
-    'login',
+    'authenticate',
+    'logger',
 ]
 
 MIDDLEWARE = [
@@ -143,8 +144,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
-AUTH_USER_MODEL = 'login.User'
-AUTHENTICATION_BACKENDS = ['login.backends.EmailBackend']
+AUTH_USER_MODEL = 'authenticate.User'
+AUTHENTICATION_BACKENDS = ['authenticate.backends.EmailBackend']
 
 CORS_ALLOW_METHODS = (
     "DELETE",

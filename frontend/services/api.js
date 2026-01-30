@@ -59,7 +59,7 @@ class APIService {
 
   validateAccess(body) {
     this.setTokenHeader();
-    return api.post('/login/validate', body);
+    return api.post('/authenticate/validate', body);
   }
 
   logout() {
@@ -102,7 +102,7 @@ class APIService {
   // }
 
   login(data) {
-    return api.post("/login/", data)
+    return api.post("/authenticate/", data)
   }
 
   get_api_keys(keys) {
@@ -241,12 +241,12 @@ class APIService {
 
   get_user_list() {
     this.setTokenHeader();
-    return api.get('/login/get_user_list');
+    return api.get('/authenticate/get_user_list');
   }
 
   get_user_profile(email) {
     this.setTokenHeader();
-    return api.post('/login/get_user_profile', email);
+    return api.post('/authenticate/get_user_profile', email);
   }
 
   // get_user_profile_admin(id) {
@@ -263,7 +263,7 @@ class APIService {
   delete_user(data) {
     this.setTokenHeader();
     // console.log(JSON.stringify(data))
-    return api.post('/login/delete_user', data)
+    return api.post('/authenticate/delete_user', data)
   }
 
   // get_user_profile(id) {
@@ -273,17 +273,17 @@ class APIService {
 
   update_profile(data) {
     this.setTokenHeader();
-    return api.post('/login/update_profile', data)
+    return api.post('/authenticate/update_profile', data)
   }
 
   update_password(data) {
     this.setTokenHeader();
-    return api.post('/login/update_password', data)
+    return api.post('/authenticate/update_password', data)
   }
 
   reset_password(data) {
     this.setTokenHeader();
-    return api.post('/login/reset_password', data)
+    return api.post('/authenticate/reset_password', data)
   }
 
 

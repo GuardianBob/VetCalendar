@@ -33,6 +33,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 import logging
 import logging.handlers
 from django.core.exceptions import ObjectDoesNotExist
+from backend.utils import trace_error, debug_print as debug
 
 # class TokenVerifyView(APIView):
 #   def post(self, request):
@@ -53,20 +54,20 @@ from django.core.exceptions import ObjectDoesNotExist
 #     return Response({'status': 'Token is valid'}, status=status.HTTP_200_OK)
 
 # Create a logger
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
-# Set the log level
-logger.setLevel(logging.ERROR)
+# # Set the log level
+# logger.setLevel(logging.ERROR)
 
-# Create a rotating file handler
-handler = logging.handlers.RotatingFileHandler('error.log', maxBytes=20000, backupCount=5)
+# # Create a rotating file handler
+# handler = logging.handlers.RotatingFileHandler('error.log', maxBytes=20000, backupCount=5)
 
-# Create a logging format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
+# # Create a logging format
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# handler.setFormatter(formatter)
 
-# Add the handler to the logger
-logger.addHandler(handler)
+# # Add the handler to the logger
+# logger.addHandler(handler)
 
 TEMP_ACCOUNT_REQUEST_FORM = {
   'Account Request': {
@@ -172,17 +173,17 @@ class SingleUser():
 class UserProfile():
   pass
 
-def trace_error(e, isForm=False):
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
-    error_message = f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}"
-    logger.error(error_message)
-    logger.error("Error: ", e)
-    print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
-    print("Error: ", e)
-    if isForm:
-        return JsonResponse({'message':'Form is invalid'}, status=500)
-    return JsonResponse({'message':'Something went wrong'}, status=500)
+# def trace_error(e, isForm=False):
+#     exc_type, exc_value, exc_traceback = sys.exc_info()
+#     filename, line_number, func_name, text = traceback.extract_tb(exc_traceback)[0]
+#     error_message = f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}"
+#     logger.error(error_message)
+#     logger.error("Error: ", e)
+#     print(f"An error occurred in file {filename} on line {line_number} in {func_name}(): {text}")
+#     print("Error: ", e)
+#     if isForm:
+#         return JsonResponse({'message':'Form is invalid'}, status=500)
+#     return JsonResponse({'message':'Something went wrong'}, status=500)
 
 class ProfileFields():
     user_fields = [f.name for f in User._meta.get_fields()]
@@ -315,9 +316,9 @@ def validate(request):
   try:
     if request.method == 'POST':
       if request.user.is_authenticated:
-        print(request.user)
+        debug(request.user)
         user_access = AccessLevel.objects.filter(users=request.user).values('access', 'permissions__permission')
-        print(user_access)
+        # debug(user_access)
         access = list(map(lambda x: x['access'], user_access))
         access = list(set(access))
         permissions = list(map(lambda x: x['permissions__permission'], user_access))
@@ -327,7 +328,7 @@ def validate(request):
     return trace_error(e, True)
 
 def verify_new_user(email):
-  print(email)
+  debug(email)
   user = User.objects.filter(email__icontains=email)
   return user
 
@@ -528,11 +529,11 @@ def set_initials(data):
 @permission_classes([IsAuthenticated])
 def get_user_list(request):
     # print(request.META.get('HTTP_AUTHORIZATION'))
-    # print(request.session)
+    debug(request.session)
     users = User.objects.select_related('access_levels').values('id', 'first_name', 'last_name', 'initials', 'email', 'access_levels__access')
     # print(users)
     user_dict = [user for user in users] # Convert QuerySet into List of Dictionaries
-    print(user_dict)
+    debug(user_dict)
     user_data = json.dumps(user_dict)   
     return HttpResponse(user_data)
 

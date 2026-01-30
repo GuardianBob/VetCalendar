@@ -1,5 +1,5 @@
 from django.db import models
-from login.models import User
+from authenticate.models import User
 from django_jsonform.models.fields import JSONField
 from django.apps import apps
 
